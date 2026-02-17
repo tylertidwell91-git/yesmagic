@@ -99,9 +99,8 @@ function AdminGate({ children }) {
 const SHOWS_API = '/api/shows'
 
 export default function AdminPage() {
-  const { inventory, shippingCost: contextShipping, loading, saveInventory, reload } = useInventory()
+  const { inventory, loading, saveInventory, reload } = useInventory()
   const [products, setProducts] = useState([])
-  const [shippingCost, setShippingCost] = useState(0)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [shows, setShows] = useState([])
@@ -114,15 +113,12 @@ export default function AdminPage() {
     series: '',
     item: '',
     description: '',
+    shipping: '',
   })
 
   useEffect(() => {
     setProducts(inventory)
   }, [inventory])
-
-  useEffect(() => {
-    if (typeof contextShipping === 'number' && contextShipping >= 0) setShippingCost(contextShipping)
-  }, [contextShipping])
 
   useEffect(() => {
     fetch(SHOWS_API)
@@ -139,10 +135,8 @@ export default function AdminPage() {
 
   const handleSave = async () => {
     setSaveError('')
-    const ship = parseFloat(shippingCost)
-    const shipNum = !Number.isNaN(ship) && ship >= 0 ? ship : 0
     try {
-      await saveInventory(products, shipNum)
+      await saveInventory(products)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
@@ -158,13 +152,14 @@ export default function AdminPage() {
       id: generateId(),
       price: Math.max(0, Number(newProduct.price) || 0),
       quantity: Math.max(0, Math.floor(Number(newProduct.quantity) || 0)),
+      shipping: Math.max(0, Number(newProduct.shipping) || 0),
       image: String(newProduct.image ?? '').trim() || 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400&h=400&fit=crop',
       series,
       item,
       description: String(newProduct.description ?? '').trim(),
     }
     setProducts((prev) => [...prev, product])
-    setNewProduct({ price: '', quantity: '', image: '', series: '', item: '', description: '' })
+    setNewProduct({ price: '', quantity: '', image: '', series: '', item: '', description: '', shipping: '' })
   }
 
   const handleRemove = (id) => {
@@ -304,6 +299,17 @@ export default function AdminPage() {
           />
         </div>
         <div className="form-group">
+          <label>Shipping ($)</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={newProduct.shipping}
+            onChange={(e) => setNewProduct((p) => ({ ...p, shipping: e.target.value }))}
+            placeholder="0.00"
+          />
+        </div>
+        <div className="form-group">
           <label>Quantity</label>
           <input
             type="number"
@@ -328,18 +334,6 @@ export default function AdminPage() {
       </section>
 
       <div className="admin-inventory-actions">
-        <div className="form-group admin-shipping-group">
-          <label htmlFor="admin-shipping">Shipping cost ($)</label>
-          <input
-            id="admin-shipping"
-            type="number"
-            step="0.01"
-            min="0"
-            value={shippingCost}
-            onChange={(e) => setShippingCost(e.target.value)}
-            placeholder="0.00"
-          />
-        </div>
         <button type="button" className="ym-btn ym-btn-primary" onClick={handleSave}>
           Save inventory
         </button>
@@ -354,6 +348,7 @@ export default function AdminPage() {
               <th className="col-item">Item</th>
               <th className="col-description">Description</th>
               <th className="col-price">Price ($)</th>
+              <th className="col-shipping">Shipping ($)</th>
               <th className="col-qty">Quantity</th>
               <th className="col-image">Image URL</th>
               <th className="col-actions">Actions</th>
@@ -418,6 +413,16 @@ export default function AdminPage() {
                     min="0"
                     value={p.price}
                     onChange={(e) => handleChange(p.id, 'price', e.target.value)}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={p.shipping ?? ''}
+                    onChange={(e) => handleChange(p.id, 'shipping', e.target.value)}
+                    placeholder="0"
                   />
                 </td>
                 <td>

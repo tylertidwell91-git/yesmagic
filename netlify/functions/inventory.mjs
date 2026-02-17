@@ -1,38 +1,13 @@
 import { getStore } from '@netlify/blobs'
 
 const DEFAULT_INVENTORY = [
-  {
-    id: '1',
-    price: 29.99,
-    quantity: 50,
-    image: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400&h=400&fit=crop',
-    series: 'Dominaria',
-    item: 'Booster Box',
-    description: '36 booster packs from the Dominaria United set.',
-  },
-  {
-    id: '2',
-    price: 49.99,
-    quantity: 30,
-    image: 'https://images.unsplash.com/photo-1580421598329-f84c6dbb0f33?w=400&h=400&fit=crop',
-    series: 'Innistrad',
-    item: 'Bundle',
-    description: 'Set bundle with boosters, lands, and storage box.',
-  },
-  {
-    id: '3',
-    price: 79.99,
-    quantity: 20,
-    image: 'https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=400&h=400&fit=crop',
-    series: 'Zendikar',
-    item: 'Draft Kit',
-    description: 'Draft kit with boosters and accessories for limited play.',
-  },
+  { id: '1', price: 29.99, quantity: 50, shipping: 0, image: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400&h=400&fit=crop', series: 'Dominaria', item: 'Booster Box', description: '36 booster packs from the Dominaria United set.' },
+  { id: '2', price: 49.99, quantity: 30, shipping: 0, image: 'https://images.unsplash.com/photo-1580421598329-f84c6dbb0f33?w=400&h=400&fit=crop', series: 'Innistrad', item: 'Bundle', description: 'Set bundle with boosters, lands, and storage box.' },
+  { id: '3', price: 79.99, quantity: 20, shipping: 0, image: 'https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=400&h=400&fit=crop', series: 'Zendikar', item: 'Draft Kit', description: 'Draft kit with boosters and accessories for limited play.' },
 ]
 
 const STORE_NAME = 'yesmagic-inventory'
 const KEY = 'inventory'
-const SHIPPING_KEY = 'shipping'
 
 function corsHeaders(origin) {
   const allowed = process.env.ALLOWED_ORIGINS
@@ -62,24 +37,20 @@ export default async (req) => {
   if (req.method === 'GET') {
     try {
       const store = getStore(STORE_NAME)
-      const [rawInv, rawShipping] = await Promise.all([
-        store.get(KEY, { consistency: 'strong' }),
-        store.get(SHIPPING_KEY, { consistency: 'strong' }),
-      ])
-      const data = rawInv != null ? (typeof rawInv === 'string' ? JSON.parse(rawInv) : rawInv) : null
-      const list = data != null && Array.isArray(data) && data.length > 0 ? data : DEFAULT_INVENTORY
-      let shippingCost = 0
-      if (rawShipping != null) {
-        const parsed = parseFloat(typeof rawShipping === 'string' ? rawShipping : String(rawShipping))
-        if (!Number.isNaN(parsed) && parsed >= 0) shippingCost = parsed
-      }
-      return new Response(JSON.stringify({ inventory: list, shippingCost }), {
+      const raw = await store.get(KEY, { consistency: 'strong' })
+      const data = raw != null ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : null
+      let list = data != null && Array.isArray(data) && data.length > 0 ? data : DEFAULT_INVENTORY
+      list = list.map((p) => ({
+        ...p,
+        shipping: Math.max(0, Number(p.shipping) ?? 0),
+      }))
+      return new Response(JSON.stringify({ inventory: list }), {
         status: 200,
         headers: corsHeaders(origin),
       })
     } catch (err) {
       console.error('Inventory read error:', err)
-      return new Response(JSON.stringify({ inventory: DEFAULT_INVENTORY, shippingCost: 0 }), {
+      return new Response(JSON.stringify({ inventory: DEFAULT_INVENTORY }), {
         status: 200,
         headers: corsHeaders(origin),
       })
@@ -111,16 +82,13 @@ export default async (req) => {
     })
   }
 
-  const shippingCost = typeof body.shippingCost === 'number' && body.shippingCost >= 0
-    ? body.shippingCost
-    : (parseFloat(body.shippingCost) >= 0 ? parseFloat(body.shippingCost) : null)
-
   try {
     const store = getStore(STORE_NAME)
     const normalized = body.products.map((p) => ({
       id: String(p.id ?? ''),
       price: Math.max(0, Number(p.price) ?? 0),
       quantity: Math.max(0, Math.floor(Number(p.quantity) ?? 0)),
+      shipping: Math.max(0, Number(p.shipping) ?? 0),
       image:
         String(p.image ?? '').trim() ||
         'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400&h=400&fit=crop',
@@ -128,10 +96,7 @@ export default async (req) => {
       item: String(p.item ?? '').trim(),
       description: String(p.description ?? '').trim(),
     }))
-    await Promise.all([
-      store.set(KEY, JSON.stringify(normalized)),
-      ...(shippingCost !== null ? [store.set(SHIPPING_KEY, String(shippingCost))] : []),
-    ])
+    await store.set(KEY, JSON.stringify(normalized))
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
       headers: corsHeaders(origin),

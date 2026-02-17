@@ -356,14 +356,6 @@
   margin-bottom: 1.5rem;
 }
 
-.admin-shipping-group {
-  margin-bottom: 0;
-}
-
-.admin-shipping-group input {
-  width: 8rem;
-}
-
 .inventory-section-title {
   font-size: 1rem;
   font-weight: 600;
@@ -420,6 +412,7 @@
 .inventory-table .col-item { width: 14rem; }
 .inventory-table .col-description { width: 14rem; }
 .inventory-table .col-price { width: 8rem; }
+.inventory-table .col-shipping { width: 7rem; }
 .inventory-table .col-qty { width: 6rem; }
 .inventory-table .col-image { min-width: 12rem; }
 .inventory-table .col-actions { width: 8rem; }

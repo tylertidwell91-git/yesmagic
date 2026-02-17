@@ -102,7 +102,7 @@ function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCart()
-  const { inventory, shippingCost, loading } = useInventory()
+  const { inventory, loading } = useInventory()
 
   const cartWithProducts = useMemo(() =>
     items
@@ -118,7 +118,10 @@ export default function CheckoutPage() {
     () => Math.round(cartWithProducts.reduce((sum, p) => sum + p.price * p.cartQuantity * 100, 0)),
     [cartWithProducts]
   )
-  const shippingCents = Math.round((Number(shippingCost) || 0) * 100)
+  const shippingCents = useMemo(
+    () => Math.round(cartWithProducts.reduce((sum, p) => sum + (Number(p.shipping) || 0) * p.cartQuantity * 100, 0)),
+    [cartWithProducts]
+  )
   const totalCents = subtotalCents + shippingCents
 
   const [orderComplete, setOrderComplete] = useState(false)
