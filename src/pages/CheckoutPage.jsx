@@ -134,6 +134,33 @@ export default function CheckoutPage() {
     [items, inventory]
   )
 
+  const [orderComplete, setOrderComplete] = useState(false)
+  const [emailFailed, setEmailFailed] = useState(false)
+  const [customerEmail, setCustomerEmail] = useState('')
+  const [clientSecret, setClientSecret] = useState(null)
+  const [error, setError] = useState(null)
+  const [loadingPayment, setLoadingPayment] = useState(false)
+  const [shippingAddress, setShippingAddress] = useState({
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: '',
+  })
+  const [addressError, setAddressError] = useState('')
+
+  const isShippingAddressValid = useMemo(() => {
+    const a = shippingAddress
+    return (
+      (a.line1 || '').trim().length > 0 &&
+      (a.city || '').trim().length > 0 &&
+      (a.state || '').trim().length > 0 &&
+      (a.zip || '').trim().length > 0 &&
+      (a.country || '').trim().length > 0
+    )
+  }, [shippingAddress])
+
   const subtotalCents = useMemo(
     () => Math.round(cartWithProducts.reduce((sum, p) => sum + p.price * p.cartQuantity * 100, 0)),
     [cartWithProducts]
@@ -168,33 +195,6 @@ export default function CheckoutPage() {
     return 0
   }, [subtotalCents, shippingCents, shippingAddress])
   const totalCents = subtotalCents + shippingCents + taxCents
-
-  const [orderComplete, setOrderComplete] = useState(false)
-  const [emailFailed, setEmailFailed] = useState(false)
-  const [customerEmail, setCustomerEmail] = useState('')
-  const [clientSecret, setClientSecret] = useState(null)
-  const [error, setError] = useState(null)
-  const [loadingPayment, setLoadingPayment] = useState(false)
-  const [shippingAddress, setShippingAddress] = useState({
-    line1: '',
-    line2: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: '',
-  })
-  const [addressError, setAddressError] = useState('')
-
-  const isShippingAddressValid = useMemo(() => {
-    const a = shippingAddress
-    return (
-      (a.line1 || '').trim().length > 0 &&
-      (a.city || '').trim().length > 0 &&
-      (a.state || '').trim().length > 0 &&
-      (a.zip || '').trim().length > 0 &&
-      (a.country || '').trim().length > 0
-    )
-  }, [shippingAddress])
 
   useLayoutEffect(() => {
     if (hadItemsRef.current && items.length === 0) {
