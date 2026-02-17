@@ -362,8 +362,6 @@ export default function AdminPage() {
                     value={p.series ?? ''}
                     onChange={(e) => handleChange(p.id, 'series', e.target.value)}
                     placeholder="Series"
-                    size={25}
-                    style={{ width: '25ch', minWidth: '25ch' }}
                   />
                 </td>
                 <td>
@@ -371,7 +369,7 @@ export default function AdminPage() {
                     {ITEM_OPTIONS.map((opt) => {
                       const selected = itemStringToArray(p.item).includes(opt)
                       return (
-                        <label key={opt} style={{ display: 'block', marginBottom: '0.2rem', whiteSpace: 'nowrap' }}>
+                        <label key={opt}>
                           <input
                             type="checkbox"
                             checked={selected}
@@ -391,7 +389,7 @@ export default function AdminPage() {
                     {DESCRIPTION_OPTIONS.map((opt) => {
                       const selected = itemStringToArray(p.description).includes(opt)
                       return (
-                        <label key={opt} style={{ display: 'block', marginBottom: '0.2rem', whiteSpace: 'nowrap' }}>
+                        <label key={opt}>
                           <input
                             type="checkbox"
                             checked={selected}
