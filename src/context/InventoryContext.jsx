@@ -28,13 +28,19 @@ export function InventoryProvider({ children }) {
       return
     }
     try {
-      const res = await fetch(apiUrl)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
+      const res = await fetch(apiUrl, { signal: controller.signal })
+      clearTimeout(timeoutId)
       if (res.ok) {
         const data = await res.json()
         if (Array.isArray(data) && data.length > 0) setInventory(data.map(ensureProductFields))
       }
-    } catch (_) {}
-    setLoading(false)
+    } catch (_) {
+      // Timeout or network error: keep default products so shop still works
+    } finally {
+      setLoading(false)
+    }
   }, [apiUrl])
 
   useEffect(() => {

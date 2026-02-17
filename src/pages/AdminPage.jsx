@@ -143,19 +143,10 @@ export default function AdminPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <AdminGate>
-        <div className="yesmagic-main admin-layout">
-          <p style={{ color: 'var(--ym-muted)' }}>Loading inventory…</p>
-        </div>
-      </AdminGate>
-    )
-  }
-
   return (
     <AdminGate>
     <div className="yesmagic-main admin-layout">
+      {loading && <p style={{ color: 'var(--ym-muted)', marginBottom: '1rem' }}>Loading inventory…</p>}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         <h2 className="admin-title" style={{ marginBottom: 0 }}>Inventory</h2>
         <button

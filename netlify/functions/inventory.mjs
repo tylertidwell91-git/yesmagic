@@ -69,8 +69,9 @@ export default async (req) => {
       })
     } catch (err) {
       console.error('Inventory read error:', err)
-      return new Response(JSON.stringify({ error: 'Failed to load inventory' }), {
-        status: 500,
+      // Return defaults so the shop still loads if Blobs fails
+      return new Response(JSON.stringify(DEFAULT_INVENTORY), {
+        status: 200,
         headers: corsHeaders(origin),
       })
     }
