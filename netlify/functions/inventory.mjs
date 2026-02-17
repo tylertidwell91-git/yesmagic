@@ -32,6 +32,7 @@ const DEFAULT_INVENTORY = [
 
 const STORE_NAME = 'yesmagic-inventory'
 const KEY = 'inventory'
+const SHIPPING_KEY = 'shipping'
 
 function corsHeaders(origin) {
   const allowed = process.env.ALLOWED_ORIGINS
@@ -61,16 +62,24 @@ export default async (req) => {
   if (req.method === 'GET') {
     try {
       const store = getStore(STORE_NAME)
-      const raw = await store.get(KEY, { consistency: 'strong' })
-      const data = raw != null ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : null
+      const [rawInv, rawShipping] = await Promise.all([
+        store.get(KEY, { consistency: 'strong' }),
+        store.get(SHIPPING_KEY, { consistency: 'strong' }),
+      ])
+      const data = rawInv != null ? (typeof rawInv === 'string' ? JSON.parse(rawInv) : rawInv) : null
       const list = data != null && Array.isArray(data) && data.length > 0 ? data : DEFAULT_INVENTORY
-      return new Response(JSON.stringify(list), {
+      let shippingCost = 0
+      if (rawShipping != null) {
+        const parsed = parseFloat(typeof rawShipping === 'string' ? rawShipping : String(rawShipping))
+        if (!Number.isNaN(parsed) && parsed >= 0) shippingCost = parsed
+      }
+      return new Response(JSON.stringify({ inventory: list, shippingCost }), {
         status: 200,
         headers: corsHeaders(origin),
       })
     } catch (err) {
       console.error('Inventory read error:', err)
-      return new Response(JSON.stringify(DEFAULT_INVENTORY), {
+      return new Response(JSON.stringify({ inventory: DEFAULT_INVENTORY, shippingCost: 0 }), {
         status: 200,
         headers: corsHeaders(origin),
       })
@@ -102,6 +111,10 @@ export default async (req) => {
     })
   }
 
+  const shippingCost = typeof body.shippingCost === 'number' && body.shippingCost >= 0
+    ? body.shippingCost
+    : (parseFloat(body.shippingCost) >= 0 ? parseFloat(body.shippingCost) : null)
+
   try {
     const store = getStore(STORE_NAME)
     const normalized = body.products.map((p) => ({
@@ -115,7 +128,10 @@ export default async (req) => {
       item: String(p.item ?? '').trim(),
       description: String(p.description ?? '').trim(),
     }))
-    await store.set(KEY, JSON.stringify(normalized))
+    await Promise.all([
+      store.set(KEY, JSON.stringify(normalized)),
+      ...(shippingCost !== null ? [store.set(SHIPPING_KEY, String(shippingCost))] : []),
+    ])
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
       headers: corsHeaders(origin),

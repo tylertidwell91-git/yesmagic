@@ -10,6 +10,7 @@ const InventoryContext = createContext(null)
 
 export function InventoryProvider({ children }) {
   const [inventory, setInventory] = useState(defaultProducts)
+  const [shippingCost, setShippingCost] = useState(0)
   const [loading, setLoading] = useState(true)
   const apiUrl = getInventoryApiUrl()
 
@@ -34,7 +35,12 @@ export function InventoryProvider({ children }) {
       clearTimeout(timeoutId)
       if (res.ok) {
         const data = await res.json()
-        if (Array.isArray(data) && data.length > 0) setInventory(data.map(ensureProductFields))
+        if (data && typeof data === 'object' && Array.isArray(data.inventory)) {
+          if (data.inventory.length > 0) setInventory(data.inventory.map(ensureProductFields))
+          if (typeof data.shippingCost === 'number' && data.shippingCost >= 0) setShippingCost(data.shippingCost)
+        } else if (Array.isArray(data) && data.length > 0) {
+          setInventory(data.map(ensureProductFields))
+        }
       }
     } catch (_) {
       // Timeout or network error: keep default products so shop still works
@@ -47,7 +53,7 @@ export function InventoryProvider({ children }) {
     load()
   }, [load])
 
-  const saveInventory = useCallback(async (products) => {
+  const saveInventory = useCallback(async (products, shipping = null) => {
     const normalized = products.map((p) => ({
       id: p.id,
       price: Math.max(0, Number(p.price) || 0),
@@ -61,16 +67,20 @@ export function InventoryProvider({ children }) {
     if (!apiUrl) {
       if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized))
       setInventory(normalized)
+      if (typeof shipping === 'number' && shipping >= 0) setShippingCost(shipping)
       return { ok: true }
     }
 
     const raw = import.meta.env.VITE_ADMIN_PASSWORD || ''
     const adminPassword = raw.replace(/\r\n?|\n/g, '').trim().replace(/^["']|["']$/g, '')
 
+    const payload = { adminPassword, products: normalized }
+    if (typeof shipping === 'number' && shipping >= 0) payload.shippingCost = shipping
+
     const res = await fetch(apiUrl, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminPassword, products: normalized }),
+      body: JSON.stringify(payload),
     })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {
@@ -79,10 +89,11 @@ export function InventoryProvider({ children }) {
       throw new Error(msg)
     }
     setInventory(normalized)
+    if (typeof shipping === 'number' && shipping >= 0) setShippingCost(shipping)
     return { ok: true }
   }, [apiUrl])
 
-  const value = { inventory, loading, saveInventory, reload: load }
+  const value = { inventory, shippingCost, loading, saveInventory, reload: load }
   return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>
 }
 

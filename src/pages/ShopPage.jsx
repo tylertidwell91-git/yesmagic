@@ -22,7 +22,7 @@ function matchesPrice(price, priceFilter) {
 
 export default function ShopPage() {
   const { addToCart } = useCart()
-  const { inventory, loading } = useInventory()
+  const { inventory, shippingCost, loading } = useInventory()
   const [qtyInputs, setQtyInputs] = useState({})
   const [filterSeries, setFilterSeries] = useState('')
   const [filterItem, setFilterItem] = useState('')
@@ -65,7 +65,12 @@ export default function ShopPage() {
 
   return (
     <div className="yesmagic-main">
-      <h2 style={{ marginBottom: '1rem', fontWeight: 600 }}>Shop</h2>
+      <h2 style={{ marginBottom: '0.5rem', fontWeight: 600 }}>Shop</h2>
+      <p className="shop-shipping-note">
+        {shippingCost > 0
+          ? `Shipping: $${Number(shippingCost).toFixed(2)}`
+          : 'Free shipping'}
+      </p>
 
       <div className="shop-filters">
         <div className="filter-group">

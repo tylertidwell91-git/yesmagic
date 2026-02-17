@@ -16,7 +16,7 @@ function getPaymentIntentUrl() {
   return '/api/create-payment-intent'
 }
 
-function buildOrderPayload(cartWithProducts, totalCents, customerEmail) {
+function buildOrderPayload(cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail) {
   return {
     items: cartWithProducts.map((p) => ({
       id: p.id,
@@ -26,6 +26,8 @@ function buildOrderPayload(cartWithProducts, totalCents, customerEmail) {
       price: p.price,
       lineTotal: (p.price * p.cartQuantity).toFixed(2),
     })),
+    subtotal: (subtotalCents / 100).toFixed(2),
+    shipping: (shippingCents / 100).toFixed(2),
     total: (totalCents / 100).toFixed(2),
     totalCents,
     customerEmail: customerEmail.trim() || undefined,
@@ -100,7 +102,7 @@ function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCart()
-  const { inventory, loading } = useInventory()
+  const { inventory, shippingCost, loading } = useInventory()
 
   const cartWithProducts = useMemo(() =>
     items
@@ -112,10 +114,12 @@ export default function CheckoutPage() {
     [items, inventory]
   )
 
-  const totalCents = useMemo(
+  const subtotalCents = useMemo(
     () => Math.round(cartWithProducts.reduce((sum, p) => sum + p.price * p.cartQuantity * 100, 0)),
     [cartWithProducts]
   )
+  const shippingCents = Math.round((Number(shippingCost) || 0) * 100)
+  const totalCents = subtotalCents + shippingCents
 
   const [orderComplete, setOrderComplete] = useState(false)
   const [emailFailed, setEmailFailed] = useState(false)
@@ -125,8 +129,8 @@ export default function CheckoutPage() {
   const [loadingPayment, setLoadingPayment] = useState(false)
 
   const orderPayload = useMemo(
-    () => buildOrderPayload(cartWithProducts, totalCents, customerEmail),
-    [cartWithProducts, totalCents, customerEmail]
+    () => buildOrderPayload(cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail),
+    [cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail]
   )
 
   const paymentIntentUrl = getPaymentIntentUrl()
@@ -228,6 +232,14 @@ export default function CheckoutPage() {
             <span>${(p.price * p.cartQuantity).toFixed(2)}</span>
           </div>
         ))}
+        <div className="cart-line">
+          <span>Subtotal</span>
+          <span>${(subtotalCents / 100).toFixed(2)}</span>
+        </div>
+        <div className="cart-line">
+          <span>Shipping</span>
+          <span>{shippingCents > 0 ? `$${(shippingCents / 100).toFixed(2)}` : 'Free'}</span>
+        </div>
         <div className="cart-line cart-total">
           <span>Total</span>
           <span>${(totalCents / 100).toFixed(2)}</span>

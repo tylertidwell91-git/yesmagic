@@ -94,6 +94,12 @@
   letter-spacing: 0.04em;
 }
 
+.shop-shipping-note {
+  color: var(--ym-muted);
+  font-size: 0.9375rem;
+  margin-bottom: 1rem;
+}
+
 .shop-filters {
   display: flex;
   flex-wrap: wrap;
@@ -317,7 +323,7 @@
 }
 
 .admin-layout {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -331,23 +337,60 @@
   margin-bottom: 1.5rem;
 }
 
+.admin-inventory-section {
+  margin-bottom: 2rem;
+}
+
+.admin-section-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--ym-accent);
+}
+
+.admin-inventory-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.admin-shipping-group {
+  margin-bottom: 0;
+}
+
+.admin-shipping-group input {
+  width: 8rem;
+}
+
+.inventory-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--ym-muted);
+}
+
 .inventory-table-wrap {
   background: var(--ym-surface);
   border-radius: var(--ym-radius);
   border: 1px solid var(--ym-border);
-  overflow: hidden;
+  overflow: auto;
+  margin-bottom: 2rem;
 }
 
 .inventory-table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
 }
 
 .inventory-table th,
 .inventory-table td {
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
   text-align: left;
   border-bottom: 1px solid var(--ym-border);
+  vertical-align: top;
 }
 
 .inventory-table th {
@@ -365,7 +408,7 @@
 
 .inventory-table input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.5rem 0.6rem;
   border: 1px solid var(--ym-border);
   border-radius: 6px;
   font-size: 0.9375rem;
@@ -373,8 +416,12 @@
   color: var(--ym-text);
 }
 
-.inventory-table .col-qty { width: 6rem; }
+.inventory-table .col-series { width: 12rem; }
+.inventory-table .col-item { width: 14rem; }
+.inventory-table .col-description { width: 14rem; }
 .inventory-table .col-price { width: 8rem; }
+.inventory-table .col-qty { width: 6rem; }
+.inventory-table .col-image { min-width: 12rem; }
 .inventory-table .col-actions { width: 8rem; }
 
 .ym-btn-sm {
@@ -452,6 +499,28 @@
   max-width: 400px;
 }
 
+.add-product-form.add-product-form--spaced {
+  max-width: 520px;
+  padding: 1.5rem 1.75rem;
+}
+
+.add-product-form--spaced .form-group {
+  margin-bottom: 1.25rem;
+}
+
+.add-product-form--spaced .checkbox-group,
+.add-product-form--spaced .checkbox-group-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+
+.add-product-form--spaced .checkbox-group label,
+.add-product-form--spaced .checkbox-group-inline label {
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+
 .add-product-form h3 {
   font-size: 1rem;
   font-weight: 600;
@@ -462,6 +531,17 @@
 .checkbox-group-inline label {
   cursor: pointer;
   font-weight: 400;
+}
+
+.inventory-table-wrap .checkbox-group-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+}
+
+.inventory-table-wrap .checkbox-group-inline label {
+  margin-bottom: 0;
+  white-space: nowrap;
 }
 
 /* Schedule calendar */

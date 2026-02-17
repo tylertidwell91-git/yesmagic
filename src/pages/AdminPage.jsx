@@ -99,8 +99,9 @@ function AdminGate({ children }) {
 const SHOWS_API = '/api/shows'
 
 export default function AdminPage() {
-  const { inventory, loading, saveInventory, reload } = useInventory()
+  const { inventory, shippingCost: contextShipping, loading, saveInventory, reload } = useInventory()
   const [products, setProducts] = useState([])
+  const [shippingCost, setShippingCost] = useState(0)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [shows, setShows] = useState([])
@@ -120,6 +121,10 @@ export default function AdminPage() {
   }, [inventory])
 
   useEffect(() => {
+    if (typeof contextShipping === 'number' && contextShipping >= 0) setShippingCost(contextShipping)
+  }, [contextShipping])
+
+  useEffect(() => {
     fetch(SHOWS_API)
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setShows(Array.isArray(data) ? data : []))
@@ -134,8 +139,10 @@ export default function AdminPage() {
 
   const handleSave = async () => {
     setSaveError('')
+    const ship = parseFloat(shippingCost)
+    const shipNum = !Number.isNaN(ship) && ship >= 0 ? ship : 0
     try {
-      await saveInventory(products)
+      await saveInventory(products, shipNum)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
@@ -228,10 +235,11 @@ export default function AdminPage() {
         </div>
       )}
 
-      <div className="add-product-form">
-        <h3>Add product</h3>
-        <div className="form-group">
-          <label>Series</label>
+      <section className="admin-inventory-section">
+        <h3 className="admin-section-heading">Add product</h3>
+        <div className="add-product-form add-product-form--spaced">
+          <div className="form-group">
+            <label>Series</label>
           <input
             value={newProduct.series}
             onChange={(e) => setNewProduct((p) => ({ ...p, series: e.target.value }))}
@@ -316,24 +324,38 @@ export default function AdminPage() {
         <button type="button" className="ym-btn ym-btn-primary" onClick={handleAdd}>
           Add product
         </button>
-      </div>
+        </div>
+      </section>
 
-      <div className="admin-actions">
+      <div className="admin-inventory-actions">
+        <div className="form-group admin-shipping-group">
+          <label htmlFor="admin-shipping">Shipping cost ($)</label>
+          <input
+            id="admin-shipping"
+            type="number"
+            step="0.01"
+            min="0"
+            value={shippingCost}
+            onChange={(e) => setShippingCost(e.target.value)}
+            placeholder="0.00"
+          />
+        </div>
         <button type="button" className="ym-btn ym-btn-primary" onClick={handleSave}>
           Save inventory
         </button>
       </div>
 
+      <h3 className="inventory-section-title">Products</h3>
       <div className="inventory-table-wrap">
         <table className="inventory-table">
           <thead>
             <tr>
-              <th>Series</th>
-              <th>Item</th>
-              <th>Description</th>
-              <th>Price ($)</th>
-              <th>Quantity</th>
-              <th>Image URL</th>
+              <th className="col-series">Series</th>
+              <th className="col-item">Item</th>
+              <th className="col-description">Description</th>
+              <th className="col-price">Price ($)</th>
+              <th className="col-qty">Quantity</th>
+              <th className="col-image">Image URL</th>
               <th className="col-actions">Actions</th>
             </tr>
           </thead>
