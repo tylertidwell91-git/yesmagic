@@ -100,7 +100,7 @@ function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCart()
-  const inventory = useMemo(() => getInventory(), [])
+  const { inventory, loading } = useInventory()
 
   const cartWithProducts = useMemo(() =>
     items
