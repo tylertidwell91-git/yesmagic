@@ -457,3 +457,144 @@
   font-weight: 600;
   margin-bottom: 1rem;
 }
+
+.checkbox-group label,
+.checkbox-group-inline label {
+  cursor: pointer;
+  font-weight: 400;
+}
+
+/* Schedule calendar */
+.schedule-page {
+  max-width: 900px;
+}
+
+.schedule-title {
+  font-family: var(--ym-font-heading);
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.schedule-calendar {
+  background: var(--ym-surface);
+  border: 1px solid var(--ym-border);
+  border-radius: var(--ym-radius);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+
+.schedule-calendar-header {
+  font-family: var(--ym-font-heading);
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--ym-accent);
+}
+
+.schedule-calendar-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.schedule-calendar-grid th {
+  padding: 0.5rem;
+  text-align: center;
+  color: var(--ym-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--ym-border);
+}
+
+.schedule-calendar-grid td {
+  vertical-align: top;
+  padding: 0.5rem;
+  min-width: 100px;
+  border: 1px solid var(--ym-border);
+  background: var(--ym-surface-elevated);
+}
+
+.schedule-day-cell.other-month {
+  background: var(--ym-surface);
+  color: var(--ym-muted);
+  opacity: 0.8;
+}
+
+.schedule-day-cell.today {
+  outline: 2px solid var(--ym-accent);
+  outline-offset: -2px;
+}
+
+.schedule-day-num {
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--ym-text);
+}
+
+.schedule-day-shows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.schedule-show-item {
+  background: var(--ym-bg);
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  border-left: 3px solid var(--ym-accent);
+}
+
+.schedule-show-time {
+  display: block;
+  color: var(--ym-accent);
+  font-weight: 500;
+}
+
+.schedule-show-title {
+  display: block;
+  color: var(--ym-text);
+}
+
+/* Admin shows section */
+.admin-shows-section {
+  background: var(--ym-surface);
+  border: 1px solid var(--ym-border);
+  border-radius: var(--ym-radius);
+  padding: 1.5rem;
+  margin-top: 2rem;
+  max-width: 600px;
+}
+
+.admin-shows-section h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.admin-shows-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.admin-shows-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--ym-border);
+  flex-wrap: wrap;
+}
+
+.admin-shows-list li input {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--ym-border);
+  border-radius: 6px;
+  background: var(--ym-surface-elevated);
+  color: var(--ym-text);
+  font-size: 0.875rem;
+}
+
+.admin-shows-list .show-date { width: 10rem; }
+.admin-shows-list .show-time { width: 7rem; }
+.admin-shows-list .show-title { width: 12rem; flex: 1; min-width: 0; }

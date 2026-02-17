@@ -96,11 +96,16 @@ function AdminGate({ children }) {
   )
 }
 
+const SHOWS_API = '/api/shows'
+
 export default function AdminPage() {
   const { inventory, loading, saveInventory, reload } = useInventory()
   const [products, setProducts] = useState([])
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [shows, setShows] = useState([])
+  const [showsSaved, setShowsSaved] = useState(false)
+  const [showsSaveError, setShowsSaveError] = useState('')
   const [newProduct, setNewProduct] = useState({
     price: '',
     quantity: '',
@@ -113,6 +118,13 @@ export default function AdminPage() {
   useEffect(() => {
     setProducts(inventory)
   }, [inventory])
+
+  useEffect(() => {
+    fetch(SHOWS_API)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setShows(Array.isArray(data) ? data : []))
+      .catch(() => setShows([]))
+  }, [])
 
   const handleChange = (id, field, value) => {
     setProducts((prev) =>
@@ -151,6 +163,34 @@ export default function AdminPage() {
   const handleRemove = (id) => {
     if (window.confirm('Remove this product from inventory?')) {
       setProducts((prev) => prev.filter((p) => p.id !== id))
+    }
+  }
+
+  const addShow = () => {
+    setShows((prev) => [...prev, { id: generateId(), date: '', time: '', title: '' }])
+  }
+  const updateShow = (id, field, value) => {
+    setShows((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: value } : s)))
+  }
+  const removeShow = (id) => {
+    setShows((prev) => prev.filter((s) => s.id !== id))
+  }
+  const saveShows = async () => {
+    setShowsSaveError('')
+    const raw = import.meta.env.VITE_ADMIN_PASSWORD || ''
+    const adminPassword = raw.replace(/\r\n?|\n/g, '').trim().replace(/^["']|["']$/g, '')
+    try {
+      const res = await fetch(SHOWS_API, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword, shows }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Failed to save schedule')
+      setShowsSaved(true)
+      setTimeout(() => setShowsSaved(false), 3000)
+    } catch (err) {
+      setShowsSaveError(err.message || 'Failed to save schedule')
     }
   }
 
@@ -196,39 +236,53 @@ export default function AdminPage() {
             value={newProduct.series}
             onChange={(e) => setNewProduct((p) => ({ ...p, series: e.target.value }))}
             placeholder="e.g. Classic, Pro"
+            size={25}
+            style={{ width: '25ch', minWidth: '25ch' }}
           />
         </div>
         <div className="form-group">
-          <label>Item (select one or more)</label>
-          <select
-            multiple
-            size={ITEM_OPTIONS.length}
-            value={itemStringToArray(newProduct.item)}
-            onChange={(e) => {
-              const arr = Array.from(e.target.selectedOptions, (o) => o.value)
-              setNewProduct((p) => ({ ...p, item: itemArrayToString(arr) }))
-            }}
-            style={{ minWidth: '200px', padding: '0.25rem' }}
-          >
-            {ITEM_OPTIONS.map((opt) => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
-          <p style={{ fontSize: '0.75rem', color: 'var(--ym-muted)', marginTop: '0.25rem' }}>
-            Hold Ctrl (Windows) or Cmd (Mac) to select multiple.
-          </p>
+          <label>Item</label>
+          <div className="checkbox-group">
+            {ITEM_OPTIONS.map((opt) => {
+              const selected = itemStringToArray(newProduct.item).includes(opt)
+              return (
+                <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={(e) => {
+                      const arr = itemStringToArray(newProduct.item)
+                      const next = e.target.checked ? [...arr, opt] : arr.filter((x) => x !== opt)
+                      setNewProduct((p) => ({ ...p, item: itemArrayToString(next) }))
+                    }}
+                  />
+                  <span>{opt}</span>
+                </label>
+              )
+            })}
+          </div>
         </div>
         <div className="form-group">
           <label>Description</label>
-          <select
-            value={newProduct.description || ''}
-            onChange={(e) => setNewProduct((p) => ({ ...p, description: e.target.value }))}
-          >
-            <option value="">Select condition</option>
-            {DESCRIPTION_OPTIONS.map((opt) => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
+          <div className="checkbox-group">
+            {DESCRIPTION_OPTIONS.map((opt) => {
+              const selected = itemStringToArray(newProduct.description).includes(opt)
+              return (
+                <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={(e) => {
+                      const arr = itemStringToArray(newProduct.description)
+                      const next = e.target.checked ? [...arr, opt] : arr.filter((x) => x !== opt)
+                      setNewProduct((p) => ({ ...p, description: itemArrayToString(next) }))
+                    }}
+                  />
+                  <span>{opt}</span>
+                </label>
+              )
+            })}
+          </div>
         </div>
         <div className="form-group">
           <label>Price ($)</label>
@@ -291,35 +345,49 @@ export default function AdminPage() {
                     value={p.series ?? ''}
                     onChange={(e) => handleChange(p.id, 'series', e.target.value)}
                     placeholder="Series"
+                    size={25}
+                    style={{ width: '25ch', minWidth: '25ch' }}
                   />
                 </td>
                 <td>
-                  <select
-                    multiple
-                    size={Math.min(4, ITEM_OPTIONS.length)}
-                    value={itemStringToArray(p.item)}
-                    onChange={(e) => {
-                      const arr = Array.from(e.target.selectedOptions, (o) => o.value)
-                      handleChange(p.id, 'item', itemArrayToString(arr))
-                    }}
-                    style={{ minWidth: '140px', padding: '0.2rem', fontSize: '0.875rem' }}
-                  >
-                    {ITEM_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
+                  <div className="checkbox-group-inline">
+                    {ITEM_OPTIONS.map((opt) => {
+                      const selected = itemStringToArray(p.item).includes(opt)
+                      return (
+                        <label key={opt} style={{ display: 'block', marginBottom: '0.2rem', whiteSpace: 'nowrap' }}>
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) => {
+                              const arr = itemStringToArray(p.item)
+                              const next = e.target.checked ? [...arr, opt] : arr.filter((x) => x !== opt)
+                              handleChange(p.id, 'item', itemArrayToString(next))
+                            }}
+                          /> {opt}
+                        </label>
+                      )
+                    })}
+                  </div>
                 </td>
                 <td>
-                  <select
-                    value={p.description ?? ''}
-                    onChange={(e) => handleChange(p.id, 'description', e.target.value)}
-                    style={{ minWidth: '120px', padding: '0.25rem' }}
-                  >
-                    <option value="">—</option>
-                    {DESCRIPTION_OPTIONS.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
+                  <div className="checkbox-group-inline">
+                    {DESCRIPTION_OPTIONS.map((opt) => {
+                      const selected = itemStringToArray(p.description).includes(opt)
+                      return (
+                        <label key={opt} style={{ display: 'block', marginBottom: '0.2rem', whiteSpace: 'nowrap' }}>
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) => {
+                              const arr = itemStringToArray(p.description)
+                              const next = e.target.checked ? [...arr, opt] : arr.filter((x) => x !== opt)
+                              handleChange(p.id, 'description', itemArrayToString(next))
+                            }}
+                          /> {opt}
+                        </label>
+                      )
+                    })}
+                  </div>
                 </td>
                 <td>
                   <input
@@ -360,6 +428,55 @@ export default function AdminPage() {
           </tbody>
         </table>
       </div>
+
+      <section className="admin-shows-section">
+        <h3>Live Stream Schedule</h3>
+        {showsSaveError && (
+          <div className="error-message" style={{ marginBottom: '1rem' }}>{showsSaveError}</div>
+        )}
+        {showsSaved && (
+          <div className="success-message" style={{ marginBottom: '1rem' }}>Schedule saved.</div>
+        )}
+        <ul className="admin-shows-list">
+          {shows.map((s) => (
+            <li key={s.id}>
+              <input
+                type="date"
+                className="show-date"
+                value={s.date ?? ''}
+                onChange={(e) => updateShow(s.id, 'date', e.target.value)}
+              />
+              <input
+                type="text"
+                className="show-time"
+                placeholder="Time"
+                value={s.time ?? ''}
+                onChange={(e) => updateShow(s.id, 'time', e.target.value)}
+              />
+              <input
+                type="text"
+                className="show-title"
+                placeholder="Title"
+                value={s.title ?? ''}
+                onChange={(e) => updateShow(s.id, 'title', e.target.value)}
+              />
+              <button
+                type="button"
+                className="ym-btn ym-btn-sm ym-btn-danger"
+                onClick={() => removeShow(s.id)}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+        <button type="button" className="ym-btn ym-btn-secondary" onClick={addShow} style={{ marginRight: '0.5rem' }}>
+          Add show
+        </button>
+        <button type="button" className="ym-btn ym-btn-primary" onClick={saveShows}>
+          Save schedule
+        </button>
+      </section>
     </div>
     </AdminGate>
   )

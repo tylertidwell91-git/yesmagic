@@ -20,6 +20,11 @@
   to = "/.netlify/functions/inventory"
   status = 200
   force = true
+[[redirects]]
+  from = "/api/shows"
+  to = "/.netlify/functions/shows"
+  status = 200
+  force = true
 
 # SPA fallback: serve index.html for all other routes (/admin, /checkout, etc.)
 [[redirects]]

@@ -4,6 +4,8 @@ import { InventoryProvider } from './context/InventoryContext'
 import ShopPage from './pages/ShopPage'
 import CheckoutPage from './pages/CheckoutPage'
 import AdminPage from './pages/AdminPage'
+import WhatNotPage from './pages/WhatNotPage'
+import SchedulePage from './pages/SchedulePage'
 import './App.css'
 
 function Layout() {
@@ -15,6 +17,8 @@ function Layout() {
         <Link to="/" className="yesmagic-logo">YESMagic</Link>
         <nav className="yesmagic-nav">
           <Link to="/">Shop</Link>
+          <Link to="/schedule">Schedule</Link>
+          <Link to="/whatnot">WhatNot</Link>
           <Link to="/checkout" className="cart-link">
             Cart {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
           </Link>
@@ -30,6 +34,8 @@ function Layout() {
           </div>
         } />
         <Route path="admin" element={<AdminPage />} />
+        <Route path="whatnot" element={<WhatNotPage />} />
+        <Route path="schedule" element={<SchedulePage />} />
       </Routes>
     </div>
   )
