@@ -10,7 +10,7 @@ const ORDER_API_URL = import.meta.env.VITE_ORDER_API_URL || ''
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
 const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null
 
-// Optional Arkansas sales tax rate (percent) configured via VITE_SALES_TAX_RATE.
+// Optional flat sales tax rate (percent) configured via VITE_SALES_TAX_RATE.
 // Example: VITE_SALES_TAX_RATE=9 for 9% tax. Defaults to 0 (no tax) if unset/invalid.
 const RAW_TAX_RATE = import.meta.env.VITE_SALES_TAX_RATE || ''
 const TAX_RATE = (() => {
@@ -179,21 +179,8 @@ export default function CheckoutPage() {
   const taxCents = useMemo(() => {
     const baseCents = subtotalCents + shippingCents
     if (!TAX_RATE || baseCents <= 0) return 0
-    const country = (shippingAddress.country || '').trim().toUpperCase()
-    const state = (shippingAddress.state || '').trim().toUpperCase()
-
-    // Charge sales tax only for US / Arkansas addresses.
-    const isUS =
-      country === 'US' ||
-      country === 'USA' ||
-      country === 'UNITED STATES' ||
-      country === 'UNITED STATES OF AMERICA'
-    const isArkansas = state === 'AR' || state === 'ARKANSAS'
-    if (isUS && isArkansas) {
-      return Math.round(baseCents * TAX_RATE)
-    }
-    return 0
-  }, [subtotalCents, shippingCents, shippingAddress])
+    return Math.round(baseCents * TAX_RATE)
+  }, [subtotalCents, shippingCents])
   const totalCents = subtotalCents + shippingCents + taxCents
 
   useLayoutEffect(() => {
