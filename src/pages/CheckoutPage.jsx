@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useInventory } from '../context/InventoryContext'
@@ -102,8 +102,10 @@ function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload
 }
 
 export default function CheckoutPage() {
+  const navigate = useNavigate()
   const { items, clearCart, removeFromCart } = useCart()
   const { inventory, loading } = useInventory()
+  const hadItemsRef = useRef(items.length > 0)
 
   const cartWithProducts = useMemo(() =>
     items
@@ -151,6 +153,13 @@ export default function CheckoutPage() {
       (a.country || '').trim().length > 0
     )
   }, [shippingAddress])
+
+  useEffect(() => {
+    if (hadItemsRef.current && items.length === 0) {
+      navigate('/', { replace: true })
+    }
+    hadItemsRef.current = items.length > 0
+  }, [items.length, navigate])
 
   const orderPayload = useMemo(
     () => buildOrderPayload(cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail, shippingAddress),

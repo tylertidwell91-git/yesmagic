@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useInventory } from '../context/InventoryContext'
 import { useCart } from '../context/CartContext'
 
@@ -27,6 +27,7 @@ export default function ShopPage() {
   const [filterSeries, setFilterSeries] = useState('')
   const [filterItem, setFilterItem] = useState('')
   const [filterPrice, setFilterPrice] = useState('')
+  const [justAddedId, setJustAddedId] = useState(null)
 
   const { seriesOptions, itemOptions, filteredProducts } = useMemo(() => {
     const seriesSet = new Set()
@@ -54,6 +55,12 @@ export default function ShopPage() {
 
   const qty = (id) => qtyInputs[id] ?? 1
   const setQty = (id, v) => setQtyInputs((prev) => ({ ...prev, [id]: v }))
+
+  const handleAddToCart = useCallback((productId, quantity) => {
+    addToCart(productId, quantity)
+    setJustAddedId(productId)
+    window.setTimeout(() => setJustAddedId(null), 2000)
+  }, [addToCart])
 
   if (loading) {
     return (
@@ -136,11 +143,11 @@ export default function ShopPage() {
                   onChange={(e) => setQty(p.id, e.target.value)}
                 />
                 <button
-                  className="ym-btn ym-btn-primary"
+                  className={`ym-btn ym-btn-primary ${justAddedId === p.id ? 'added-to-cart' : ''}`}
                   disabled={p.quantity < 1}
-                  onClick={() => addToCart(p.id, qty(p.id))}
+                  onClick={() => handleAddToCart(p.id, qty(p.id))}
                 >
-                  Add to cart
+                  {justAddedId === p.id ? 'Added to cart!' : 'Add to cart'}
                 </button>
               </div>
             </div>

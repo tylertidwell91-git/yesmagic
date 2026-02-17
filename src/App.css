@@ -227,6 +227,15 @@
   background: var(--ym-accent-hover);
 }
 
+.ym-btn-primary.added-to-cart {
+  background: #16a34a;
+  pointer-events: none;
+}
+
+.ym-btn-primary.added-to-cart:hover {
+  background: #16a34a;
+}
+
 .ym-btn-secondary {
   background: transparent;
   color: var(--ym-text);
