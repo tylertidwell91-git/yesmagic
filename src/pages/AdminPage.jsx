@@ -58,14 +58,6 @@ function AdminGate({ children }) {
       <>
         {children}
         <div className="yesmagic-main admin-footer-actions" style={{ marginTop: '1rem' }}>
-          <a
-            href="https://privateemail.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ym-btn ym-btn-secondary"
-          >
-            Email
-          </a>
           <button type="button" className="ym-btn ym-btn-secondary" onClick={handleLogout}>
             Log out
           </button>
@@ -208,8 +200,24 @@ export default function AdminPage() {
     <AdminGate>
     <div className="yesmagic-main admin-layout">
       {loading && <p style={{ color: 'var(--ym-muted)', marginBottom: '1rem' }}>Loading inventory…</p>}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
         <h2 className="admin-title" style={{ marginBottom: 0 }}>Inventory</h2>
+        <a
+          href="https://privateemail.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ym-btn ym-btn-secondary"
+        >
+          Email
+        </a>
+        <a
+          href="https://docs.google.com/spreadsheets/d/1CMzlLF_XkExTverzJdGzAjrCllVhJ_We5g8ouKpOmb0/edit?gid=937067463#gid=937067463"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ym-btn ym-btn-secondary"
+        >
+          Master Spreadsheet
+        </a>
         <button
           type="button"
           className="ym-btn ym-btn-secondary"
