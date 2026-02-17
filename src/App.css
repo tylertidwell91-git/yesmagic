@@ -94,12 +94,6 @@
   letter-spacing: 0.04em;
 }
 
-.shop-shipping-note {
-  color: var(--ym-muted);
-  font-size: 0.9375rem;
-  margin-bottom: 1rem;
-}
-
 .shop-filters {
   display: flex;
   flex-wrap: wrap;
