@@ -73,7 +73,11 @@ export function InventoryProvider({ children }) {
       body: JSON.stringify({ adminPassword, products: normalized }),
     })
     const data = await res.json().catch(() => ({}))
-    if (!res.ok) throw new Error(data.error || 'Failed to save inventory')
+    if (!res.ok) {
+      const msg = data.error || 'Failed to save inventory'
+      if (res.status === 401) throw new Error('Unauthorized: ADMIN_PASSWORD and VITE_ADMIN_PASSWORD must match in Netlify env vars.')
+      throw new Error(msg)
+    }
     setInventory(normalized)
     return { ok: true }
   }, [apiUrl])

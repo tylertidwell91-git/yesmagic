@@ -115,6 +115,7 @@ export default function AdminPage() {
       await saveInventory(products)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
+      reload()
     } catch (err) {
       setSaveError(err.message || 'Failed to save inventory')
     }

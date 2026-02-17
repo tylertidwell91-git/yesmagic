@@ -41,6 +41,7 @@ function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
     'Content-Type': 'application/json',
   }
 }
@@ -57,19 +58,17 @@ export default async (req) => {
     })
   }
 
-  const store = getStore({ name: STORE_NAME, consistency: 'strong' })
-
   if (req.method === 'GET') {
     try {
+      const store = getStore(STORE_NAME)
       const data = await store.get(KEY, { type: 'json' })
-      const list = Array.isArray(data) && data.length > 0 ? data : DEFAULT_INVENTORY
+      const list = data != null && Array.isArray(data) && data.length > 0 ? data : DEFAULT_INVENTORY
       return new Response(JSON.stringify(list), {
         status: 200,
         headers: corsHeaders(origin),
       })
     } catch (err) {
       console.error('Inventory read error:', err)
-      // Return defaults so the shop still loads if Blobs fails
       return new Response(JSON.stringify(DEFAULT_INVENTORY), {
         status: 200,
         headers: corsHeaders(origin),
@@ -103,6 +102,7 @@ export default async (req) => {
   }
 
   try {
+    const store = getStore(STORE_NAME)
     const normalized = body.products.map((p) => ({
       id: String(p.id ?? ''),
       price: Math.max(0, Number(p.price) ?? 0),

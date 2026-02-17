@@ -10,9 +10,10 @@ const ORDER_API_URL = import.meta.env.VITE_ORDER_API_URL || ''
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
 const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null
 
+/** Use relative path so API is same-origin (avoids CORS/redirect when www vs non-www). */
 function getPaymentIntentUrl() {
   if (!ORDER_API_URL) return ''
-  return ORDER_API_URL.replace(/\/api\/order\/?$/, '') + '/api/create-payment-intent'
+  return '/api/create-payment-intent'
 }
 
 function buildOrderPayload(cartWithProducts, totalCents, customerEmail) {
@@ -57,7 +58,7 @@ function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload
       // Payment succeeded; submit order to our server for email notification
       let emailFailed = false
       if (ORDER_API_URL) {
-        const res = await fetch(ORDER_API_URL, {
+        const res = await fetch('/api/order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(orderPayload),

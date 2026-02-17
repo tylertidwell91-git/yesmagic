@@ -15,10 +15,11 @@ export function ensureProductFields(p) {
   }
 }
 
+/** Use relative path so API is always same-origin (avoids CORS/redirect when www vs non-www). */
 export function getInventoryApiUrl() {
   const orderUrl = import.meta.env.VITE_ORDER_API_URL || ''
   if (!orderUrl) return ''
-  return orderUrl.replace(/\/api\/order\/?$/, '') + '/api/inventory'
+  return '/api/inventory'
 }
 
 /** Sync getter for non-React code (e.g. pull-inventory script). In the app, prefer useInventory(). */
