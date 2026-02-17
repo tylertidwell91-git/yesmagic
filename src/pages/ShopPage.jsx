@@ -27,6 +27,7 @@ export default function ShopPage() {
   const [filterSeries, setFilterSeries] = useState('')
   const [filterItem, setFilterItem] = useState('')
   const [filterPrice, setFilterPrice] = useState('')
+  const [sortPrice, setSortPrice] = useState('')
   const [justAddedId, setJustAddedId] = useState(null)
 
   const { seriesOptions, itemOptions, filteredProducts } = useMemo(() => {
@@ -41,7 +42,7 @@ export default function ShopPage() {
     const seriesOptions = [...seriesSet].sort()
     const itemOptions = [...itemSet].sort()
 
-    const filtered = inventory.filter((p) => {
+    let filtered = inventory.filter((p) => {
       const series = String(p.series ?? '').trim()
       const item = String(p.item ?? '').trim()
       if (filterSeries && series !== filterSeries) return false
@@ -50,8 +51,14 @@ export default function ShopPage() {
       return true
     })
 
+    if (sortPrice === 'low') {
+      filtered = [...filtered].sort((a, b) => Number(a.price) - Number(b.price))
+    } else if (sortPrice === 'high') {
+      filtered = [...filtered].sort((a, b) => Number(b.price) - Number(a.price))
+    }
+
     return { seriesOptions, itemOptions, filteredProducts: filtered }
-  }, [inventory, filterSeries, filterItem, filterPrice])
+  }, [inventory, filterSeries, filterItem, filterPrice, sortPrice])
 
   const qty = (id) => qtyInputs[id] ?? 1
   const setQty = (id, v) => setQtyInputs((prev) => ({ ...prev, [id]: v }))
@@ -114,6 +121,18 @@ export default function ShopPage() {
             {PRICE_OPTIONS.map((opt) => (
               <option key={opt.value || 'any'} value={opt.value}>{opt.label}</option>
             ))}
+          </select>
+        </div>
+        <div className="filter-group">
+          <label htmlFor="sort-price">Sort by price</label>
+          <select
+            id="sort-price"
+            value={sortPrice}
+            onChange={(e) => setSortPrice(e.target.value)}
+          >
+            <option value="">None</option>
+            <option value="low">Low to high</option>
+            <option value="high">High to low</option>
           </select>
         </div>
       </div>
