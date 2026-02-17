@@ -10,13 +10,29 @@ const ORDER_API_URL = import.meta.env.VITE_ORDER_API_URL || ''
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
 const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null
 
+// Optional Arkansas sales tax rate (percent) configured via VITE_SALES_TAX_RATE.
+// Example: VITE_SALES_TAX_RATE=9 for 9% tax. Defaults to 0 (no tax) if unset/invalid.
+const RAW_TAX_RATE = import.meta.env.VITE_SALES_TAX_RATE || ''
+const TAX_RATE = (() => {
+  const n = Number(RAW_TAX_RATE)
+  return !Number.isNaN(n) && n > 0 ? n / 100 : 0
+})()
+
 /** Use relative path so API is same-origin (avoids CORS/redirect when www vs non-www). */
 function getPaymentIntentUrl() {
   if (!ORDER_API_URL) return ''
   return '/api/create-payment-intent'
 }
 
-function buildOrderPayload(cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail, shippingAddress) {
+function buildOrderPayload(
+  cartWithProducts,
+  subtotalCents,
+  shippingCents,
+  taxCents,
+  totalCents,
+  customerEmail,
+  shippingAddress
+) {
   return {
     items: cartWithProducts.map((p) => ({
       id: p.id,
@@ -28,6 +44,7 @@ function buildOrderPayload(cartWithProducts, subtotalCents, shippingCents, total
     })),
     subtotal: (subtotalCents / 100).toFixed(2),
     shipping: (shippingCents / 100).toFixed(2),
+    tax: (taxCents / 100).toFixed(2),
     total: (totalCents / 100).toFixed(2),
     totalCents,
     customerEmail: customerEmail.trim() || undefined,
@@ -122,10 +139,35 @@ export default function CheckoutPage() {
     [cartWithProducts]
   )
   const shippingCents = useMemo(
-    () => Math.round(cartWithProducts.reduce((sum, p) => sum + (Number(p.shipping) || 0) * p.cartQuantity * 100, 0)),
+    () =>
+      Math.round(
+        cartWithProducts.reduce((sum, p) => {
+          const perItem = Number(p.shipping) || 0
+          const qtyForShipping = Math.min(p.cartQuantity, 10)
+          return sum + perItem * qtyForShipping * 100
+        }, 0)
+      ),
     [cartWithProducts]
   )
-  const totalCents = subtotalCents + shippingCents
+  const taxCents = useMemo(() => {
+    const baseCents = subtotalCents + shippingCents
+    if (!TAX_RATE || baseCents <= 0) return 0
+    const country = (shippingAddress.country || '').trim().toUpperCase()
+    const state = (shippingAddress.state || '').trim().toUpperCase()
+
+    // Charge sales tax only for US / Arkansas addresses.
+    const isUS =
+      country === 'US' ||
+      country === 'USA' ||
+      country === 'UNITED STATES' ||
+      country === 'UNITED STATES OF AMERICA'
+    const isArkansas = state === 'AR' || state === 'ARKANSAS'
+    if (isUS && isArkansas) {
+      return Math.round(baseCents * TAX_RATE)
+    }
+    return 0
+  }, [subtotalCents, shippingCents, shippingAddress])
+  const totalCents = subtotalCents + shippingCents + taxCents
 
   const [orderComplete, setOrderComplete] = useState(false)
   const [emailFailed, setEmailFailed] = useState(false)
@@ -163,8 +205,17 @@ export default function CheckoutPage() {
   }, [items.length, navigate])
 
   const orderPayload = useMemo(
-    () => buildOrderPayload(cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail, shippingAddress),
-    [cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail, shippingAddress]
+    () =>
+      buildOrderPayload(
+        cartWithProducts,
+        subtotalCents,
+        shippingCents,
+        taxCents,
+        totalCents,
+        customerEmail,
+        shippingAddress
+      ),
+    [cartWithProducts, subtotalCents, shippingCents, taxCents, totalCents, customerEmail, shippingAddress]
   )
 
   const paymentIntentUrl = getPaymentIntentUrl()
@@ -288,6 +339,10 @@ export default function CheckoutPage() {
         <div className="cart-line">
           <span>Shipping</span>
           <span>{shippingCents > 0 ? `$${(shippingCents / 100).toFixed(2)}` : 'Free'}</span>
+        </div>
+        <div className="cart-line">
+          <span>Tax</span>
+          <span>{taxCents > 0 ? `$${(taxCents / 100).toFixed(2)}` : '$0.00'}</span>
         </div>
         <div className="cart-line cart-total">
           <span>Total</span>

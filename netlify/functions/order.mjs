@@ -28,15 +28,30 @@ function corsHeaders(origin) {
 }
 
 function formatOrderEmail(body) {
-  const lines = [
-    `Total: $${body.total}`,
-    '',
-    'Items:',
+  const lines = []
+  if (body.subtotal != null) lines.push(`Subtotal: $${body.subtotal}`)
+  if (body.shipping != null) lines.push(`Shipping: $${body.shipping}`)
+  if (body.tax != null) lines.push(`Tax: $${body.tax}`)
+  lines.push(`Total: $${body.total}`, '', 'Items:')
+  lines.push(
     ...body.items.map(
-      (i) => `  - ${[i.series, i.item].filter(Boolean).join(' ')} × ${i.quantity} @ $${i.price} = $${i.lineTotal}`
-    ),
-  ]
+      (i) =>
+        `  - ${[i.series, i.item].filter(Boolean).join(' ')} × ${i.quantity} @ $${i.price} = $${i.lineTotal}`
+    )
+  )
   if (body.customerEmail) lines.push('', `Customer email: ${body.customerEmail}`)
+  if (body.shippingAddress) {
+    const a = body.shippingAddress
+    const addrLines = [
+      a.line1,
+      a.line2,
+      [a.city, a.state].filter(Boolean).join(', '),
+      [a.zip, a.country].filter(Boolean).join(' '),
+    ].filter((x) => x && String(x).trim().length > 0)
+    if (addrLines.length) {
+      lines.push('', 'Shipping address:', ...addrLines.map((l) => `  ${l}`))
+    }
+  }
   return lines.join('\n')
 }
 
