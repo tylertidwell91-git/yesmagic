@@ -500,25 +500,41 @@
 }
 
 .add-product-form.add-product-form--spaced {
-  max-width: 520px;
-  padding: 1.5rem 1.75rem;
+  max-width: 820px;
+  padding: 1.75rem 2rem;
 }
 
 .add-product-form--spaced .form-group {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.add-product-form--spaced .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 .add-product-form--spaced .checkbox-group,
 .add-product-form--spaced .checkbox-group-inline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.5rem 1.5rem;
 }
 
 .add-product-form--spaced .checkbox-group label,
 .add-product-form--spaced .checkbox-group-inline label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 0;
   white-space: nowrap;
+  min-width: 0;
+}
+
+.add-product-form--spaced .checkbox-group input[type="checkbox"],
+.add-product-form--spaced .checkbox-group-inline input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
 }
 
 .add-product-form h3 {

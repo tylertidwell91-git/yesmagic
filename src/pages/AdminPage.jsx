@@ -254,7 +254,7 @@ export default function AdminPage() {
             {ITEM_OPTIONS.map((opt) => {
               const selected = itemStringToArray(newProduct.item).includes(opt)
               return (
-                <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                <label key={opt}>
                   <input
                     type="checkbox"
                     checked={selected}
@@ -276,7 +276,7 @@ export default function AdminPage() {
             {DESCRIPTION_OPTIONS.map((opt) => {
               const selected = itemStringToArray(newProduct.description).includes(opt)
               return (
-                <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                <label key={opt}>
                   <input
                     type="checkbox"
                     checked={selected}
