@@ -10,14 +10,6 @@ const ORDER_API_URL = import.meta.env.VITE_ORDER_API_URL || ''
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
 const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null
 
-// Optional flat sales tax rate (percent) configured via VITE_SALES_TAX_RATE.
-// Example: VITE_SALES_TAX_RATE=9 for 9% tax. Defaults to 0 (no tax) if unset/invalid.
-const RAW_TAX_RATE = import.meta.env.VITE_SALES_TAX_RATE || ''
-const TAX_RATE = (() => {
-  const n = Number(RAW_TAX_RATE)
-  return !Number.isNaN(n) && n > 0 ? n / 100 : 0
-})()
-
 /** Use relative path so API is same-origin (avoids CORS/redirect when www vs non-www). */
 function getPaymentIntentUrl() {
   if (!ORDER_API_URL) return ''
@@ -176,11 +168,9 @@ export default function CheckoutPage() {
       ),
     [cartWithProducts]
   )
-  const taxCents = useMemo(() => {
-    const baseCents = subtotalCents + shippingCents
-    if (!TAX_RATE || baseCents <= 0) return 0
-    return Math.round(baseCents * TAX_RATE)
-  }, [subtotalCents, shippingCents])
+  // No sales tax is added by the site. All applicable tax is handled outside
+  // of this checkout flow. We still keep a Tax line in the UI for clarity.
+  const taxCents = 0
   const totalCents = subtotalCents + shippingCents + taxCents
 
   useLayoutEffect(() => {
@@ -212,6 +202,19 @@ export default function CheckoutPage() {
     setAddressError('')
     if (!isShippingAddressValid) {
       setAddressError('Please fill in all required shipping address fields.')
+      return
+    }
+    // Hard-block Arkansas shipments: we do not ship to AR.
+    const country = (shippingAddress.country || '').trim().toUpperCase()
+    const state = (shippingAddress.state || '').trim().toUpperCase()
+    const isUS =
+      country === 'US' ||
+      country === 'USA' ||
+      country === 'UNITED STATES' ||
+      country === 'UNITED STATES OF AMERICA'
+    const isArkansas = state === 'AR' || state === 'ARKANSAS'
+    if (isUS && isArkansas) {
+      setAddressError('We currently do not ship to Arkansas addresses.')
       return
     }
     if (!STRIPE_PK) {
@@ -326,10 +329,6 @@ export default function CheckoutPage() {
         <div className="cart-line">
           <span>Shipping</span>
           <span>{shippingCents > 0 ? `$${(shippingCents / 100).toFixed(2)}` : 'Free'}</span>
-        </div>
-        <div className="cart-line">
-          <span>Tax</span>
-          <span>{taxCents > 0 ? `$${(taxCents / 100).toFixed(2)}` : '$0.00'}</span>
         </div>
         <div className="cart-line cart-total">
           <span>Total</span>

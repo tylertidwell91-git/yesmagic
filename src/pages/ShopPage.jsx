@@ -73,6 +73,9 @@ export default function ShopPage() {
   return (
     <div className="yesmagic-main">
       <h2 style={{ marginBottom: '1rem', fontWeight: 600 }}>Shop</h2>
+      <p style={{ fontStyle: 'italic', color: 'var(--ym-muted)', marginBottom: '1rem' }}>
+        All sales tax included in listed price. Shipping is calculated at checkout.
+      </p>
 
       <div className="shop-filters">
         <div className="filter-group">
