@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useInventory } from '../context/InventoryContext'
 import { getProductById } from '../data/inventory'
 import { useCart } from '../context/CartContext'
+import { computeShippingFromRules } from '../utils/shipping'
 
 const ORDER_API_URL = import.meta.env.VITE_ORDER_API_URL || ''
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
@@ -139,6 +140,14 @@ export default function CheckoutPage() {
     country: '',
   })
   const [addressError, setAddressError] = useState('')
+  const [shippingRules, setShippingRules] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/shipping-rules')
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((data) => setShippingRules(data.rules ?? null))
+      .catch(() => setShippingRules(null))
+  }, [])
 
   const isShippingAddressValid = useMemo(() => {
     const a = shippingAddress
@@ -155,17 +164,10 @@ export default function CheckoutPage() {
     () => Math.round(cartWithProducts.reduce((sum, p) => sum + p.price * p.cartQuantity * 100, 0)),
     [cartWithProducts]
   )
-  const shippingCents = useMemo(
-    () =>
-      Math.round(
-        cartWithProducts.reduce((sum, p) => {
-          const perItem = Number(p.shipping) || 0
-          const qtyForShipping = Math.min(p.cartQuantity, 10)
-          return sum + perItem * qtyForShipping * 100
-        }, 0)
-      ),
-    [cartWithProducts]
-  )
+  const shippingCents = useMemo(() => {
+    const dollars = computeShippingFromRules(shippingRules || {}, cartWithProducts)
+    return Math.round(dollars * 100)
+  }, [shippingRules, cartWithProducts])
   // No sales tax is added by the site. All applicable tax is handled outside
   // of this checkout flow. We still keep a Tax line in the UI for clarity.
   const taxCents = 0

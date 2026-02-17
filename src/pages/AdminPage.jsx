@@ -110,12 +110,16 @@ function AdminGate({ children }) {
 }
 
 const SHOWS_API = '/api/shows'
+const SHIPPING_RULES_API = '/api/shipping-rules'
 
 export default function AdminPage() {
   const { inventory, loading, saveInventory, reload } = useInventory()
   const [products, setProducts] = useState([])
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [shippingRules, setShippingRules] = useState(null)
+  const [shippingRulesSaved, setShippingRulesSaved] = useState(false)
+  const [shippingRulesSaveError, setShippingRulesSaveError] = useState('')
   const [shows, setShows] = useState([])
   const [showsSaved, setShowsSaved] = useState(false)
   const [showsSaveError, setShowsSaveError] = useState('')
@@ -138,6 +142,13 @@ export default function AdminPage() {
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setShows(Array.isArray(data) ? data : []))
       .catch(() => setShows([]))
+  }, [])
+
+  useEffect(() => {
+    fetch(SHIPPING_RULES_API)
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((data) => setShippingRules(data.rules ?? null))
+      .catch(() => setShippingRules(null))
   }, [])
 
   const handleChange = (id, field, value) => {
@@ -206,6 +217,51 @@ export default function AdminPage() {
       setTimeout(() => setShowsSaved(false), 3000)
     } catch (err) {
       setShowsSaveError(err.message || 'Failed to save schedule')
+    }
+  }
+
+  const updateShippingTier = (itemType, tierIndex, field, value) => {
+    setShippingRules((prev) => {
+      const next = { ...(prev || {}) }
+      const tiers = [...(next[itemType] || [])]
+      if (!tiers[tierIndex]) return prev
+      tiers[tierIndex] = { ...tiers[tierIndex], [field]: value }
+      next[itemType] = tiers
+      return next
+    })
+  }
+  const addShippingTier = (itemType) => {
+    setShippingRules((prev) => {
+      const next = { ...(prev || {}) }
+      const tiers = [...(next[itemType] || []), { min: 1, max: null, price: 0, perUnit: false }]
+      next[itemType] = tiers
+      return next
+    })
+  }
+  const removeShippingTier = (itemType, tierIndex) => {
+    setShippingRules((prev) => {
+      const next = { ...(prev || {}) }
+      const tiers = (next[itemType] || []).filter((_, i) => i !== tierIndex)
+      next[itemType] = tiers.length ? tiers : [{ min: 1, max: null, price: 0, perUnit: false }]
+      return next
+    })
+  }
+  const saveShippingRules = async () => {
+    setShippingRulesSaveError('')
+    const raw = import.meta.env.VITE_ADMIN_PASSWORD || ''
+    const adminPassword = raw.replace(/\r\n?|\n/g, '').trim().replace(/^["']|["']$/g, '')
+    try {
+      const res = await fetch(SHIPPING_RULES_API, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminPassword, rules: shippingRules }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Failed to save shipping rules')
+      setShippingRulesSaved(true)
+      setTimeout(() => setShippingRulesSaved(false), 3000)
+    } catch (err) {
+      setShippingRulesSaveError(err.message || 'Failed to save shipping rules')
     }
   }
 
@@ -367,6 +423,101 @@ export default function AdminPage() {
           Save inventory
         </button>
       </div>
+
+      <section className="admin-shipping-rules-section" style={{ marginTop: '2rem' }}>
+        <h3 className="admin-section-heading">Shipping rules</h3>
+        <p style={{ color: 'var(--ym-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+          Shipping is calculated by item type from the cart. Leave max empty for “and above”. Check “Per unit” for per-item pricing (e.g. Collector Box $11 each).
+        </p>
+        {shippingRulesSaveError && (
+          <div className="error-message" style={{ marginBottom: '1rem' }}>{shippingRulesSaveError}</div>
+        )}
+        {shippingRulesSaved && (
+          <div className="success-message" style={{ marginBottom: '1rem' }}>Shipping rules saved.</div>
+        )}
+        {shippingRules == null ? (
+          <p style={{ color: 'var(--ym-muted)' }}>Loading shipping rules…</p>
+        ) : (
+          <>
+            {Object.entries(shippingRules).map(([itemType, tiers]) => (
+              <div key={itemType} className="shipping-rules-block" style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{ marginBottom: '0.5rem', fontFamily: 'var(--ym-font-heading)', color: 'var(--ym-accent)' }}>{itemType}</h4>
+                <table className="inventory-table shipping-rules-table">
+                  <thead>
+                    <tr>
+                      <th>Min qty</th>
+                      <th>Max qty (blank = ∞)</th>
+                      <th>Price ($)</th>
+                      <th>Per unit</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(Array.isArray(tiers) ? tiers : []).map((tier, idx) => (
+                      <tr key={idx}>
+                        <td>
+                          <input
+                            type="number"
+                            min="0"
+                            value={tier.min ?? ''}
+                            onChange={(e) => updateShippingTier(itemType, idx, 'min', e.target.value === '' ? '' : Number(e.target.value))}
+                            style={{ width: '5ch' }}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="∞"
+                            value={tier.max ?? ''}
+                            onChange={(e) => updateShippingTier(itemType, idx, 'max', e.target.value === '' ? null : Number(e.target.value))}
+                            style={{ width: '6ch' }}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={tier.price ?? ''}
+                            onChange={(e) => updateShippingTier(itemType, idx, 'price', e.target.value === '' ? '' : Number(e.target.value))}
+                            style={{ width: '7ch' }}
+                          />
+                        </td>
+                        <td>
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={Boolean(tier.perUnit)}
+                              onChange={(e) => updateShippingTier(itemType, idx, 'perUnit', e.target.checked)}
+                            />
+                            {' '}each
+                          </label>
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className="ym-btn ym-btn-sm ym-btn-danger"
+                            onClick={() => removeShippingTier(itemType, idx)}
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <button type="button" className="ym-btn ym-btn-secondary" style={{ marginTop: '0.5rem' }} onClick={() => addShippingTier(itemType)}>
+                  Add tier
+                </button>
+              </div>
+            ))}
+            <button type="button" className="ym-btn ym-btn-primary" onClick={saveShippingRules}>
+              Save shipping rules
+            </button>
+          </>
+        )}
+      </section>
 
       <h3 className="inventory-section-title">Products</h3>
       <div className="inventory-table-wrap">
