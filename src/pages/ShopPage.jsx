@@ -57,7 +57,15 @@ export default function ShopPage() {
       filtered = [...filtered].sort((a, b) => Number(b.price) - Number(a.price))
     }
 
-    return { seriesOptions, itemOptions, filteredProducts: filtered }
+    // Always show in-stock items first, then out-of-stock items.
+    const sortedByStock = [...filtered].sort((a, b) => {
+      const aOOS = Number(a.quantity) <= 0
+      const bOOS = Number(b.quantity) <= 0
+      if (aOOS === bOOS) return 0
+      return aOOS ? 1 : -1
+    })
+
+    return { seriesOptions, itemOptions, filteredProducts: sortedByStock }
   }, [inventory, filterSeries, filterItem, filterPrice, sortPrice])
 
   const qty = (id) => qtyInputs[id] ?? 1
@@ -140,8 +148,12 @@ export default function ShopPage() {
       <div className="shop-grid">
         {filteredProducts.map((p) => {
           const displayName = [p.series, p.item].filter(Boolean).join(' ') || 'Product'
+          const isOutOfStock = Number(p.quantity) <= 0
           return (
-          <article key={p.id} className="product-card">
+          <article
+            key={p.id}
+            className={`product-card ${isOutOfStock ? 'product-card-out-of-stock' : ''}`}
+          >
             <img src={p.image} alt={displayName} className="product-card-image" />
             <div className="product-card-body">
               <h3 className="product-card-name">{displayName}</h3>
@@ -163,13 +175,18 @@ export default function ShopPage() {
                   max={p.quantity}
                   value={qty(p.id)}
                   onChange={(e) => setQty(p.id, e.target.value)}
+                  disabled={isOutOfStock}
                 />
                 <button
                   className={`ym-btn ym-btn-primary ${justAddedId === p.id ? 'added-to-cart' : ''}`}
-                  disabled={p.quantity < 1}
+                  disabled={isOutOfStock}
                   onClick={() => handleAddToCart(p.id, qty(p.id))}
                 >
-                  {justAddedId === p.id ? 'Added to cart!' : 'Add to cart'}
+                  {isOutOfStock
+                    ? 'Out of stock'
+                    : justAddedId === p.id
+                      ? 'Added to cart!'
+                      : 'Add to cart'}
                 </button>
               </div>
             </div>

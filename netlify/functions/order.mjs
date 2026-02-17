@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { getStore } from '@netlify/blobs'
 
 const ORDER_EMAIL = process.env.ORDER_EMAIL || ''
 const port = Number(process.env.SMTP_PORT) || 587
@@ -18,6 +19,9 @@ const transporter =
             : undefined,
       })
     : null
+
+const STORE_NAME = 'yesmagic-inventory'
+const KEY = 'inventory'
 
 function corsHeaders(origin) {
   const allowed = process.env.ALLOWED_ORIGINS
@@ -80,6 +84,45 @@ export default async (req) => {
         headers: corsHeaders(origin),
       })
     }
+
+    // Load current inventory and ensure we have enough stock for this order.
+    const store = getStore(STORE_NAME)
+    const raw = await store.get(KEY, { consistency: 'strong' })
+    const current =
+      raw != null ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : []
+    if (!Array.isArray(current) || current.length === 0) {
+      return new Response(JSON.stringify({ error: 'Inventory is not configured on the server.' }), {
+        status: 500,
+        headers: corsHeaders(origin),
+      })
+    }
+
+    const updated = current.map((p) => ({ ...p }))
+
+    for (const item of body.items) {
+      const id = String(item.id ?? '')
+      const qty = Math.max(0, Math.floor(Number(item.quantity) || 0))
+      if (!id || qty <= 0) continue
+      const product = updated.find((p) => String(p.id) === id)
+      if (!product) {
+        return new Response(JSON.stringify({ error: `Product not found for id "${id}".` }), {
+          status: 400,
+          headers: corsHeaders(origin),
+        })
+      }
+      const currentQty = Math.max(0, Math.floor(Number(product.quantity) || 0))
+      const remaining = currentQty - qty
+      if (remaining < 0) {
+        const label = [product.series, product.item].filter(Boolean).join(' ') || `Product ${id}`
+        return new Response(
+          JSON.stringify({ error: `Not enough inventory for "${label}". Only ${currentQty} left.` }),
+          { status: 400, headers: corsHeaders(origin) }
+        )
+      }
+      product.quantity = remaining
+    }
+
+    await store.set(KEY, JSON.stringify(updated))
 
     const text = formatOrderEmail(body)
     console.log('Order received:\n' + text)

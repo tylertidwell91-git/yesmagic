@@ -149,6 +149,15 @@
   transform: translateY(-2px);
 }
 
+.product-card-out-of-stock {
+  opacity: 0.55;
+  filter: grayscale(0.8);
+}
+
+.product-card-out-of-stock .product-card-name {
+  color: var(--ym-muted);
+}
+
 .product-card-image {
   width: 100%;
   aspect-ratio: 1;

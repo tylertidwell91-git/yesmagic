@@ -4,8 +4,21 @@ import { useInventory } from '../context/InventoryContext'
 
 const ADMIN_SESSION_KEY = 'yesmagic_admin_session'
 
-const ITEM_OPTIONS = ['Play Booster Pack', 'Collector Booster Pack', 'Collector Box', 'Commander Deck']
-const DESCRIPTION_OPTIONS = ['Brand New', 'Factory-Sealed', 'Opened', 'Minimal Packaging']
+const ITEM_OPTIONS = [
+  'Play Booster Pack',
+  'Collector Booster Pack',
+  'Collector Box',
+  'Commander Deck',
+  'Single Card',
+]
+const DESCRIPTION_OPTIONS = [
+  'Brand New',
+  'Factory-Sealed',
+  'Opened',
+  'Minimal Packaging',
+  'Pre-Release',
+  '10+ Days until shipment',
+]
 
 function itemStringToArray(s) {
   if (!s || typeof s !== 'string') return []
