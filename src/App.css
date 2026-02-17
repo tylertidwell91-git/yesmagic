@@ -364,6 +364,17 @@
   margin-bottom: 1rem;
 }
 
+.payment-section textarea {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid var(--ym-border);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  background: var(--ym-surface-elevated);
+  color: var(--ym-text);
+  font-family: inherit;
+}
+
 .ym-stripe-element {
   padding: 0.75rem;
   border: 1px solid var(--ym-border);

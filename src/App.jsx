@@ -6,6 +6,7 @@ import CheckoutPage from './pages/CheckoutPage'
 import AdminPage from './pages/AdminPage'
 import WhatNotPage from './pages/WhatNotPage'
 import SchedulePage from './pages/SchedulePage'
+import ContactPage from './pages/ContactPage'
 import './App.css'
 
 function Layout() {
@@ -19,6 +20,7 @@ function Layout() {
           <Link to="/">Shop</Link>
           <Link to="/schedule">Schedule</Link>
           <Link to="/whatnot">WhatNot</Link>
+          <Link to="/contact">Contact</Link>
           <Link to="/checkout" className="cart-link">
             Cart {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
           </Link>
@@ -36,6 +38,7 @@ function Layout() {
         <Route path="admin" element={<AdminPage />} />
         <Route path="whatnot" element={<WhatNotPage />} />
         <Route path="schedule" element={<SchedulePage />} />
+        <Route path="contact" element={<ContactPage />} />
       </Routes>
     </div>
   )
