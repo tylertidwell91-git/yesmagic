@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useInventory } from '../context/InventoryContext'
@@ -271,16 +271,9 @@ export default function CheckoutPage() {
   }
 
   if (cartWithProducts.length === 0) {
-    return (
-      <div className="yesmagic-main checkout-layout">
-        <div className="empty-cart empty-cart-checkout">
-          <p>Your cart is empty.</p>
-          <Link to="/" className="ym-btn ym-btn-primary">
-            Continue shopping
-          </Link>
-        </div>
-      </div>
-    )
+    // When the last item is removed from the cart on the checkout page,
+    // immediately send the user back to the shop so they never get stuck.
+    return <Navigate to="/" replace />
   }
 
   const options = useMemo(
