@@ -273,9 +273,30 @@
 .cart-line {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--ym-border);
   font-size: 0.9375rem;
+}
+
+.cart-line-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cart-remove-btn {
+  background: none;
+  border: none;
+  color: var(--ym-muted);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  text-decoration: underline;
+}
+
+.cart-remove-btn:hover {
+  color: #fca5a5;
 }
 
 .cart-line:last-child {
@@ -288,6 +309,36 @@
   border-top: 2px solid var(--ym-border);
   font-size: 1.125rem;
   font-weight: 700;
+}
+
+.checkout-address-section {
+  background: var(--ym-surface);
+  border-radius: var(--ym-radius);
+  border: 1px solid var(--ym-border);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.checkout-address-section h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.checkout-address-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1rem;
+}
+
+.checkout-address-grid .form-group-full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 560px) {
+  .checkout-address-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .payment-section {

@@ -16,7 +16,7 @@ function getPaymentIntentUrl() {
   return '/api/create-payment-intent'
 }
 
-function buildOrderPayload(cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail) {
+function buildOrderPayload(cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail, shippingAddress) {
   return {
     items: cartWithProducts.map((p) => ({
       id: p.id,
@@ -31,6 +31,7 @@ function buildOrderPayload(cartWithProducts, subtotalCents, shippingCents, total
     total: (totalCents / 100).toFixed(2),
     totalCents,
     customerEmail: customerEmail.trim() || undefined,
+    shippingAddress: shippingAddress || undefined,
   }
 }
 
@@ -101,7 +102,7 @@ function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload
 }
 
 export default function CheckoutPage() {
-  const { items, clearCart } = useCart()
+  const { items, clearCart, removeFromCart } = useCart()
   const { inventory, loading } = useInventory()
 
   const cartWithProducts = useMemo(() =>
@@ -130,16 +131,41 @@ export default function CheckoutPage() {
   const [clientSecret, setClientSecret] = useState(null)
   const [error, setError] = useState(null)
   const [loadingPayment, setLoadingPayment] = useState(false)
+  const [shippingAddress, setShippingAddress] = useState({
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: '',
+  })
+  const [addressError, setAddressError] = useState('')
+
+  const isShippingAddressValid = useMemo(() => {
+    const a = shippingAddress
+    return (
+      (a.line1 || '').trim().length > 0 &&
+      (a.city || '').trim().length > 0 &&
+      (a.state || '').trim().length > 0 &&
+      (a.zip || '').trim().length > 0 &&
+      (a.country || '').trim().length > 0
+    )
+  }, [shippingAddress])
 
   const orderPayload = useMemo(
-    () => buildOrderPayload(cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail),
-    [cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail]
+    () => buildOrderPayload(cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail, shippingAddress),
+    [cartWithProducts, subtotalCents, shippingCents, totalCents, customerEmail, shippingAddress]
   )
 
   const paymentIntentUrl = getPaymentIntentUrl()
 
   const handleContinueToPayment = async () => {
     setError(null)
+    setAddressError('')
+    if (!isShippingAddressValid) {
+      setAddressError('Please fill in all required shipping address fields.')
+      return
+    }
     if (!STRIPE_PK) {
       setError('Payment is not configured. Add VITE_STRIPE_PUBLISHABLE_KEY to the .env file.')
       return
@@ -228,11 +254,21 @@ export default function CheckoutPage() {
       <div className="cart-summary">
         <h3>Order summary</h3>
         {cartWithProducts.map((p) => (
-          <div key={p.id} className="cart-line">
+          <div key={p.id} className="cart-line cart-line-item">
             <span>
               {[p.series, p.item].filter(Boolean).join(' ') || 'Product'} × {p.cartQuantity}
             </span>
-            <span>${(p.price * p.cartQuantity).toFixed(2)}</span>
+            <span className="cart-line-right">
+              <span>${(p.price * p.cartQuantity).toFixed(2)}</span>
+              <button
+                type="button"
+                className="cart-remove-btn"
+                onClick={() => removeFromCart(p.id)}
+                title="Remove from cart"
+              >
+                Remove
+              </button>
+            </span>
           </div>
         ))}
         <div className="cart-line">
@@ -250,28 +286,102 @@ export default function CheckoutPage() {
       </div>
 
       {!clientSecret ? (
-        <div className="payment-section">
-          <h3>Payment</h3>
-          <div className="form-group">
-            <label htmlFor="customer-email">Your email (optional, for receipt)</label>
-            <input
-              id="customer-email"
-              type="email"
-              value={customerEmail}
-              onChange={(e) => setCustomerEmail(e.target.value)}
-              placeholder="you@example.com"
-            />
+        <>
+          <div className="checkout-address-section">
+            <h3>Shipping address</h3>
+            <div className="checkout-address-grid">
+              <div className="form-group form-group-full">
+                <label htmlFor="address-line1">Address line 1 *</label>
+                <input
+                  id="address-line1"
+                  type="text"
+                  value={shippingAddress.line1}
+                  onChange={(e) => setShippingAddress((a) => ({ ...a, line1: e.target.value }))}
+                  placeholder="Street address"
+                  autoComplete="address-line1"
+                />
+              </div>
+              <div className="form-group form-group-full">
+                <label htmlFor="address-line2">Address line 2 (optional)</label>
+                <input
+                  id="address-line2"
+                  type="text"
+                  value={shippingAddress.line2}
+                  onChange={(e) => setShippingAddress((a) => ({ ...a, line2: e.target.value }))}
+                  placeholder="Apt, suite, etc."
+                  autoComplete="address-line2"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="address-city">City *</label>
+                <input
+                  id="address-city"
+                  type="text"
+                  value={shippingAddress.city}
+                  onChange={(e) => setShippingAddress((a) => ({ ...a, city: e.target.value }))}
+                  placeholder="City"
+                  autoComplete="address-level2"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="address-state">State / Province *</label>
+                <input
+                  id="address-state"
+                  type="text"
+                  value={shippingAddress.state}
+                  onChange={(e) => setShippingAddress((a) => ({ ...a, state: e.target.value }))}
+                  placeholder="State"
+                  autoComplete="address-level1"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="address-zip">ZIP / Postal code *</label>
+                <input
+                  id="address-zip"
+                  type="text"
+                  value={shippingAddress.zip}
+                  onChange={(e) => setShippingAddress((a) => ({ ...a, zip: e.target.value }))}
+                  placeholder="ZIP"
+                  autoComplete="postal-code"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="address-country">Country *</label>
+                <input
+                  id="address-country"
+                  type="text"
+                  value={shippingAddress.country}
+                  onChange={(e) => setShippingAddress((a) => ({ ...a, country: e.target.value }))}
+                  placeholder="Country"
+                  autoComplete="country-name"
+                />
+              </div>
+            </div>
           </div>
-          {error && <p className="error-message">{error}</p>}
-          <button
-            type="button"
-            className="ym-btn ym-btn-primary"
-            disabled={loadingPayment}
-            onClick={handleContinueToPayment}
-          >
-            {loadingPayment ? 'Loading…' : 'Continue to payment'}
-          </button>
-        </div>
+          <div className="payment-section">
+            <h3>Payment</h3>
+            <div className="form-group">
+              <label htmlFor="customer-email">Your email (optional, for receipt)</label>
+              <input
+                id="customer-email"
+                type="email"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
+                placeholder="you@example.com"
+              />
+            </div>
+            {addressError && <p className="error-message">{addressError}</p>}
+            {error && <p className="error-message">{error}</p>}
+            <button
+              type="button"
+              className="ym-btn ym-btn-primary"
+              disabled={loadingPayment}
+              onClick={handleContinueToPayment}
+            >
+              {loadingPayment ? 'Loading…' : 'Continue to payment'}
+            </button>
+          </div>
+        </>
       ) : options && stripePromise ? (
         <Elements stripe={stripePromise} options={options}>
           <PaymentForm
