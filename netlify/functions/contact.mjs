@@ -1,12 +1,17 @@
 import nodemailer from 'nodemailer'
 
 const ORDER_EMAIL = process.env.ORDER_EMAIL || ''
+const port = Number(process.env.SMTP_PORT) || 587
+const secure = process.env.SMTP_SECURE === 'true'
 const transporter =
   ORDER_EMAIL && (process.env.SMTP_HOST || process.env.SMTP_USER)
     ? nodemailer.createTransport({
         host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: process.env.SMTP_SECURE === 'true',
+        port,
+        secure,
+        requireTLS: !secure && port === 587,
+        connectionTimeout: 10000,
+        greetingTimeout: 5000,
         auth:
           process.env.SMTP_USER
             ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
@@ -65,17 +70,23 @@ export default async (req) => {
 
     console.log('Contact form received:\n' + text)
 
-    if (ORDER_EMAIL && transporter) {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER || 'contact@yesmagic.local',
-        to: ORDER_EMAIL,
-        subject: 'YESMagic contact form submission',
-        text,
-      })
-      console.log('Contact email sent to', ORDER_EMAIL)
-    } else if (ORDER_EMAIL) {
-      console.warn('ORDER_EMAIL is set but SMTP is not configured.')
+    if (!ORDER_EMAIL || !transporter) {
+      console.warn('Contact form: ORDER_EMAIL or SMTP not configured.')
+      return new Response(
+        JSON.stringify({
+          error: 'Email is not configured on the server. The site owner needs to set ORDER_EMAIL and SMTP (SMTP_HOST, SMTP_USER, SMTP_PASS) in Netlify.',
+        }),
+        { status: 503, headers: corsHeaders(origin) }
+      )
     }
+
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER || 'contact@yesmagic.local',
+      to: ORDER_EMAIL,
+      subject: 'YESMagic contact form submission',
+      text,
+    })
+    console.log('Contact email sent to', ORDER_EMAIL)
 
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
@@ -83,7 +94,13 @@ export default async (req) => {
     })
   } catch (err) {
     console.error('Contact error:', err)
-    return new Response(JSON.stringify({ error: 'Failed to submit contact form' }), {
+    const message =
+      err.code === 'EAUTH'
+        ? 'SMTP authentication failed. Check SMTP_USER and SMTP_PASS in Netlify.'
+        : err.code === 'ECONNECTION' || err.code === 'ETIMEDOUT'
+          ? 'Could not connect to the mail server. Check SMTP_HOST and SMTP_PORT.'
+          : err.message || 'Failed to send email.'
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: corsHeaders(origin),
     })

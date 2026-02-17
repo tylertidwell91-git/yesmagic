@@ -1,12 +1,17 @@
 import nodemailer from 'nodemailer'
 
 const ORDER_EMAIL = process.env.ORDER_EMAIL || ''
+const port = Number(process.env.SMTP_PORT) || 587
+const secure = process.env.SMTP_SECURE === 'true'
 const transporter =
   ORDER_EMAIL && (process.env.SMTP_HOST || process.env.SMTP_USER)
     ? nodemailer.createTransport({
         host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: process.env.SMTP_SECURE === 'true',
+        port,
+        secure,
+        requireTLS: !secure && port === 587,
+        connectionTimeout: 10000,
+        greetingTimeout: 5000,
         auth:
           process.env.SMTP_USER
             ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
