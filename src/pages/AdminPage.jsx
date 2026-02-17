@@ -115,7 +115,6 @@ export default function AdminPage() {
       await saveInventory(products)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
-      reload()
     } catch (err) {
       setSaveError(err.message || 'Failed to save inventory')
     }
@@ -165,11 +164,18 @@ export default function AdminPage() {
         >
           Export inventory
         </button>
+        <button type="button" className="ym-btn ym-btn-secondary" onClick={() => reload()}>
+          Refresh from server
+        </button>
         <Link to="/" className="ym-btn ym-btn-secondary">Back to shop</Link>
       </div>
 
       {saved && <div className="success-message">Inventory saved.</div>}
-      {saveError && <div className="error-message">{saveError}</div>}
+      {saveError && (
+        <div className="error-message" style={{ marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: 6 }}>
+          {saveError}
+        </div>
+      )}
 
       <div className="add-product-form">
         <h3>Add product</h3>

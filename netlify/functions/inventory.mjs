@@ -61,7 +61,8 @@ export default async (req) => {
   if (req.method === 'GET') {
     try {
       const store = getStore(STORE_NAME)
-      const data = await store.get(KEY, { type: 'json' })
+      const raw = await store.get(KEY, { consistency: 'strong' })
+      const data = raw != null ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : null
       const list = data != null && Array.isArray(data) && data.length > 0 ? data : DEFAULT_INVENTORY
       return new Response(JSON.stringify(list), {
         status: 200,
@@ -114,7 +115,7 @@ export default async (req) => {
       item: String(p.item ?? '').trim(),
       description: String(p.description ?? '').trim(),
     }))
-    await store.setJSON(KEY, normalized)
+    await store.set(KEY, JSON.stringify(normalized))
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
       headers: corsHeaders(origin),
