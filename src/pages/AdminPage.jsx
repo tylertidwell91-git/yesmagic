@@ -57,7 +57,15 @@ function AdminGate({ children }) {
     return (
       <>
         {children}
-        <div className="yesmagic-main" style={{ marginTop: '1rem' }}>
+        <div className="yesmagic-main admin-footer-actions" style={{ marginTop: '1rem' }}>
+          <a
+            href="https://privateemail.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ym-btn ym-btn-secondary"
+          >
+            Email
+          </a>
           <button type="button" className="ym-btn ym-btn-secondary" onClick={handleLogout}>
             Log out
           </button>
