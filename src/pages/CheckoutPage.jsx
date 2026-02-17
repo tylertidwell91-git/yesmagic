@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useLayoutEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
@@ -154,9 +154,10 @@ export default function CheckoutPage() {
     )
   }, [shippingAddress])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (hadItemsRef.current && items.length === 0) {
       navigate('/', { replace: true })
+      return
     }
     hadItemsRef.current = items.length > 0
   }, [items.length, navigate])
@@ -241,7 +242,7 @@ export default function CheckoutPage() {
   if (cartWithProducts.length === 0) {
     return (
       <div className="yesmagic-main checkout-layout">
-        <div className="empty-cart">
+        <div className="empty-cart empty-cart-checkout">
           <p>Your cart is empty.</p>
           <Link to="/" className="ym-btn ym-btn-primary">
             Continue shopping

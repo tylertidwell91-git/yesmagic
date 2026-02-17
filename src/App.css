@@ -534,6 +534,18 @@
   margin-bottom: 1rem;
 }
 
+.empty-cart-checkout {
+  background: var(--ym-surface);
+  border: 1px solid var(--ym-border);
+  border-radius: var(--ym-radius);
+  color: var(--ym-text);
+}
+
+.empty-cart-checkout p {
+  color: var(--ym-text);
+  margin-bottom: 1.25rem;
+}
+
 .success-message {
   background: rgba(34, 197, 94, 0.15);
   color: #86efac;
