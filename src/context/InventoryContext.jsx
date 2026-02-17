@@ -1,0 +1,83 @@
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import {
+  defaultProducts,
+  ensureProductFields,
+  getInventoryApiUrl,
+  STORAGE_KEY,
+} from '../data/inventory'
+
+const InventoryContext = createContext(null)
+
+export function InventoryProvider({ children }) {
+  const [inventory, setInventory] = useState(defaultProducts)
+  const [loading, setLoading] = useState(true)
+  const apiUrl = getInventoryApiUrl()
+
+  const load = useCallback(async () => {
+    if (!apiUrl) {
+      try {
+        const raw = typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setInventory(parsed.map(ensureProductFields))
+          }
+        }
+      } catch (_) {}
+      setLoading(false)
+      return
+    }
+    try {
+      const res = await fetch(apiUrl)
+      if (res.ok) {
+        const data = await res.json()
+        if (Array.isArray(data) && data.length > 0) setInventory(data.map(ensureProductFields))
+      }
+    } catch (_) {}
+    setLoading(false)
+  }, [apiUrl])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const saveInventory = useCallback(async (products) => {
+    const normalized = products.map((p) => ({
+      id: p.id,
+      price: Math.max(0, Number(p.price) || 0),
+      quantity: Math.max(0, Math.floor(Number(p.quantity) || 0)),
+      image: String(p.image ?? '').trim() || 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400&h=400&fit=crop',
+      series: String(p.series ?? '').trim(),
+      item: String(p.item ?? '').trim(),
+      description: String(p.description ?? '').trim(),
+    }))
+
+    if (!apiUrl) {
+      if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized))
+      setInventory(normalized)
+      return { ok: true }
+    }
+
+    const raw = import.meta.env.VITE_ADMIN_PASSWORD || ''
+    const adminPassword = raw.replace(/\r\n?|\n/g, '').trim().replace(/^["']|["']$/g, '')
+
+    const res = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminPassword, products: normalized }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(data.error || 'Failed to save inventory')
+    setInventory(normalized)
+    return { ok: true }
+  }, [apiUrl])
+
+  const value = { inventory, loading, saveInventory, reload: load }
+  return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>
+}
+
+export function useInventory() {
+  const ctx = useContext(InventoryContext)
+  if (!ctx) throw new Error('useInventory must be used within InventoryProvider')
+  return ctx
+}
