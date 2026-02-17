@@ -4,6 +4,17 @@ import { useInventory } from '../context/InventoryContext'
 
 const ADMIN_SESSION_KEY = 'yesmagic_admin_session'
 
+const ITEM_OPTIONS = ['Play Booster Pack', 'Collector Booster Pack', 'Collector Box', 'Commander Deck']
+const DESCRIPTION_OPTIONS = ['Brand New', 'Factory-Sealed', 'Opened', 'Minimal Packaging']
+
+function itemStringToArray(s) {
+  if (!s || typeof s !== 'string') return []
+  return s.split(',').map((x) => x.trim()).filter(Boolean)
+}
+function itemArrayToString(arr) {
+  return Array.isArray(arr) ? arr.join(', ') : ''
+}
+
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2)
 }
@@ -122,7 +133,7 @@ export default function AdminPage() {
 
   const handleAdd = () => {
     const series = String(newProduct.series ?? '').trim()
-    const item = String(newProduct.item ?? '').trim()
+    const item = itemArrayToString(itemStringToArray(newProduct.item))
     if (!series && !item) return
     const product = {
       id: generateId(),
@@ -188,20 +199,36 @@ export default function AdminPage() {
           />
         </div>
         <div className="form-group">
-          <label>Item</label>
-          <input
-            value={newProduct.item}
-            onChange={(e) => setNewProduct((p) => ({ ...p, item: e.target.value }))}
-            placeholder="e.g. Deck, Kit, Set"
-          />
+          <label>Item (select one or more)</label>
+          <select
+            multiple
+            size={ITEM_OPTIONS.length}
+            value={itemStringToArray(newProduct.item)}
+            onChange={(e) => {
+              const arr = Array.from(e.target.selectedOptions, (o) => o.value)
+              setNewProduct((p) => ({ ...p, item: itemArrayToString(arr) }))
+            }}
+            style={{ minWidth: '200px', padding: '0.25rem' }}
+          >
+            {ITEM_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+          <p style={{ fontSize: '0.75rem', color: 'var(--ym-muted)', marginTop: '0.25rem' }}>
+            Hold Ctrl (Windows) or Cmd (Mac) to select multiple.
+          </p>
         </div>
         <div className="form-group">
           <label>Description</label>
-          <input
-            value={newProduct.description}
+          <select
+            value={newProduct.description || ''}
             onChange={(e) => setNewProduct((p) => ({ ...p, description: e.target.value }))}
-            placeholder="Short product description"
-          />
+          >
+            <option value="">Select condition</option>
+            {DESCRIPTION_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
         </div>
         <div className="form-group">
           <label>Price ($)</label>
@@ -267,18 +294,32 @@ export default function AdminPage() {
                   />
                 </td>
                 <td>
-                  <input
-                    value={p.item ?? ''}
-                    onChange={(e) => handleChange(p.id, 'item', e.target.value)}
-                    placeholder="Item"
-                  />
+                  <select
+                    multiple
+                    size={Math.min(4, ITEM_OPTIONS.length)}
+                    value={itemStringToArray(p.item)}
+                    onChange={(e) => {
+                      const arr = Array.from(e.target.selectedOptions, (o) => o.value)
+                      handleChange(p.id, 'item', itemArrayToString(arr))
+                    }}
+                    style={{ minWidth: '140px', padding: '0.2rem', fontSize: '0.875rem' }}
+                  >
+                    {ITEM_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
                 </td>
                 <td>
-                  <input
+                  <select
                     value={p.description ?? ''}
                     onChange={(e) => handleChange(p.id, 'description', e.target.value)}
-                    placeholder="Description"
-                  />
+                    style={{ minWidth: '120px', padding: '0.25rem' }}
+                  >
+                    <option value="">—</option>
+                    {DESCRIPTION_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
                 </td>
                 <td>
                   <input
