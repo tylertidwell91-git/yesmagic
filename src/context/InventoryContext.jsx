@@ -69,20 +69,13 @@ export function InventoryProvider({ children }) {
       return { ok: true }
     }
 
-    const raw = import.meta.env.VITE_ADMIN_PASSWORD || ''
-    const adminPassword = raw.replace(/\r\n?|\n/g, '').trim().replace(/^["']|["']$/g, '')
-
     const res = await fetch(apiUrl, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminPassword, products: normalized }),
+      body: JSON.stringify({ products: normalized }),
     })
     const data = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      const msg = data.error || 'Failed to save inventory'
-      if (res.status === 401) throw new Error('Unauthorized: ADMIN_PASSWORD and VITE_ADMIN_PASSWORD must match in Netlify env vars.')
-      throw new Error(msg)
-    }
+    if (!res.ok) throw new Error(data.error || 'Failed to save inventory')
     setInventory(normalized)
     return { ok: true }
   }, [apiUrl])

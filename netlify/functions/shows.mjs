@@ -1,4 +1,5 @@
 import { getStore } from '@netlify/blobs'
+import { hasValidAdminSession } from './_admin-auth.mjs'
 
 const STORE_NAME = 'yesmagic-inventory'
 const KEY = 'shows'
@@ -44,7 +45,6 @@ export default async (req) => {
     }
   }
 
-  const adminPassword = (process.env.ADMIN_PASSWORD || '').trim()
   let body
   try {
     body = await req.json()
@@ -54,8 +54,7 @@ export default async (req) => {
       headers: corsHeaders(origin),
     })
   }
-  const sent = typeof body?.adminPassword === 'string' ? body.adminPassword.trim() : ''
-  if (!adminPassword || sent !== adminPassword) {
+  if (!hasValidAdminSession(req)) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: corsHeaders(origin),

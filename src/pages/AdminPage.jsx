@@ -34,35 +34,54 @@ function generateId() {
 
 function AdminGate({ children }) {
   const navigate = useNavigate()
-  // Normalize: strip whitespace, line endings, and optional surrounding quotes
-  const raw = import.meta.env.VITE_ADMIN_PASSWORD || ''
-  const expectedPassword = raw.replace(/\r\n?|\n/g, '').trim().replace(/^["']|["']$/g, '')
   const [authenticated, setAuthenticated] = useState(() =>
     typeof sessionStorage !== 'undefined' && sessionStorage.getItem(ADMIN_SESSION_KEY) === '1'
   )
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    fetch('/api/admin-auth')
+      .then((res) => (res.ok ? res.json() : { authenticated: false }))
+      .then((data) => {
+        if (data.authenticated) {
+          sessionStorage.setItem(ADMIN_SESSION_KEY, '1')
+          setAuthenticated(true)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   const handleSubmit = (e) => {
     e.preventDefault()
     setError('')
-    if (!expectedPassword) {
-      setError('Admin password is not configured. Add VITE_ADMIN_PASSWORD to your .env file.')
+    const trimmed = password.trim()
+    if (!trimmed) {
+      setError('Password is required.')
       return
     }
-    const trimmed = password.trim()
-    if (trimmed === expectedPassword.trim()) {
-      sessionStorage.setItem(ADMIN_SESSION_KEY, '1')
-      setAuthenticated(true)
-    } else {
-      setError('Incorrect password.')
-    }
+    fetch('/api/admin-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: trimmed }),
+    })
+      .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (!ok) {
+          setError(data.error || 'Login failed.')
+          return
+        }
+        sessionStorage.setItem(ADMIN_SESSION_KEY, '1')
+        setAuthenticated(true)
+      })
+      .catch(() => setError('Login failed.'))
   }
 
   const handleLogout = () => {
     sessionStorage.removeItem(ADMIN_SESSION_KEY)
     setAuthenticated(false)
     setPassword('')
+    fetch('/api/admin-auth', { method: 'DELETE' }).catch(() => {})
     navigate('/')
   }
 
@@ -203,13 +222,11 @@ export default function AdminPage() {
   }
   const saveShows = async () => {
     setShowsSaveError('')
-    const raw = import.meta.env.VITE_ADMIN_PASSWORD || ''
-    const adminPassword = raw.replace(/\r\n?|\n/g, '').trim().replace(/^["']|["']$/g, '')
     try {
       const res = await fetch(SHOWS_API, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminPassword, shows }),
+        body: JSON.stringify({ shows }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Failed to save schedule')
@@ -248,13 +265,11 @@ export default function AdminPage() {
   }
   const saveShippingRules = async () => {
     setShippingRulesSaveError('')
-    const raw = import.meta.env.VITE_ADMIN_PASSWORD || ''
-    const adminPassword = raw.replace(/\r\n?|\n/g, '').trim().replace(/^["']|["']$/g, '')
     try {
       const res = await fetch(SHIPPING_RULES_API, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminPassword, rules: shippingRules }),
+        body: JSON.stringify({ rules: shippingRules }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Failed to save shipping rules')

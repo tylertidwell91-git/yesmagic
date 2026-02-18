@@ -31,6 +31,11 @@
   status = 200
   force = true
 [[redirects]]
+  from = "/api/admin-auth"
+  to = "/.netlify/functions/admin-auth"
+  status = 200
+  force = true
+[[redirects]]
   from = "/api/shipping-rules"
   to = "/.netlify/functions/shipping-rules"
   status = 200
