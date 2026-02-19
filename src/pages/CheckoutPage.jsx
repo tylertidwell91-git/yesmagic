@@ -274,8 +274,17 @@ export default function CheckoutPage() {
 
   if (cartWithProducts.length === 0) {
     // When the last item is removed from the cart on the checkout page,
-    // immediately send the user back to the shop so they never get stuck.
-    return <Navigate to="/" replace />
+    // show a friendly empty state with navigation rather than a blank view.
+    return (
+      <div className="yesmagic-main checkout-layout">
+        <div className="empty-cart empty-cart-checkout">
+          <p>Your cart is empty. There&apos;s nothing to check out right now.</p>
+          <Link to="/" className="ym-btn ym-btn-primary">
+            Back to shop
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   const options = useMemo(
