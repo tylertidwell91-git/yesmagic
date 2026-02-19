@@ -33,12 +33,19 @@
 }
 
 .yesmagic-logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   color: var(--ym-accent);
   text-decoration: none;
   font-family: var(--ym-font-heading);
+  letter-spacing: 0.08em;
+}
+
+.yesmagic-logo-image {
+  height: 40px;
+  width: auto;
+  display: block;
 }
 
 .yesmagic-nav {

@@ -7,6 +7,7 @@ import AdminPage from './pages/AdminPage'
 import WhatNotPage from './pages/WhatNotPage'
 import SchedulePage from './pages/SchedulePage'
 import ContactPage from './pages/ContactPage'
+import yesmagicLogo from './assets/yesmagic-logo.png'
 import './App.css'
 
 function Layout() {
@@ -15,7 +16,14 @@ function Layout() {
   return (
     <div className="yesmagic">
       <header className="yesmagic-header">
-        <Link to="/" className="yesmagic-logo">YESMagic</Link>
+        <Link to="/" className="yesmagic-logo">
+          <img
+            src={yesmagicLogo}
+            alt="YESMagic logo"
+            className="yesmagic-logo-image"
+          />
+          <span>YESMagic</span>
+        </Link>
         <nav className="yesmagic-nav">
           <Link to="/">Shop</Link>
           <Link to="/schedule">Schedule</Link>

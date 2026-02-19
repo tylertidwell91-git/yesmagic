@@ -88,8 +88,26 @@ export default function ShopPage() {
   return (
     <div className="yesmagic-main">
       <h2 style={{ marginBottom: '1rem', fontWeight: 600 }}>Shop</h2>
-      <p style={{ fontStyle: 'italic', color: 'var(--ym-muted)', marginBottom: '1rem' }}>
-        All sales tax included in listed price. Shipping is calculated at checkout.
+      <p
+        className="shop-tax-banner"
+        style={{
+          marginBottom: '1.25rem',
+          padding: '0.85rem 1rem',
+          borderRadius: 10,
+          border: '1px solid rgba(201, 162, 39, 0.7)',
+          background:
+            'radial-gradient(circle at top left, rgba(201,162,39,0.18), transparent 55%), rgba(15,14,23,0.95)',
+          boxShadow: '0 0 25px rgba(201,162,39,0.35)',
+          fontWeight: 700,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          fontSize: '0.8rem',
+          color: 'var(--ym-accent)',
+          textAlign: 'center',
+        }}
+      >
+        All prices include sales tax — <span style={{ color: '#facc15' }}>NO extra tax added at checkout</span>.
+        &nbsp;Shipping is calculated at checkout.
       </p>
 
       <div className="shop-filters">

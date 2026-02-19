@@ -439,100 +439,6 @@ export default function AdminPage() {
         </button>
       </div>
 
-      <section className="admin-shipping-rules-section" style={{ marginTop: '2rem' }}>
-        <h3 className="admin-section-heading">Shipping rules</h3>
-        <p style={{ color: 'var(--ym-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
-          Shipping is calculated by item type from the cart. Leave max empty for “and above”. Check “Per unit” for per-item pricing (e.g. Collector Box $11 each).
-        </p>
-        {shippingRulesSaveError && (
-          <div className="error-message" style={{ marginBottom: '1rem' }}>{shippingRulesSaveError}</div>
-        )}
-        {shippingRulesSaved && (
-          <div className="success-message" style={{ marginBottom: '1rem' }}>Shipping rules saved.</div>
-        )}
-        {shippingRules == null ? (
-          <p style={{ color: 'var(--ym-muted)' }}>Loading shipping rules…</p>
-        ) : (
-          <>
-            {Object.entries(shippingRules).map(([itemType, tiers]) => (
-              <div key={itemType} className="shipping-rules-block" style={{ marginBottom: '1.5rem' }}>
-                <h4 style={{ marginBottom: '0.5rem', fontFamily: 'var(--ym-font-heading)', color: 'var(--ym-accent)' }}>{itemType}</h4>
-                <table className="inventory-table shipping-rules-table">
-                  <thead>
-                    <tr>
-                      <th>Min qty</th>
-                      <th>Max qty (blank = ∞)</th>
-                      <th>Price ($)</th>
-                      <th>Per unit</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(Array.isArray(tiers) ? tiers : []).map((tier, idx) => (
-                      <tr key={idx}>
-                        <td>
-                          <input
-                            type="number"
-                            min="0"
-                            value={tier.min ?? ''}
-                            onChange={(e) => updateShippingTier(itemType, idx, 'min', e.target.value === '' ? '' : Number(e.target.value))}
-                            style={{ width: '5ch' }}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            min="0"
-                            placeholder="∞"
-                            value={tier.max ?? ''}
-                            onChange={(e) => updateShippingTier(itemType, idx, 'max', e.target.value === '' ? null : Number(e.target.value))}
-                            style={{ width: '6ch' }}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={tier.price ?? ''}
-                            onChange={(e) => updateShippingTier(itemType, idx, 'price', e.target.value === '' ? '' : Number(e.target.value))}
-                            style={{ width: '7ch' }}
-                          />
-                        </td>
-                        <td>
-                          <label>
-                            <input
-                              type="checkbox"
-                              checked={Boolean(tier.perUnit)}
-                              onChange={(e) => updateShippingTier(itemType, idx, 'perUnit', e.target.checked)}
-                            />
-                            {' '}each
-                          </label>
-                        </td>
-                        <td>
-                          <button
-                            type="button"
-                            className="ym-btn ym-btn-sm ym-btn-danger"
-                            onClick={() => removeShippingTier(itemType, idx)}
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <button type="button" className="ym-btn ym-btn-secondary" style={{ marginTop: '0.5rem' }} onClick={() => addShippingTier(itemType)}>
-                  Add tier
-                </button>
-              </div>
-            ))}
-            <button type="button" className="ym-btn ym-btn-primary" onClick={saveShippingRules}>
-              Save shipping rules
-            </button>
-          </>
-        )}
-      </section>
 
       <h3 className="inventory-section-title">Products</h3>
       <div className="inventory-table-wrap">
@@ -648,6 +554,8 @@ export default function AdminPage() {
           </tbody>
         </table>
       </div>
+
+  
 
       <section className="admin-shows-section">
         <h3>Live Stream Schedule</h3>
