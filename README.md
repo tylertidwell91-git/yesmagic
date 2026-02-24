@@ -46,4 +46,19 @@ Then open **http://localhost:5173** in your browser.
 3. In **yesmagic/server**: run `npm install` (installs Stripe), then `npm start`.
 4. Set **ORDER_EMAIL** (and optionally **SMTP_***) in **server/.env** so new orders are emailed to you.
 
-Without Stripe keys, checkout will show an error asking you to configure payment. The order server must be running with **STRIPE_SECRET_KEY** set so the “Continue to payment” step can create a secure payment session.
+Without Stripe keys, checkout will show an error asking you to configure payment. The order server must be running with **STRIPE_SECRET_KEY** set so the "Continue to payment" step can create a secure payment session.
+
+## Arkansas sales tax
+
+When the shipping address is in **Arkansas**, checkout looks up the combined state + local sales tax rate from the [Arkansas DFA city/county tax table](https://www.dfa.arkansas.gov/office/taxes/excise-tax-administration/sales-use-tax/) and adds it to the order total.
+
+- **Data:** Tax rates are stored in **`src/data/arTaxTable.json`**, which is built from the official Excel file (e.g. `cityCountyTaxTable_Jan_Mar_2026.xls`).
+- **When you get a new DFA file** (new quarter), run:
+  ```bash
+  npm run build-ar-tax
+  ```
+  Or with an explicit path:
+  ```bash
+  node scripts/build-ar-tax-table.cjs /path/to/cityCountyTaxTable_Jan_Mar_2026.xls
+  ```
+  That updates **`src/data/arTaxTable.json`**. Commit the updated file so the site uses the new rates.

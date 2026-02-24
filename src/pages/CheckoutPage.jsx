@@ -6,6 +6,7 @@ import { useInventory } from '../context/InventoryContext'
 import { getProductById } from '../data/inventory'
 import { useCart } from '../context/CartContext'
 import { computeShippingFromRules } from '../utils/shipping'
+import { getArkansasTaxRateForShippingAddress } from '../data/arTaxRates'
 
 const ORDER_API_URL = import.meta.env.VITE_ORDER_API_URL || ''
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
@@ -168,9 +169,11 @@ export default function CheckoutPage() {
     const dollars = computeShippingFromRules(shippingRules || {}, cartWithProducts)
     return Math.round(dollars * 100)
   }, [shippingRules, cartWithProducts])
-  // No sales tax is added by the site. All applicable tax is handled outside
-  // of this checkout flow. We still keep a Tax line in the UI for clarity.
-  const taxCents = 0
+  const taxCents = useMemo(() => {
+    const rate = getArkansasTaxRateForShippingAddress(shippingAddress)
+    if (rate == null || rate <= 0) return 0
+    return Math.round(subtotalCents * rate)
+  }, [shippingAddress, subtotalCents])
   const totalCents = subtotalCents + shippingCents + taxCents
 
   const orderPayload = useMemo(
@@ -194,19 +197,6 @@ export default function CheckoutPage() {
     setAddressError('')
     if (!isShippingAddressValid) {
       setAddressError('Please fill in all required shipping address fields.')
-      return
-    }
-    // Hard-block Arkansas shipments: we do not ship to AR.
-    const country = (shippingAddress.country || '').trim().toUpperCase()
-    const state = (shippingAddress.state || '').trim().toUpperCase()
-    const isUS =
-      country === 'US' ||
-      country === 'USA' ||
-      country === 'UNITED STATES' ||
-      country === 'UNITED STATES OF AMERICA'
-    const isArkansas = state === 'AR' || state === 'ARKANSAS'
-    if (isUS && isArkansas) {
-      setAddressError('We currently do not ship to Arkansas addresses.')
       return
     }
     if (!STRIPE_PK) {
@@ -272,19 +262,10 @@ export default function CheckoutPage() {
     )
   }
 
+  // When cart is empty on checkout, redirect to shop so the user is never stuck.
+  // (Empty-state UI was unreliable in some environments; redirect is guaranteed.)
   if (cartWithProducts.length === 0) {
-    // When the last item is removed from the cart on the checkout page,
-    // show a friendly empty state with navigation rather than a blank view.
-    return (
-      <div className="yesmagic-main checkout-layout">
-        <div className="empty-cart empty-cart-checkout">
-          <p>Your cart is empty. There&apos;s nothing to check out right now.</p>
-          <Link to="/" className="ym-btn ym-btn-primary">
-            Back to shop
-          </Link>
-        </div>
-      </div>
-    )
+    return <Navigate to="/" replace />
   }
 
   const options = useMemo(
@@ -324,6 +305,17 @@ export default function CheckoutPage() {
           <span>Shipping</span>
           <span>{shippingCents > 0 ? `$${(shippingCents / 100).toFixed(2)}` : 'Free'}</span>
         </div>
+        {taxCents > 0 && (
+          <>
+            <div className="cart-line">
+              <span>Tax (AR)</span>
+              <span>${(taxCents / 100).toFixed(2)}</span>
+            </div>
+            <p className="checkout-ar-tax-note" style={{ fontSize: '0.8125rem', color: 'var(--ym-muted)', marginTop: '-0.25rem', marginBottom: '0.5rem' }}>
+              Sales tax is applied for shipments within the state of Arkansas only.
+            </p>
+          </>
+        )}
         <div className="cart-line cart-total">
           <span>Total</span>
           <span>${(totalCents / 100).toFixed(2)}</span>
