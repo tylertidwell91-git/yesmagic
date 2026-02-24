@@ -141,6 +141,7 @@ export default function CheckoutPage() {
     country: '',
   })
   const [addressError, setAddressError] = useState('')
+  const [addressSaved, setAddressSaved] = useState(false)
   const [shippingRules, setShippingRules] = useState(null)
 
   useEffect(() => {
@@ -177,6 +178,8 @@ export default function CheckoutPage() {
   }, [shippingAddress, subtotalCents, shippingCents])
   const totalCents = subtotalCents + shippingCents + taxCents
 
+  const canShowTotals = addressSaved && isShippingAddressValid
+
   const orderPayload = useMemo(
     () =>
       buildOrderPayload(
@@ -193,11 +196,26 @@ export default function CheckoutPage() {
 
   const paymentIntentUrl = getPaymentIntentUrl()
 
+  const handleSaveAddress = () => {
+    setError(null)
+    setAddressError('')
+    if (!isShippingAddressValid) {
+      setAddressError('Please fill in all required shipping address fields before saving.')
+      setAddressSaved(false)
+      return
+    }
+    setAddressSaved(true)
+  }
+
   const handleContinueToPayment = async () => {
     setError(null)
     setAddressError('')
     if (!isShippingAddressValid) {
       setAddressError('Please fill in all required shipping address fields.')
+      return
+    }
+    if (!addressSaved) {
+      setAddressError('Please save your shipping address before continuing to payment.')
       return
     }
     if (!STRIPE_PK) {
@@ -302,29 +320,6 @@ export default function CheckoutPage() {
           <span>Subtotal</span>
           <span>${(subtotalCents / 100).toFixed(2)}</span>
         </div>
-        <div className="cart-line">
-          <span>Shipping</span>
-          <span>{shippingCents > 0 ? `$${(shippingCents / 100).toFixed(2)}` : 'Free'}</span>
-        </div>
-        <div className="cart-line">
-          <span>Subtotal + shipping</span>
-          <span>${((subtotalCents + shippingCents) / 100).toFixed(2)}</span>
-        </div>
-        {taxCents > 0 && (
-          <>
-            <div className="cart-line">
-              <span>Tax (AR)</span>
-              <span>${(taxCents / 100).toFixed(2)}</span>
-            </div>
-            <p className="checkout-ar-tax-note" style={{ fontSize: '0.8125rem', color: 'var(--ym-muted)', marginTop: '-0.25rem', marginBottom: '0.5rem' }}>
-              Sales tax is applied for shipments within the state of Arkansas only.
-            </p>
-          </>
-        )}
-        <div className="cart-line cart-total">
-          <span>Total after tax</span>
-          <span>${(totalCents / 100).toFixed(2)}</span>
-        </div>
       </div>
 
       {!clientSecret ? (
@@ -338,7 +333,10 @@ export default function CheckoutPage() {
                   id="address-line1"
                   type="text"
                   value={shippingAddress.line1}
-                  onChange={(e) => setShippingAddress((a) => ({ ...a, line1: e.target.value }))}
+                  onChange={(e) => {
+                    setShippingAddress((a) => ({ ...a, line1: e.target.value }))
+                    setAddressSaved(false)
+                  }}
                   placeholder="Street address"
                   autoComplete="address-line1"
                 />
@@ -349,7 +347,10 @@ export default function CheckoutPage() {
                   id="address-line2"
                   type="text"
                   value={shippingAddress.line2}
-                  onChange={(e) => setShippingAddress((a) => ({ ...a, line2: e.target.value }))}
+                  onChange={(e) => {
+                    setShippingAddress((a) => ({ ...a, line2: e.target.value }))
+                    setAddressSaved(false)
+                  }}
                   placeholder="Apt, suite, etc."
                   autoComplete="address-line2"
                 />
@@ -360,7 +361,10 @@ export default function CheckoutPage() {
                   id="address-city"
                   type="text"
                   value={shippingAddress.city}
-                  onChange={(e) => setShippingAddress((a) => ({ ...a, city: e.target.value }))}
+                  onChange={(e) => {
+                    setShippingAddress((a) => ({ ...a, city: e.target.value }))
+                    setAddressSaved(false)
+                  }}
                   placeholder="City"
                   autoComplete="address-level2"
                 />
@@ -371,7 +375,10 @@ export default function CheckoutPage() {
                   id="address-state"
                   type="text"
                   value={shippingAddress.state}
-                  onChange={(e) => setShippingAddress((a) => ({ ...a, state: e.target.value }))}
+                  onChange={(e) => {
+                    setShippingAddress((a) => ({ ...a, state: e.target.value }))
+                    setAddressSaved(false)
+                  }}
                   placeholder="State"
                   autoComplete="address-level1"
                 />
@@ -382,7 +389,10 @@ export default function CheckoutPage() {
                   id="address-zip"
                   type="text"
                   value={shippingAddress.zip}
-                  onChange={(e) => setShippingAddress((a) => ({ ...a, zip: e.target.value }))}
+                  onChange={(e) => {
+                    setShippingAddress((a) => ({ ...a, zip: e.target.value }))
+                    setAddressSaved(false)
+                  }}
                   placeholder="ZIP"
                   autoComplete="postal-code"
                 />
@@ -393,13 +403,55 @@ export default function CheckoutPage() {
                   id="address-country"
                   type="text"
                   value={shippingAddress.country}
-                  onChange={(e) => setShippingAddress((a) => ({ ...a, country: e.target.value }))}
+                  onChange={(e) => {
+                    setShippingAddress((a) => ({ ...a, country: e.target.value }))
+                    setAddressSaved(false)
+                  }}
                   placeholder="Country"
                   autoComplete="country-name"
                 />
               </div>
             </div>
+            <button
+              type="button"
+              className="ym-btn"
+              style={{ marginTop: '1rem' }}
+              onClick={handleSaveAddress}
+            >
+              Save shipping address
+            </button>
           </div>
+          {canShowTotals && (
+            <div className="cart-summary" style={{ marginTop: '1.5rem' }}>
+              <div className="cart-line">
+                <span>Shipping</span>
+                <span>{shippingCents > 0 ? `$${(shippingCents / 100).toFixed(2)}` : 'Free'}</span>
+              </div>
+              <div className="cart-line">
+                <span>Subtotal + shipping</span>
+                <span>${((subtotalCents + shippingCents) / 100).toFixed(2)}</span>
+              </div>
+              <div className="cart-line">
+                <span>Tax</span>
+                <span>${(taxCents / 100).toFixed(2)}</span>
+              </div>
+              <p
+                className="checkout-ar-tax-note"
+                style={{
+                  fontSize: '0.8125rem',
+                  color: 'var(--ym-muted)',
+                  marginTop: '-0.25rem',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                Sales tax is applied for shipments within the state of Arkansas only.
+              </p>
+              <div className="cart-line cart-total">
+                <span>Total after tax</span>
+                <span>${(totalCents / 100).toFixed(2)}</span>
+              </div>
+            </div>
+          )}
           <div className="payment-section">
             <h3>Payment</h3>
             <div className="form-group">
