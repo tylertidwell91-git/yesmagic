@@ -196,6 +196,11 @@ export default function CheckoutPage() {
 
   const paymentIntentUrl = getPaymentIntentUrl()
 
+  const options = useMemo(
+    () => (clientSecret ? { clientSecret, appearance: { theme: 'night' } } : null),
+    [clientSecret]
+  )
+
   const handleSaveAddress = () => {
     setError(null)
     setAddressError('')
@@ -291,11 +296,6 @@ export default function CheckoutPage() {
   if (cartWithProducts.length === 0) {
     return <Navigate to="/" replace />
   }
-
-  const options = useMemo(
-    () => (clientSecret ? { clientSecret, appearance: { theme: 'night' } } : null),
-    [clientSecret]
-  )
 
   return (
     <div className="yesmagic-main checkout-layout">
