@@ -10,6 +10,22 @@ import ContactPage from './pages/ContactPage'
 import yesmagicLogo from './assets/yesmagic-logo.png'
 import './App.css'
 
+function CheckoutSuccessPage() {
+  const { clearCart } = useCart()
+
+  // Ensure cart is cleared once the user lands on the success page after payment.
+  React.useEffect(() => {
+    clearCart()
+  }, [clearCart])
+
+  return (
+    <div className="yesmagic-main checkout-layout">
+      <div className="success-message">Thank you! Your order has been placed.</div>
+      <Link to="/" className="ym-btn ym-btn-primary">Back to shop</Link>
+    </div>
+  )
+}
+
 function Layout() {
   const { cartCount } = useCart()
 
@@ -37,12 +53,7 @@ function Layout() {
       <Routes>
         <Route index element={<ShopPage />} />
         <Route path="checkout" element={<CheckoutPage />} />
-        <Route path="checkout/success" element={
-          <div className="yesmagic-main checkout-layout">
-            <div className="success-message">Thank you! Your order has been placed.</div>
-            <Link to="/" className="ym-btn ym-btn-primary">Back to shop</Link>
-          </div>
-        } />
+        <Route path="checkout/success" element={<CheckoutSuccessPage />} />
         <Route path="admin" element={<AdminPage />} />
         <Route path="whatnot" element={<WhatNotPage />} />
         <Route path="schedule" element={<SchedulePage />} />
