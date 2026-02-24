@@ -71,14 +71,12 @@ function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload
       }
       // Payment succeeded; submit order to our server for email notification
       let emailFailed = false
-      if (ORDER_API_URL) {
-        const res = await fetch('/api/order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(orderPayload),
-        })
-        if (!res.ok) emailFailed = true
-      }
+      const res = await fetch('/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      })
+      if (!res.ok) emailFailed = true
       onSuccess({ emailFailed })
     } catch (err) {
       const isNetworkError = err.message === 'Failed to fetch' || err.name === 'TypeError'
