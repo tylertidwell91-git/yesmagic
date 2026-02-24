@@ -172,8 +172,9 @@ export default function CheckoutPage() {
   const taxCents = useMemo(() => {
     const rate = getArkansasTaxRateForShippingAddress(shippingAddress)
     if (rate == null || rate <= 0) return 0
-    return Math.round(subtotalCents * rate)
-  }, [shippingAddress, subtotalCents])
+    const taxableCents = subtotalCents + shippingCents
+    return Math.round(taxableCents * rate)
+  }, [shippingAddress, subtotalCents, shippingCents])
   const totalCents = subtotalCents + shippingCents + taxCents
 
   const orderPayload = useMemo(
