@@ -101,15 +101,35 @@
     margin: 0.25rem 0;
   }
 
+  /* Mobile header layout:
+   * Row 1: logo (left) + Cart (right)
+   * Row 2: Shop / Schedule / WhatNot / Contact
+   */
+  .yesmagic-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
   .yesmagic-nav {
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    row-gap: 0.25rem;
+    width: 100%;
+  }
+
+  .yesmagic-nav a {
+    justify-content: center;
   }
 
   .yesmagic-nav .cart-link {
-    order: 99;
-    width: 100%;
+    grid-row: 1;
+    grid-column: 4;
     justify-content: flex-end;
+  }
+
+  .yesmagic-nav a:not(.cart-link) {
+    grid-row: 2;
   }
 }
 
