@@ -142,6 +142,12 @@ export default function AdminPage() {
   const [shows, setShows] = useState([])
   const [showsSaved, setShowsSaved] = useState(false)
   const [showsSaveError, setShowsSaveError] = useState('')
+  const [confirmEmail, setConfirmEmail] = useState('')
+  const [confirmDescription, setConfirmDescription] = useState('')
+  const [confirmEta, setConfirmEta] = useState('')
+  const [confirmSending, setConfirmSending] = useState(false)
+  const [confirmSuccess, setConfirmSuccess] = useState(false)
+  const [confirmError, setConfirmError] = useState('')
   const [newProduct, setNewProduct] = useState({
     price: '',
     quantity: '',
@@ -234,6 +240,41 @@ export default function AdminPage() {
       setTimeout(() => setShowsSaved(false), 3000)
     } catch (err) {
       setShowsSaveError(err.message || 'Failed to save schedule')
+    }
+  }
+
+  const sendOrderConfirmation = async () => {
+    setConfirmError('')
+    setConfirmSuccess(false)
+    const email = confirmEmail.trim()
+    if (!email) {
+      setConfirmError('Customer email is required.')
+      return
+    }
+    setConfirmSending(true)
+    try {
+      const res = await fetch('/api/order-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerEmail: email,
+          orderDescription: confirmDescription,
+          estimatedShipDate: confirmEta,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || 'Could not send confirmation email.')
+      }
+      setConfirmSuccess(true)
+      setConfirmEmail('')
+      setConfirmDescription('')
+      setConfirmEta('')
+      setTimeout(() => setConfirmSuccess(false), 4000)
+    } catch (err) {
+      setConfirmError(err.message || 'Could not send confirmation email.')
+    } finally {
+      setConfirmSending(false)
     }
   }
 
@@ -736,6 +777,62 @@ export default function AdminPage() {
         <button type="button" className="ym-btn ym-btn-primary" onClick={saveShows}>
           Save schedule
         </button>
+      </section>
+
+      <section className="admin-inventory-section" style={{ marginTop: '2rem' }}>
+        <h3 className="admin-section-heading">Manual order confirmation email</h3>
+        <p style={{ color: 'var(--ym-muted)', marginBottom: '0.75rem', fontSize: '0.85rem' }}>
+          Generate and send a clean order confirmation email from <code>orders@yesmagicshop.com</code>.
+        </p>
+        {confirmError && (
+          <div className="error-message" style={{ marginBottom: '0.75rem' }}>{confirmError}</div>
+        )}
+        {confirmSuccess && (
+          <div className="success-message" style={{ marginBottom: '0.75rem' }}>
+            Confirmation email sent.
+          </div>
+        )}
+        <div className="admin-order-confirmation-form">
+          <div className="form-group">
+            <label htmlFor="confirm-email">Customer email *</label>
+            <input
+              id="confirm-email"
+              type="email"
+              value={confirmEmail}
+              onChange={(e) => setConfirmEmail(e.target.value)}
+              placeholder="customer@example.com"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="confirm-description">Order description</label>
+            <textarea
+              id="confirm-description"
+              value={confirmDescription}
+              onChange={(e) => setConfirmDescription(e.target.value)}
+              placeholder="Short summary of what they ordered"
+              rows={3}
+              style={{ resize: 'vertical' }}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="confirm-eta">Estimated shipment date</label>
+            <input
+              id="confirm-eta"
+              type="text"
+              value={confirmEta}
+              onChange={(e) => setConfirmEta(e.target.value)}
+              placeholder="e.g. March 15, 2026"
+            />
+          </div>
+          <button
+            type="button"
+            className="ym-btn ym-btn-primary"
+            onClick={sendOrderConfirmation}
+            disabled={confirmSending}
+          >
+            {confirmSending ? 'Sending…' : 'Send confirmation email'}
+          </button>
+        </div>
       </section>
     </div>
     </AdminGate>

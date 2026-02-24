@@ -40,6 +40,11 @@
   to = "/.netlify/functions/shipping-rules"
   status = 200
   force = true
+[[redirects]]
+  from = "/api/order-confirmation"
+  to = "/.netlify/functions/order-confirmation"
+  status = 200
+  force = true
 
 # SPA fallback: serve index.html for all other routes (/admin, /checkout, etc.)
 [[redirects]]
