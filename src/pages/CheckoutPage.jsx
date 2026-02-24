@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { useInventory } from '../context/InventoryContext'
@@ -49,6 +49,7 @@ function buildOrderPayload(
 function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload, onSuccess, onError }) {
   const stripe = useStripe()
   const elements = useElements()
+  const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async (e) => {
@@ -57,12 +58,12 @@ function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload
     setSubmitting(true)
     onError(null)
     try {
-      const { error } = await stripe.confirmPayment({
+      const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/checkout/success`,
           receipt_email: customerEmail.trim() || undefined,
         },
+        redirect: 'if_required',
       })
       if (error) {
         onError(error.message || 'Payment failed')
@@ -78,6 +79,7 @@ function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload
       })
       if (!res.ok) emailFailed = true
       onSuccess({ emailFailed })
+      navigate('/checkout/success', { replace: true })
     } catch (err) {
       const isNetworkError = err.message === 'Failed to fetch' || err.name === 'TypeError'
       if (isNetworkError) {
