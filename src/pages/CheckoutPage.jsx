@@ -58,7 +58,7 @@ function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload
     setSubmitting(true)
     onError(null)
     try {
-      const { error, paymentIntent } = await stripe.confirmPayment({
+      const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           receipt_email: customerEmail.trim() || undefined,
@@ -218,6 +218,11 @@ export default function CheckoutPage() {
       setAddressError('Please save your shipping address before continuing to payment.')
       return
     }
+     const email = customerEmail.trim()
+     if (!email) {
+       setError('Please enter an email address for your receipt.')
+       return
+     }
     if (!STRIPE_PK) {
       setError('Payment is not configured. Add VITE_STRIPE_PUBLISHABLE_KEY to the .env file.')
       return
@@ -441,47 +446,17 @@ export default function CheckoutPage() {
               Save shipping address
             </button>
           </div>
-          {canShowTotals && (
-            <div className="cart-summary" style={{ marginTop: '1.5rem' }}>
-              <div className="cart-line">
-                <span>Shipping</span>
-                <span>{shippingCents > 0 ? `$${(shippingCents / 100).toFixed(2)}` : 'Free'}</span>
-              </div>
-              <div className="cart-line">
-                <span>Subtotal + shipping</span>
-                <span>${((subtotalCents + shippingCents) / 100).toFixed(2)}</span>
-              </div>
-              <div className="cart-line">
-                <span>Tax</span>
-                <span>${(taxCents / 100).toFixed(2)}</span>
-              </div>
-              <p
-                className="checkout-ar-tax-note"
-                style={{
-                  fontSize: '0.8125rem',
-                  color: 'var(--ym-muted)',
-                  marginTop: '-0.25rem',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                Sales tax is applied for shipments within the state of Arkansas only.
-              </p>
-              <div className="cart-line cart-total">
-                <span>Total after tax</span>
-                <span>${(totalCents / 100).toFixed(2)}</span>
-              </div>
-            </div>
-          )}
           <div className="payment-section">
             <h3>Payment</h3>
             <div className="form-group">
-              <label htmlFor="customer-email">Your email (optional, for receipt)</label>
+              <label htmlFor="customer-email">Your email (required, for receipt)</label>
               <input
                 id="customer-email"
                 type="email"
                 value={customerEmail}
                 onChange={(e) => setCustomerEmail(e.target.value)}
                 placeholder="you@example.com"
+                required
               />
             </div>
             {addressError && <p className="error-message">{addressError}</p>}
