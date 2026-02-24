@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
 import { CartProvider, useCart } from './context/CartContext'
 import { InventoryProvider } from './context/InventoryContext'
@@ -14,7 +15,7 @@ function CheckoutSuccessPage() {
   const { clearCart } = useCart()
 
   // Ensure cart is cleared once the user lands on the success page after payment.
-  React.useEffect(() => {
+  useEffect(() => {
     clearCart()
   }, [clearCart])
 
