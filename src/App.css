@@ -24,12 +24,15 @@
   background: var(--ym-surface);
   border-bottom: 1px solid var(--ym-border);
   padding: 1rem 1.5rem;
+  box-shadow: var(--ym-shadow);
+}
+
+.yesmagic-header-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 1rem;
-  box-shadow: var(--ym-shadow);
+  margin-bottom: 0.25rem;
 }
 
 .yesmagic-logo {
@@ -42,6 +45,10 @@
   letter-spacing: 0.08em;
 }
 
+.yesmagic-header-top .yesmagic-logo {
+  flex: 1;
+}
+
 .yesmagic-logo-image {
   height: 40px;
   width: auto;
@@ -52,6 +59,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .yesmagic-nav a {
@@ -75,8 +83,8 @@
 }
 
 .yesmagic-nav .cart-count {
-  background: var(--ym-accent);
-  color: white;
+  background: transparent;
+  color: var(--ym-accent);
   font-size: 0.75rem;
   font-weight: 600;
   min-width: 1.25rem;
@@ -85,6 +93,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--ym-accent);
 }
 
 /* Shop banner tax lines */
@@ -101,35 +110,12 @@
     margin: 0.25rem 0;
   }
 
-  /* Mobile header layout:
-   * Row 1: logo (left) + Cart (right)
-   * Row 2: Shop / Schedule / WhatNot / Contact
-   */
-  .yesmagic-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
+  .yesmagic-header-top {
+    flex-wrap: nowrap;
   }
 
   .yesmagic-nav {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    row-gap: 0.25rem;
-    width: 100%;
-  }
-
-  .yesmagic-nav a {
-    justify-content: center;
-  }
-
-  .yesmagic-nav .cart-link {
-    grid-row: 1;
-    grid-column: 4;
-    justify-content: flex-end;
-  }
-
-  .yesmagic-nav a:not(.cart-link) {
-    grid-row: 2;
+    justify-content: space-between;
   }
 }
 
