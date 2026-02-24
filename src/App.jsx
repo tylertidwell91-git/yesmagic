@@ -33,22 +33,25 @@ function Layout() {
   return (
     <div className="yesmagic">
       <header className="yesmagic-header">
-        <Link to="/" className="yesmagic-logo">
-          <img
-            src={yesmagicLogo}
-            alt="YESMagic logo"
-            className="yesmagic-logo-image"
-          />
-          <span>YESMagic</span>
-        </Link>
+        <div className="yesmagic-header-top">
+          <Link to="/" className="yesmagic-logo">
+            <img
+              src={yesmagicLogo}
+              alt="YESMagic logo"
+              className="yesmagic-logo-image"
+            />
+            <span>YESMagic</span>
+          </Link>
+          <Link to="/checkout" className="cart-link" aria-label="View cart and checkout">
+            <span aria-hidden="true">🛒</span>
+            {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+          </Link>
+        </div>
         <nav className="yesmagic-nav">
           <Link to="/">Shop</Link>
           <Link to="/schedule">Schedule</Link>
           <Link to="/whatnot">WhatNot</Link>
           <Link to="/contact">Contact</Link>
-          <Link to="/checkout" className="cart-link">
-            Cart {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
-          </Link>
         </nav>
       </header>
       <Routes>
