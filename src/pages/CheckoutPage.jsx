@@ -320,6 +320,26 @@ export default function CheckoutPage() {
           <span>Subtotal</span>
           <span>${(subtotalCents / 100).toFixed(2)}</span>
         </div>
+        {canShowTotals && (
+          <>
+            <div className="cart-line">
+              <span>Shipping</span>
+              <span>{shippingCents > 0 ? `$${(shippingCents / 100).toFixed(2)}` : 'Free'}</span>
+            </div>
+            <div className="cart-line">
+              <span>Subtotal + shipping</span>
+              <span>${((subtotalCents + shippingCents) / 100).toFixed(2)}</span>
+            </div>
+            <div className="cart-line">
+              <span>Tax</span>
+              <span>${(taxCents / 100).toFixed(2)}</span>
+            </div>
+            <div className="cart-line cart-total">
+              <span>Total after tax</span>
+              <span>${(totalCents / 100).toFixed(2)}</span>
+            </div>
+          </>
+        )}
       </div>
 
       {!clientSecret ? (
