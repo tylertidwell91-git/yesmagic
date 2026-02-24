@@ -306,6 +306,10 @@ export default function CheckoutPage() {
           <span>Shipping</span>
           <span>{shippingCents > 0 ? `$${(shippingCents / 100).toFixed(2)}` : 'Free'}</span>
         </div>
+        <div className="cart-line">
+          <span>Subtotal + shipping</span>
+          <span>${((subtotalCents + shippingCents) / 100).toFixed(2)}</span>
+        </div>
         {taxCents > 0 && (
           <>
             <div className="cart-line">
@@ -318,7 +322,7 @@ export default function CheckoutPage() {
           </>
         )}
         <div className="cart-line cart-total">
-          <span>Total</span>
+          <span>Total after tax</span>
           <span>${(totalCents / 100).toFixed(2)}</span>
         </div>
       </div>

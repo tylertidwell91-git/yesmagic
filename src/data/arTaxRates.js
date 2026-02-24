@@ -14,7 +14,7 @@
 import arTaxTable from './arTaxTable.json'
 import zipToCounty from './arZipToCounty.json'
 
-const { stateRatePercent, cities, counties } = arTaxTable
+const { stateRatePercent, cities, citiesVaries = {}, counties } = arTaxTable
 const STATE_RATE_DECIMAL = stateRatePercent / 100
 
 function normalizeCity(s) {
@@ -41,16 +41,36 @@ export function getArkansasTaxRateForShippingAddress(address) {
   const state = (address.state || '').trim().toUpperCase()
   if (state !== 'AR' && state !== 'ARKANSAS') return null
 
-  // Step 1: Try city match (City List → Total % Rate column)
+  // Step 1a: Try city match where Total % Rate is numeric (simple City List rows).
   const city = address.city
   if (city) {
     const cityKey = normalizeCity(city)
     let localRate = cities[cityKey]
     if (localRate == null) localRate = cities[cityKey + ' (CITY)']
     if (localRate != null) return STATE_RATE_DECIMAL + localRate
+
+    // Step 1b: Handle \"Varies\" rows: use city % (col D) + county % (from County List for this address).
+    let varies = citiesVaries[cityKey]
+    if (!varies) varies = citiesVaries[cityKey + ' (CITY)']
+    if (varies && typeof varies.cityRate === 'number') {
+      const zip5ForCity = getZip5(address.zip)
+      let countyKey = ''
+      if (zip5ForCity && zipToCounty[zip5ForCity]) {
+        countyKey = normalizeCounty(zipToCounty[zip5ForCity])
+      } else if (address.county) {
+        countyKey = normalizeCounty(address.county)
+      }
+      if (countyKey) {
+        const countyRate = counties[countyKey]
+        if (typeof countyRate === 'number') {
+          const localFromCityAndCounty = varies.cityRate + countyRate
+          return STATE_RATE_DECIMAL + localFromCityAndCounty
+        }
+      }
+    }
   }
 
-  // Step 2: No city match — determine county from ZIP and use County List rate
+  // Step 2: No city match of any kind — determine county from ZIP and use County List rate
   const zip5 = getZip5(address.zip)
   if (zip5) {
     const countyName = zipToCounty[zip5]
@@ -81,6 +101,25 @@ export function getArkansasTaxRateForAddress(city, countyOrZip) {
     let localRate = cities[cityKey]
     if (localRate == null) localRate = cities[cityKey + ' (CITY)']
     if (localRate != null) return STATE_RATE_DECIMAL + localRate
+
+    let varies = citiesVaries[cityKey]
+    if (!varies) varies = citiesVaries[cityKey + ' (CITY)']
+    if (varies && typeof varies.cityRate === 'number') {
+      let countyKey = ''
+      const zip5ForCity = getZip5(countyOrZip)
+      if (zip5ForCity && zipToCounty[zip5ForCity]) {
+        countyKey = normalizeCounty(zipToCounty[zip5ForCity])
+      } else if (countyOrZip && typeof countyOrZip === 'string') {
+        countyKey = normalizeCounty(countyOrZip)
+      }
+      if (countyKey) {
+        const countyRate = counties[countyKey]
+        if (typeof countyRate === 'number') {
+          const localFromCityAndCounty = varies.cityRate + countyRate
+          return STATE_RATE_DECIMAL + localFromCityAndCounty
+        }
+      }
+    }
   }
   const zip5 = getZip5(countyOrZip)
   if (zip5 && zipToCounty[zip5]) {

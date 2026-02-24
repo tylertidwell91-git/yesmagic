@@ -1,17 +1,14 @@
 {
   "stateRatePercent": 6.5,
   "cities": {
-    "ALEXANDER": 0.04,
     "ALMA": 0.0325,
     "ALMYRA": 0.02,
-    "ALPENA": 0.0225,
     "ALTHEIMER": 0.0225,
     "ALTUS": 0.03,
     "AMITY": 0.03,
     "ANTHONYVILLE": 0.0375,
     "ARKADELPHIA": 0.035,
     "ARKANSAS CITY": 0.035,
-    "ASH FLAT": 0.0438,
     "ASHDOWN": 0.0488,
     "ATKINS": 0.03,
     "AUGUSTA": 0.03,
@@ -31,7 +28,6 @@
     "BENTON (CITY)": 0.025,
     "BENTONVILLE": 0.03,
     "BERRYVILLE": 0.025,
-    "BIG FLAT": 0.025,
     "BLACK ROCK": 0.035,
     "BLEVINS": 0.035,
     "BLUE MOUNTAIN": 0.03,
@@ -55,12 +51,10 @@
     "CARLISLE": 0.0363,
     "CARTHAGE": 0.035,
     "CASH": 0.02,
-    "CAVE CITY": 0.025,
     "CAVE SPRINGS": 0.0325,
     "CEDARVILLE": 0.0225,
     "CENTERTON": 0.03,
     "CHARLESTON": 0.035,
-    "CHEROKEE VILLAGE": 0.04,
     "CHERRY VALLEY": 0.05,
     "CHIDESTER": 0.045,
     "CLARENDON": 0.04,
@@ -77,7 +71,6 @@
     "CRAWFORDSVILLE": 0.0375,
     "CROSSETT": 0.0325,
     "CUSHMAN": 0.025,
-    "DAMASCUS": 0.025,
     "DANVILLE": 0.0263,
     "DARDANELLE": 0.0313,
     "DE QUEEN": 0.0413,
@@ -97,14 +90,12 @@
     "EAST CAMDEN": 0.035,
     "EL DORADO": 0.0325,
     "ELKINS": 0.04,
-    "ELM SPRINGS": 0.0225,
     "EMERSON": 0.025,
     "ENGLAND": 0.045,
     "ETOWAH": 0.035,
     "EUDORA": 0.04,
     "EUREKA SPRINGS": 0.0288,
     "EVENING SHADE": 0.0225,
-    "FAIRFIELD BAY": 0.0313,
     "FARMINGTON": 0.0325,
     "FAYETTEVILLE": 0.0325,
     "FLIPPIN": 0.0325,
@@ -123,7 +114,6 @@
     "GILLETT": 0.04,
     "GILLHAM": 0.0613,
     "GILMORE": 0.0275,
-    "GLENWOOD": 0.045,
     "GOSHEN": 0.0325,
     "GOSNELL": 0.04,
     "GOULD": 0.05,
@@ -142,7 +132,6 @@
     "HACKETT": 0.02,
     "HAMBURG": 0.045,
     "HAMPTON": 0.0313,
-    "HARDY": 0.04,
     "HARRISBURG": 0.0375,
     "HARRISON": 0.03,
     "HARTFORD": 0.03,
@@ -161,18 +150,15 @@
     "HOLLY GROVE": 0.03,
     "HOPE": 0.04,
     "HORATIO": 0.0413,
-    "HORSESHOE BEND": 0.05,
     "HOT SPRINGS (CITY)": 0.03,
     "HOXIE": 0.035,
     "HUGHES": 0.0388,
     "HUMNOKE": 0.03,
-    "HUMPHREY": 0.0225,
     "HUNTINGTON": 0.025,
     "HUNTSVILLE": 0.045,
     "IMBODEN": 0.035,
     "JACKSONVILLE": 0.03,
     "JASPER": 0.03,
-    "JENNETTE": 0.0388,
     "JOHNSON (CITY)": 0.0425,
     "JOINER": 0.0375,
     "JONESBORO": 0.02,
@@ -206,7 +192,6 @@
     "MALVERN": 0.035,
     "MAMMOTH SPRING": 0.04,
     "MANILA": 0.0375,
-    "MANSFIELD": 0.045,
     "MARIANNA": 0.03,
     "MARION (CITY)": 0.0375,
     "MARKED TREE": 0.0375,
@@ -277,7 +262,6 @@
     "PRAIRIE GROVE": 0.04,
     "PRESCOTT": 0.04,
     "PYATT": 0.0325,
-    "QUITMAN": 0.0313,
     "RAVENDEN": 0.035,
     "RECTOR": 0.035,
     "REDFIELD": 0.0325,
@@ -300,7 +284,6 @@
     "SHIRLEY": 0.025,
     "SILOAM SPRINGS": 0.03,
     "SPARKMAN": 0.03,
-    "SPRINGDALE": 0.0325,
     "SPRINGTOWN": 0.02,
     "ST. CHARLES": 0.03,
     "ST. PAUL": 0.055,
@@ -317,7 +300,6 @@
     "TAYLOR": 0.035,
     "TEXARKANA": 0.0375,
     "THORNTON": 0.0363,
-    "TILLAR": 0.0425,
     "TONTITOWN": 0.04,
     "TRUMANN": 0.0375,
     "TUCKERMAN": 0.035,
@@ -350,6 +332,136 @@
     "WINSLOW": 0.0325,
     "WYNNE": 0.04,
     "YELLVILLE": 0.0375
+  },
+  "citiesVaries": {
+    "ALEXANDER": {
+      "cityRate": 0.03,
+      "counties": [
+        "PULASKI",
+        "SALINE"
+      ]
+    },
+    "ALPENA": {
+      "cityRate": 0.01,
+      "counties": [
+        "BOONE",
+        "CARROLL"
+      ]
+    },
+    "ASH FLAT": {
+      "cityRate": 0.0138,
+      "counties": [
+        "SHARP",
+        "FULTON"
+      ]
+    },
+    "BIG FLAT": {
+      "cityRate": 0.01,
+      "counties": [
+        "BAXTER",
+        "SEARCY"
+      ]
+    },
+    "CAVE CITY": {
+      "cityRate": 0.01,
+      "counties": [
+        "SHARP",
+        "INDEPENDENCE"
+      ]
+    },
+    "CHEROKEE VILLAGE": {
+      "cityRate": 0.01,
+      "counties": [
+        "SHARP",
+        "FULTON"
+      ]
+    },
+    "DAMASCUS": {
+      "cityRate": 0.01,
+      "counties": [
+        "FAULKNER",
+        "VAN BUREN"
+      ]
+    },
+    "ELM SPRINGS": {
+      "cityRate": 0.01,
+      "counties": [
+        "WASHINGTON",
+        "BENTON"
+      ]
+    },
+    "FAIRFIELD BAY": {
+      "cityRate": 0.015,
+      "counties": [
+        "VAN BUREN",
+        "CLEBURNE"
+      ]
+    },
+    "GLENWOOD": {
+      "cityRate": 0.015,
+      "counties": [
+        "PIKE",
+        "MONTGOMERY"
+      ]
+    },
+    "HARDY": {
+      "cityRate": 0.01,
+      "counties": [
+        "SHARP",
+        "FULTON"
+      ]
+    },
+    "HORSESHOE BEND": {
+      "cityRate": 0.02,
+      "counties": [
+        "IZARD",
+        "FULTON",
+        "SHARP"
+      ]
+    },
+    "HUMPHREY": {
+      "cityRate": 0.01,
+      "counties": [
+        "ARKANSAS",
+        "JEFFERSON"
+      ]
+    },
+    "JENNETTE": {
+      "cityRate": 0.01,
+      "counties": [
+        "CRITTENDEN",
+        "ST. FRANCIS"
+      ]
+    },
+    "MANSFIELD": {
+      "cityRate": 0.025,
+      "counties": [
+        "SEBASTIAN",
+        "SCOTT"
+      ]
+    },
+    "QUITMAN": {
+      "cityRate": 0.015,
+      "counties": [
+        "CLEBURNE",
+        "FAULKNER",
+        "VAN BUREN"
+      ]
+    },
+    "SPRINGDALE": {
+      "cityRate": 0.02,
+      "counties": [
+        "WASHINGTON",
+        "BENTON"
+      ]
+    },
+    "TILLAR": {
+      "cityRate": 0.02,
+      "counties": [
+        "DREW",
+        "DESHA"
+      ]
+    }
   },
   "counties": {
     "ARKANSAS": 0.01,

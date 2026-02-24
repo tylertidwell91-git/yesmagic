@@ -47,9 +47,13 @@ for (let i = 360; i <= 434; i++) {
   if (!isNaN(rate) && rate >= 0) counties[name] = rate;
 }
 
-// City list (rows 9-358, "- CITY LIST -"): normalized city name -> local rate from "Total % Rate" column.
-// At lookup: total rate = 6.5% state + this local rate. For "Varies" rows we use city rate + max of the two counties.
+// City list (rows 9-358, "- CITY LIST -").
+// - For rows where "Total % Rate" is numeric: cities[city] = that local rate (city + county).
+// - For rows where "Total % Rate" is \"Varies\": we cannot know the local total until we know
+//   which county the address is in, so we store just the city % (column D) and the list of
+//   possible counties. At lookup time we will add the city % to the address's county rate.
 const cities = {};
+const citiesVaries = {};
 for (let i = 9; i < 359; i++) {
   const row = data[i];
   if (!row || row[0] == null) continue;
@@ -57,25 +61,26 @@ for (let i = 9; i < 359; i++) {
   if (!cityName) continue;
   const cityRate = Number(row[3]);
   const totalCell = row[6];
-  let localRate;
   if (typeof totalCell === 'number' && !isNaN(totalCell)) {
-    localRate = totalCell; // Total % Rate column (local only)
+    const localRate = Math.round(totalCell * 10000) / 10000; // Total % Rate column (local only)
+    cities[cityName] = localRate;
   } else if (totalCell === 'Varies' && !isNaN(cityRate)) {
     const countyLoc = String(row[4] ?? '').trim();
-    const parts = countyLoc.split('/').map((s) => norm(s.replace(/\s*$/, '')));
-    let maxCounty = 0;
-    for (const p of parts) {
-      const r = counties[p];
-      if (r != null && r > maxCounty) maxCounty = r;
-    }
-    localRate = cityRate + maxCounty;
-  } else continue;
-  cities[cityName] = Math.round(localRate * 10000) / 10000;
+    const parts = countyLoc
+      .split('/')
+      .map((s) => norm(s.replace(/\s*$/, '')))
+      .filter(Boolean);
+    citiesVaries[cityName] = {
+      cityRate: Math.round(cityRate * 10000) / 10000,
+      counties: parts,
+    };
+  }
 }
 
 const output = {
   stateRatePercent: AR_STATE_RATE_PERCENT,
   cities,
+  citiesVaries,
   counties,
 };
 
