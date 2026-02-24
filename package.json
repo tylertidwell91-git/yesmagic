@@ -10,7 +10,8 @@
     "deploy": "node scripts/prepare-deploy.js",
     "deploy:site": "node scripts/deploy-site.js",
     "pull-inventory": "node scripts/pull-inventory.js",
-    "build-ar-tax": "node scripts/build-ar-tax-table.cjs"
+    "build-ar-tax": "node scripts/build-ar-tax-table.cjs",
+    "build-ar-zip-county": "node scripts/build-ar-zip-county.cjs"
   },
   "dependencies": {
     "@netlify/blobs": "^6.0.0",

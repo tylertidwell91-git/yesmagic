@@ -33,7 +33,10 @@ function norm(s) {
 const wb = XLSX.readFile(xlsPath);
 const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1 });
 
-// County list (rows 360-434): name (without " County") -> rate
+// Arkansas state sales tax (always added to local rate at lookup).
+const AR_STATE_RATE_PERCENT = 6.5;
+
+// County list (rows 360-434): name (without " County") -> local rate (decimal)
 const counties = {};
 for (let i = 360; i <= 434; i++) {
   const row = data[i];
@@ -44,7 +47,8 @@ for (let i = 360; i <= 434; i++) {
   if (!isNaN(rate) && rate >= 0) counties[name] = rate;
 }
 
-// City list (rows 9-358): normalized city name -> combined local rate (city + county)
+// City list (rows 9-358, "- CITY LIST -"): normalized city name -> local rate from "Total % Rate" column.
+// At lookup: total rate = 6.5% state + this local rate. For "Varies" rows we use city rate + max of the two counties.
 const cities = {};
 for (let i = 9; i < 359; i++) {
   const row = data[i];
@@ -55,7 +59,7 @@ for (let i = 9; i < 359; i++) {
   const totalCell = row[6];
   let localRate;
   if (typeof totalCell === 'number' && !isNaN(totalCell)) {
-    localRate = totalCell;
+    localRate = totalCell; // Total % Rate column (local only)
   } else if (totalCell === 'Varies' && !isNaN(cityRate)) {
     const countyLoc = String(row[4] ?? '').trim();
     const parts = countyLoc.split('/').map((s) => norm(s.replace(/\s*$/, '')));
@@ -68,9 +72,6 @@ for (let i = 9; i < 359; i++) {
   } else continue;
   cities[cityName] = Math.round(localRate * 10000) / 10000;
 }
-
-// Arkansas state sales tax (added to local rate at lookup time)
-const AR_STATE_RATE_PERCENT = 6.5;
 
 const output = {
   stateRatePercent: AR_STATE_RATE_PERCENT,

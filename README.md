@@ -50,15 +50,19 @@ Without Stripe keys, checkout will show an error asking you to configure payment
 
 ## Arkansas sales tax
 
-When the shipping address is in **Arkansas**, checkout looks up the combined state + local sales tax rate from the [Arkansas DFA city/county tax table](https://www.dfa.arkansas.gov/office/taxes/excise-tax-administration/sales-use-tax/) and adds it to the order total.
+When the shipping address is in **Arkansas**, checkout computes sales tax as follows:
 
-- **Data:** Tax rates are stored in **`src/data/arTaxTable.json`**, which is built from the official Excel file (e.g. `cityCountyTaxTable_Jan_Mar_2026.xls`).
-- **When you get a new DFA file** (new quarter), run:
+1. **State rate:** 6.5% is always included.
+2. **City match:** The system checks whether the shipment **city** appears in the **"- CITY LIST -"** section of the DFA tax table. If there is a match, it uses the **Total % Rate** from that row as the local rate. **Total tax = 6.5% + Total % Rate.**
+3. **County fallback:** If there is no city match, the system determines the **county** from the shipment **ZIP** (using `arZipToCounty.json`), finds that county in the **"- COUNTY LIST -"** section, and uses its rate. **Total tax = 6.5% + county rate.**
+
+- **City/county rates:** **`src/data/arTaxTable.json`** — built from the official DFA Excel file (e.g. `cityCountyTaxTable_Jan_Mar_2026.xls`). Run when you get a new quarter file:
   ```bash
   npm run build-ar-tax
   ```
-  Or with an explicit path:
+  Or: `node scripts/build-ar-tax-table.cjs /path/to/cityCountyTaxTable_Jan_Mar_2026.xls`
+- **ZIP → county (for fallback):** **`src/data/arZipToCounty.json`** — maps 5-digit Arkansas ZIPs to county names (matching the County List). To rebuild from a CSV with columns `zip,county`:
   ```bash
-  node scripts/build-ar-tax-table.cjs /path/to/cityCountyTaxTable_Jan_Mar_2026.xls
+  node scripts/build-ar-zip-county.cjs /path/to/ar-zip-county.csv
   ```
-  That updates **`src/data/arTaxTable.json`**. Commit the updated file so the site uses the new rates.
+  Commit updated JSON files so the site uses the new data.
