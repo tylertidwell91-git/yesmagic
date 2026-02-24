@@ -106,8 +106,9 @@ export default function ShopPage() {
           textAlign: 'center',
         }}
       >
-        All prices include sales tax — <span style={{ color: '#facc15' }}>NO extra tax added at checkout</span>.
-        &nbsp;Shipping is calculated at checkout.
+        <span className="shop-tax-line">All prices include sales tax</span>{' '}
+        <span className="shop-tax-line shop-tax-line-highlight">— NO extra tax added at checkout —</span>{' '}
+        <span className="shop-tax-line">Shipping is calculated at checkout.</span>
       </p>
 
       <div className="shop-filters">

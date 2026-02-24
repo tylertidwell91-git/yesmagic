@@ -87,6 +87,32 @@
   justify-content: center;
 }
 
+/* Shop banner tax lines */
+.shop-tax-banner .shop-tax-line-highlight {
+  color: #facc15;
+}
+
+@media (max-width: 640px) {
+  .shop-tax-banner .shop-tax-line {
+    display: block;
+  }
+
+  .shop-tax-banner .shop-tax-line-highlight {
+    margin: 0.25rem 0;
+  }
+
+  .yesmagic-nav {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .yesmagic-nav .cart-link {
+    order: 99;
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
 .yesmagic-main {
   max-width: 1100px;
   margin: 0 auto;
