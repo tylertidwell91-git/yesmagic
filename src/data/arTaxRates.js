@@ -88,7 +88,8 @@ export function getArkansasTaxRateForShippingAddress(address) {
     if (localRate != null) return STATE_RATE_DECIMAL + localRate
   }
 
-  return null
+  // Fallback: at minimum, apply the 6.5% state rate for all Arkansas shipments
+  return STATE_RATE_DECIMAL
 }
 
 /**
