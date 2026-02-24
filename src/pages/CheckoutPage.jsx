@@ -339,6 +339,19 @@ export default function CheckoutPage() {
               <span>Tax</span>
               <span>${(taxCents / 100).toFixed(2)}</span>
             </div>
+            {taxCents > 0 && (
+              <p
+                className="checkout-ar-tax-note"
+                style={{
+                  fontSize: '0.8125rem',
+                  color: 'var(--ym-muted)',
+                  marginTop: '-0.25rem',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                Sales tax is applied for shipments within the state of Arkansas only.
+              </p>
+            )}
             <div className="cart-line cart-total">
               <span>Total after tax</span>
               <span>${(totalCents / 100).toFixed(2)}</span>

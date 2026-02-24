@@ -47,8 +47,6 @@ function buildConfirmationEmail({ description, eta }) {
     lines.push(`Estimated shipment date: ${eta}`)
     lines.push('')
   }
-  lines.push('We\'re working on your order and will send tracking information as soon as it ships.')
-  lines.push('')
   lines.push('If you have any questions, just reply to this email.')
   lines.push('')
   lines.push('Best wishes,')
@@ -59,7 +57,7 @@ function buildConfirmationEmail({ description, eta }) {
 function buildConfirmationHtml({ description, eta }) {
   const logoUrl =
     process.env.ORDER_LOGO_URL ||
-    'https://yesmagicshop.com/yesmagic-logo.png'
+    'https://yesmagicshop.com/assets/yesmagic-email-logo.png'
 
   const descriptionBlock = description
     ? `<tr>
@@ -112,11 +110,6 @@ function buildConfirmationHtml({ description, eta }) {
             </tr>
             ${descriptionBlock}
             ${etaBlock}
-            <tr>
-              <td style="padding:0 24px 16px 24px; font-size:15px; line-height:1.5; color:#e8e6e3;">
-                We&apos;re working on your order and will send tracking information as soon as it ships.
-              </td>
-            </tr>
             <tr>
               <td style="padding:0 24px 20px 24px; font-size:15px; line-height:1.5; color:#e8e6e3;">
                 If you have any questions, just reply to this email.
@@ -177,7 +170,6 @@ export default async (req) => {
     await transporter.sendMail({
       from: process.env.SMTP_FROM || process.env.SMTP_USER || 'orders@yesmagicshop.com',
       to: customerEmail,
-      bcc: ORDER_EMAIL,
       subject: 'Your YESMagic order confirmation',
       text,
       html,
