@@ -32,6 +32,12 @@ function Layout() {
 
   return (
     <div className="yesmagic">
+      {/* Cart icon symbol (GoDaddy-style), referenced by cart link */}
+      <svg xmlns="http://www.w3.org/2000/svg" className="svg-sprite-hidden" aria-hidden="true">
+        <symbol id="svg-container-cart" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+        </symbol>
+      </svg>
       <header className="yesmagic-header">
         <div className="yesmagic-header-top">
           <Link to="/" className="yesmagic-logo">
@@ -43,14 +49,14 @@ function Layout() {
             <span>YESMagic</span>
           </Link>
           <Link to="/checkout" className="cart-link" aria-label="View cart and checkout">
-            <span className="cart-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-                <path d="M3 6h18" />
-                <path d="M16 10a4 4 0 0 1-8 0" />
-              </svg>
+            <span className="cart-icon-wrapper">
+              <span className="cart-icon uxicon-svg-container" aria-hidden="true">
+                <svg width="30" height="30" viewBox="0 0 24 24" role="presentation" fill="none">
+                  <use href="#svg-container-cart" fill="currentColor" />
+                </svg>
+              </span>
+              {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
             </span>
-            {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
           </Link>
         </div>
         <nav className="yesmagic-nav">

@@ -1,5 +1,14 @@
 /* YESMagic – MTG card set store theme */
 
+/* Hidden SVG sprite for symbol definitions (e.g. cart icon) */
+.svg-sprite-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
 .yesmagic {
   --ym-bg: #0f0e17;
   --ym-surface: #1a1722;
@@ -83,7 +92,11 @@
 .yesmagic-header-top .cart-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+}
+
+.cart-icon-wrapper {
+  position: relative;
+  display: inline-flex;
 }
 
 .cart-icon {
@@ -93,22 +106,30 @@
   color: var(--ym-text);
 }
 
-.cart-icon svg {
-  width: 1.5rem;
-  height: 1.5rem;
+/* GoDaddy-style: 30×30 cart icon */
+.cart-icon.uxicon-svg-container svg {
+  width: 30px;
+  height: 30px;
+  color: var(--ym-text);
 }
 
-.yesmagic-nav .cart-count {
-  background: var(--ym-accent);
-  color: #0f0e17;
-  font-size: 0.75rem;
+/* GoDaddy-style badge: overlaid on top-right of cart icon */
+.cart-count {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.35rem;
+  background: #c00;
+  color: #fff;
+  font-size: 0.7rem;
   font-weight: 600;
-  min-width: 1.25rem;
-  height: 1.25rem;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.25rem;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
 }
 
 /* Shop banner tax lines */
