@@ -74,6 +74,7 @@ export default async (req) => {
       date: String(s.date ?? '').trim(),
       time: String(s.time ?? '').trim(),
       title: String(s.title ?? '').trim(),
+      details: String(s.details ?? '').trim(),
     }))
     await store.set(KEY, JSON.stringify(normalized))
     return new Response(JSON.stringify({ ok: true }), {

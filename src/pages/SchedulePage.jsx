@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 
 const API_URL = '/api/shows'
@@ -38,6 +38,8 @@ function getCalendarWeeks(startDate, weeks = 5) {
 export default function SchedulePage() {
   const [shows, setShows] = useState([])
   const [loading, setLoading] = useState(true)
+  const [detailsShowId, setDetailsShowId] = useState(null)
+  const detailsPopoverRef = useRef(null)
 
   useEffect(() => {
     fetch(API_URL)
@@ -69,6 +71,17 @@ export default function SchedulePage() {
 
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+  useEffect(() => {
+    if (detailsShowId == null) return
+    const handleClickOutside = (e) => {
+      if (detailsPopoverRef.current && !detailsPopoverRef.current.contains(e.target)) {
+        setDetailsShowId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [detailsShowId])
 
   if (loading) {
     return (
@@ -112,12 +125,50 @@ export default function SchedulePage() {
                     >
                       <div className="schedule-day-num">{cellDate.getDate()}</div>
                       <div className="schedule-day-shows">
-                        {dayShows.map((s) => (
-                          <div key={s.id} className="schedule-show-item">
-                            <span className="schedule-show-time">{s.time || '—'}</span>
-                            <span className="schedule-show-title">{s.title || 'Show'}</span>
-                          </div>
-                        ))}
+                        {dayShows.map((s) => {
+                          const hasDetails = (s.details ?? '').trim().length > 0
+                          const isDetailsOpen = detailsShowId === s.id
+                          return (
+                            <div
+                              key={s.id}
+                              className={`schedule-show-item ${hasDetails ? 'schedule-show-item--has-details' : ''}`}
+                              title={hasDetails ? (s.details ?? '').trim() : undefined}
+                              onClick={() => hasDetails && setDetailsShowId(isDetailsOpen ? null : s.id)}
+                              role={hasDetails ? 'button' : undefined}
+                              tabIndex={hasDetails ? 0 : undefined}
+                              onKeyDown={(e) => {
+                                if (hasDetails && (e.key === 'Enter' || e.key === ' ')) {
+                                  e.preventDefault()
+                                  setDetailsShowId((id) => (id === s.id ? null : s.id))
+                                }
+                              }}
+                            >
+                              <span className="schedule-show-time">{s.time || '—'}</span>
+                              <span className="schedule-show-title">{s.title || 'Show'}</span>
+                              {hasDetails && isDetailsOpen && (
+                                <div
+                                  className="schedule-show-details-popover"
+                                  ref={detailsPopoverRef}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <div className="schedule-show-details-popover-title">
+                                    {s.title || 'Show'} — {s.time || '—'}
+                                  </div>
+                                  <div className="schedule-show-details-popover-body">
+                                    {(s.details ?? '').trim()}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="schedule-show-details-close ym-btn ym-btn-sm ym-btn-secondary"
+                                    onClick={() => setDetailsShowId(null)}
+                                  >
+                                    Close
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
                       </div>
                     </td>
                   )

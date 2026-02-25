@@ -48,6 +48,12 @@ function Layout() {
             />
             <span>YESMagic</span>
           </Link>
+          <nav className="yesmagic-nav yesmagic-nav-desktop">
+            <Link to="/">Shop</Link>
+            <Link to="/schedule">Schedule</Link>
+            <Link to="/whatnot">WhatNot</Link>
+            <Link to="/contact">Contact</Link>
+          </nav>
           <Link to="/checkout" className="cart-link" aria-label="View cart and checkout">
             <span className="cart-icon-wrapper">
               <span className="cart-icon uxicon-svg-container" aria-hidden="true">
@@ -59,7 +65,7 @@ function Layout() {
             </span>
           </Link>
         </div>
-        <nav className="yesmagic-nav">
+        <nav className="yesmagic-nav yesmagic-nav-mobile">
           <Link to="/">Shop</Link>
           <Link to="/schedule">Schedule</Link>
           <Link to="/whatnot">WhatNot</Link>

@@ -74,6 +74,14 @@
   flex-wrap: wrap;
 }
 
+.yesmagic-nav-desktop {
+  display: none;
+}
+
+.yesmagic-nav-mobile {
+  margin-top: 0.25rem;
+}
+
 .yesmagic-nav a {
   color: var(--ym-muted);
   text-decoration: none;
@@ -161,6 +169,22 @@
     padding: 0.4rem 0.4rem;
     font-size: 0.8rem;
     white-space: nowrap;
+  }
+}
+
+@media (min-width: 641px) {
+  .yesmagic-header-top {
+    margin-bottom: 0;
+  }
+
+  .yesmagic-nav-desktop {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .yesmagic-nav-mobile {
+    display: none;
   }
 }
 
@@ -835,6 +859,48 @@
   border-radius: 6px;
   font-size: 0.8125rem;
   border-left: 3px solid var(--ym-accent);
+  position: relative;
+}
+
+.schedule-show-item--has-details {
+  cursor: pointer;
+}
+
+.schedule-show-item--has-details:hover {
+  background: var(--ym-surface-elevated);
+}
+
+.schedule-show-details-popover {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 0.35rem;
+  min-width: 220px;
+  max-width: 320px;
+  background: var(--ym-surface-elevated);
+  border: 1px solid var(--ym-border);
+  border-radius: var(--ym-radius);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--ym-shadow);
+  z-index: 50;
+}
+
+.schedule-show-details-popover-title {
+  font-weight: 600;
+  color: var(--ym-accent);
+  font-size: 0.8125rem;
+  margin-bottom: 0.5rem;
+}
+
+.schedule-show-details-popover-body {
+  font-size: 0.8125rem;
+  color: var(--ym-text);
+  white-space: pre-wrap;
+  margin-bottom: 0.5rem;
+}
+
+.schedule-show-details-close {
+  margin-top: 0.25rem;
 }
 
 .schedule-show-time {
@@ -871,12 +937,42 @@
 }
 
 .admin-shows-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--ym-border);
+}
+
+.admin-show-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-show-fields {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--ym-border);
   flex-wrap: wrap;
+}
+
+.admin-show-details-wrap {
+  margin: 0;
+}
+
+.admin-show-details-wrap label {
+  font-size: 0.75rem;
+  color: var(--ym-muted);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.admin-shows-list .show-details {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--ym-border);
+  border-radius: 6px;
+  background: var(--ym-surface-elevated);
+  color: var(--ym-text);
+  font-size: 0.875rem;
+  font-family: inherit;
 }
 
 .admin-shows-list li input {

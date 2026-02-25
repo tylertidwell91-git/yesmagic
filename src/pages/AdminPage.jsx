@@ -218,7 +218,7 @@ export default function AdminPage() {
   }
 
   const addShow = () => {
-    setShows((prev) => [...prev, { id: generateId(), date: '', time: '', title: '' }])
+    setShows((prev) => [...prev, { id: generateId(), date: '', time: '', title: '', details: '' }])
   }
   const updateShow = (id, field, value) => {
     setShows((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: value } : s)))
@@ -740,34 +740,47 @@ export default function AdminPage() {
         )}
         <ul className="admin-shows-list">
           {shows.map((s) => (
-            <li key={s.id}>
-              <input
-                type="date"
-                className="show-date"
-                value={s.date ?? ''}
-                onChange={(e) => updateShow(s.id, 'date', e.target.value)}
-              />
-              <input
-                type="text"
-                className="show-time"
-                placeholder="Time"
-                value={s.time ?? ''}
-                onChange={(e) => updateShow(s.id, 'time', e.target.value)}
-              />
-              <input
-                type="text"
-                className="show-title"
-                placeholder="Title"
-                value={s.title ?? ''}
-                onChange={(e) => updateShow(s.id, 'title', e.target.value)}
-              />
-              <button
-                type="button"
-                className="ym-btn ym-btn-sm ym-btn-danger"
-                onClick={() => removeShow(s.id)}
-              >
-                Remove
-              </button>
+            <li key={s.id} className="admin-show-row">
+              <div className="admin-show-fields">
+                <input
+                  type="date"
+                  className="show-date"
+                  value={s.date ?? ''}
+                  onChange={(e) => updateShow(s.id, 'date', e.target.value)}
+                />
+                <input
+                  type="text"
+                  className="show-time"
+                  placeholder="Time"
+                  value={s.time ?? ''}
+                  onChange={(e) => updateShow(s.id, 'time', e.target.value)}
+                />
+                <input
+                  type="text"
+                  className="show-title"
+                  placeholder="Title"
+                  value={s.title ?? ''}
+                  onChange={(e) => updateShow(s.id, 'title', e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="ym-btn ym-btn-sm ym-btn-danger"
+                  onClick={() => removeShow(s.id)}
+                >
+                  Remove
+                </button>
+              </div>
+              <div className="form-group admin-show-details-wrap">
+                <label>Event details (shown when users hover or click the event on the schedule)</label>
+                <textarea
+                  className="show-details"
+                  placeholder="e.g. What we're opening, special guests, giveaways…"
+                  value={s.details ?? ''}
+                  onChange={(e) => updateShow(s.id, 'details', e.target.value)}
+                  rows={2}
+                  style={{ resize: 'vertical', width: '100%' }}
+                />
+              </div>
             </li>
           ))}
         </ul>
