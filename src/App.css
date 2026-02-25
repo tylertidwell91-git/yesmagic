@@ -21,6 +21,9 @@
 }
 
 .yesmagic-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   background: var(--ym-surface);
   border-bottom: 1px solid var(--ym-border);
   padding: 1rem 1.5rem;
@@ -76,10 +79,23 @@
   background: rgba(201, 162, 39, 0.12);
 }
 
-.yesmagic-nav .cart-link {
+.yesmagic-nav .cart-link,
+.yesmagic-header-top .cart-link {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+}
+
+.cart-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ym-text);
+}
+
+.cart-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .yesmagic-nav .cart-count {
