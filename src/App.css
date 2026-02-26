@@ -174,13 +174,31 @@
 
 @media (min-width: 641px) {
   .yesmagic-header-top {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1.5rem;
     margin-bottom: 0;
+  }
+
+  .yesmagic-header-top .yesmagic-logo {
+    justify-self: start;
+  }
+
+  .yesmagic-header-top .cart-link {
+    justify-self: end;
   }
 
   .yesmagic-nav-desktop {
     display: flex;
-    flex: 1;
     justify-content: center;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .yesmagic-nav-desktop a {
+    font-size: 1.125rem;
+    padding: 0.6rem 1rem;
   }
 
   .yesmagic-nav-mobile {
@@ -871,18 +889,13 @@
 }
 
 .schedule-show-details-popover {
-  position: absolute;
-  left: 0;
-  bottom: 100%;
-  margin-bottom: 0.35rem;
   min-width: 220px;
-  max-width: 320px;
   background: var(--ym-surface-elevated);
   border: 1px solid var(--ym-border);
   border-radius: var(--ym-radius);
   padding: 0.75rem 1rem;
   box-shadow: var(--ym-shadow);
-  z-index: 50;
+  z-index: 9999;
 }
 
 .schedule-show-details-popover-title {
@@ -897,6 +910,8 @@
   color: var(--ym-text);
   white-space: pre-wrap;
   margin-bottom: 0.5rem;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .schedule-show-details-close {

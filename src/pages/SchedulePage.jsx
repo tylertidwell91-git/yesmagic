@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 
 const API_URL = '/api/shows'
@@ -39,6 +40,7 @@ export default function SchedulePage() {
   const [shows, setShows] = useState([])
   const [loading, setLoading] = useState(true)
   const [detailsShowId, setDetailsShowId] = useState(null)
+  const [detailsAnchorRect, setDetailsAnchorRect] = useState(null)
   const detailsPopoverRef = useRef(null)
 
   useEffect(() => {
@@ -73,9 +75,20 @@ export default function SchedulePage() {
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
   useEffect(() => {
+    if (!detailsShowId) {
+      setDetailsAnchorRect(null)
+      return
+    }
+    const el = document.querySelector(`[data-show-id="${detailsShowId}"]`)
+    if (el) setDetailsAnchorRect(el.getBoundingClientRect())
+  }, [detailsShowId])
+
+  useEffect(() => {
     if (detailsShowId == null) return
     const handleClickOutside = (e) => {
       if (detailsPopoverRef.current && !detailsPopoverRef.current.contains(e.target)) {
+        const trigger = document.querySelector(`[data-show-id="${detailsShowId}"]`)
+        if (trigger && trigger.contains(e.target)) return
         setDetailsShowId(null)
       }
     }
@@ -131,6 +144,7 @@ export default function SchedulePage() {
                           return (
                             <div
                               key={s.id}
+                              data-show-id={s.id}
                               className={`schedule-show-item ${hasDetails ? 'schedule-show-item--has-details' : ''}`}
                               title={hasDetails ? (s.details ?? '').trim() : undefined}
                               onClick={() => hasDetails && setDetailsShowId(isDetailsOpen ? null : s.id)}
@@ -145,27 +159,6 @@ export default function SchedulePage() {
                             >
                               <span className="schedule-show-time">{s.time || '—'}</span>
                               <span className="schedule-show-title">{s.title || 'Show'}</span>
-                              {hasDetails && isDetailsOpen && (
-                                <div
-                                  className="schedule-show-details-popover"
-                                  ref={detailsPopoverRef}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <div className="schedule-show-details-popover-title">
-                                    {s.title || 'Show'} — {s.time || '—'}
-                                  </div>
-                                  <div className="schedule-show-details-popover-body">
-                                    {(s.details ?? '').trim()}
-                                  </div>
-                                  <button
-                                    type="button"
-                                    className="schedule-show-details-close ym-btn ym-btn-sm ym-btn-secondary"
-                                    onClick={() => setDetailsShowId(null)}
-                                  >
-                                    Close
-                                  </button>
-                                </div>
-                              )}
                             </div>
                           )
                         })}
@@ -182,6 +175,42 @@ export default function SchedulePage() {
       <Link to="/" className="ym-btn ym-btn-secondary" style={{ marginTop: '1.5rem' }}>
         Back to shop
       </Link>
+
+      {detailsShowId && detailsAnchorRect && (() => {
+        const openShow = shows.find((s) => s.id === detailsShowId)
+        if (!openShow || !(openShow.details ?? '').trim()) return null
+        const popoverWidth = 360
+        const left = Math.max(12, Math.min(detailsAnchorRect.left, typeof window !== 'undefined' ? window.innerWidth - popoverWidth - 12 : detailsAnchorRect.left))
+        const bottom = typeof window !== 'undefined' ? window.innerHeight - detailsAnchorRect.top + 8 : 0
+        return createPortal(
+          <div
+            className="schedule-show-details-popover schedule-show-details-popover--fixed"
+            ref={detailsPopoverRef}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'fixed',
+              left: `${left}px`,
+              bottom: `${bottom}px`,
+              width: `min(${popoverWidth}px, calc(100vw - 24px))`,
+            }}
+          >
+            <div className="schedule-show-details-popover-title">
+              {openShow.title || 'Show'} — {openShow.time || '—'}
+            </div>
+            <div className="schedule-show-details-popover-body">
+              {(openShow.details ?? '').trim()}
+            </div>
+            <button
+              type="button"
+              className="schedule-show-details-close ym-btn ym-btn-sm ym-btn-secondary"
+              onClick={() => setDetailsShowId(null)}
+            >
+              Close
+            </button>
+          </div>,
+          document.body
+        )
+      })()}
     </div>
   )
 }
