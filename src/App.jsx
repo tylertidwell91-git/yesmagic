@@ -8,6 +8,8 @@ import AdminPage from './pages/AdminPage'
 import WhatNotPage from './pages/WhatNotPage'
 import SchedulePage from './pages/SchedulePage'
 import ContactPage from './pages/ContactPage'
+import SubscribePage from './pages/SubscribePage'
+import EmailsPage from './pages/EmailsPage'
 import yesmagicLogo from './assets/yesmagic-logo.png'
 import './App.css'
 
@@ -71,6 +73,11 @@ function Layout() {
           <Link to="/whatnot">WhatNot</Link>
           <Link to="/contact">Contact</Link>
         </nav>
+        <div className="yesmagic-header-cta">
+          <Link to="/subscribe" className="yesmagic-header-cta-link">
+            Enter to win free prizes by subscribing here
+          </Link>
+        </div>
       </header>
       <Routes>
         <Route index element={<ShopPage />} />
@@ -80,6 +87,8 @@ function Layout() {
         <Route path="whatnot" element={<WhatNotPage />} />
         <Route path="schedule" element={<SchedulePage />} />
         <Route path="contact" element={<ContactPage />} />
+        <Route path="subscribe" element={<SubscribePage />} />
+        <Route path="emails" element={<EmailsPage />} />
       </Routes>
     </div>
   )

@@ -45,6 +45,16 @@
   to = "/.netlify/functions/order-confirmation"
   status = 200
   force = true
+[[redirects]]
+  from = "/api/email-subscribers"
+  to = "/.netlify/functions/email-subscribers"
+  status = 200
+  force = true
+[[redirects]]
+  from = "/api/email-broadcast"
+  to = "/.netlify/functions/email-broadcast"
+  status = 200
+  force = true
 
 # SPA fallback: serve index.html for all other routes (/admin, /checkout, etc.)
 [[redirects]]

@@ -32,7 +32,7 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2)
 }
 
-function AdminGate({ children }) {
+export function AdminGate({ children }) {
   const navigate = useNavigate()
   const [authenticated, setAuthenticated] = useState(() =>
     typeof sessionStorage !== 'undefined' && sessionStorage.getItem(ADMIN_SESSION_KEY) === '1'
