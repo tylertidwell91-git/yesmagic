@@ -27,6 +27,11 @@ const transporter =
 function normalizeHttpUrl(raw, fallback) {
   const trimmed = String(raw || '').trim()
   if (!trimmed) return fallback
+  // Fix common typo where ":" after http/https is missing (e.g. "https//whatnot.com")
+  if (/^https?\/\/+/i.test(trimmed)) {
+    const fixed = trimmed.replace(/^https?/i, (m) => `${m}:`)
+    if (/^https?:\/\//i.test(fixed)) return fixed
+  }
   if (/^https?:\/\//i.test(trimmed)) return trimmed
   return `https://${trimmed}`
 }
