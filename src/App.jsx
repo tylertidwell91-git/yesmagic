@@ -73,12 +73,12 @@ function Layout() {
           <Link to="/whatnot">WhatNot</Link>
           <Link to="/contact">Contact</Link>
         </nav>
-        <div className="yesmagic-header-cta">
-          <Link to="/subscribe" className="yesmagic-header-cta-link">
-            Enter to win free prizes by subscribing here
-          </Link>
-        </div>
       </header>
+      <div className="yesmagic-header-cta">
+        <Link to="/subscribe" className="yesmagic-header-cta-link">
+          Enter to win free prizes by subscribing here
+        </Link>
+      </div>
       <Routes>
         <Route index element={<ShopPage />} />
         <Route path="checkout" element={<CheckoutPage />} />

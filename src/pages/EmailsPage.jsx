@@ -5,6 +5,14 @@ import { AdminGate } from './AdminPage'
 const WHATNOT_URL = import.meta.env.VITE_WHATNOT_CHANNEL_URL || ''
 
 export default function EmailsPage() {
+  return (
+    <AdminGate>
+      <EmailsPageInner />
+    </AdminGate>
+  )
+}
+
+function EmailsPageInner() {
   const [subscribers, setSubscribers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -130,8 +138,7 @@ export default function EmailsPage() {
   }
 
   return (
-    <AdminGate>
-      <div className="yesmagic-main admin-layout">
+    <div className="yesmagic-main admin-layout">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
           <h2 className="admin-title" style={{ marginBottom: 0 }}>Email subscribers</h2>
           <Link to="/" className="ym-btn ym-btn-secondary">Back to shop</Link>
@@ -314,7 +321,7 @@ export default function EmailsPage() {
           </>
         )}
       </div>
-    </AdminGate>
+    </div>
   )
 }
 

@@ -51,7 +51,7 @@ export function hasValidAdminSession(req) {
 export function clearAdminCookieHeaders(origin, extraHeaders = {}) {
   return {
     ...extraHeaders,
-    'Set-Cookie': 'ym_admin=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax; Secure',
+    'Set-Cookie': 'ym_admin=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax',
   }
 }
 

@@ -30,7 +30,7 @@ export default async (req) => {
   if (req.method === 'DELETE') {
     const headers = {
       ...corsHeaders(origin),
-      'Set-Cookie': 'ym_admin=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax; Secure',
+      'Set-Cookie': 'ym_admin=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax',
     }
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
@@ -67,7 +67,7 @@ export default async (req) => {
   const token = createAdminToken()
   const headers = {
     ...corsHeaders(origin),
-    'Set-Cookie': `ym_admin=${token}; Path=/; HttpOnly; SameSite=Lax; Secure`,
+    'Set-Cookie': `ym_admin=${token}; Path=/; HttpOnly; SameSite=Lax`,
   }
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
