@@ -4,7 +4,10 @@ import { Link } from 'react-router-dom'
 export default function SubscribePage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [shippingAddress, setShippingAddress] = useState('')
+  const [street, setStreet] = useState('')
+  const [city, setCity] = useState('')
+  const [state, setState] = useState('')
+  const [postalCode, setPostalCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
@@ -15,14 +18,17 @@ export default function SubscribePage() {
     setSuccess(false)
 
     const trimmedEmail = email.trim()
-    const trimmedAddress = shippingAddress.trim()
+    const trimmedStreet = street.trim()
+    const trimmedCity = city.trim()
+    const trimmedState = state.trim()
+    const trimmedPostal = postalCode.trim()
 
     if (!trimmedEmail) {
       setError('Email is required.')
       return
     }
-    if (!trimmedAddress) {
-      setError('Shipping address is required.')
+    if (!trimmedStreet || !trimmedState || !trimmedPostal) {
+      setError('Street, state, and ZIP/postal code are required.')
       return
     }
 
@@ -34,7 +40,10 @@ export default function SubscribePage() {
         body: JSON.stringify({
           name: name.trim(),
           email: trimmedEmail,
-          shippingAddress: trimmedAddress,
+          street: trimmedStreet,
+          city: trimmedCity,
+          state: trimmedState,
+          postalCode: trimmedPostal,
         }),
       })
       const data = await res.json().catch(() => ({}))
@@ -44,7 +53,10 @@ export default function SubscribePage() {
       setSuccess(true)
       setName('')
       setEmail('')
-      setShippingAddress('')
+      setStreet('')
+      setCity('')
+      setState('')
+      setPostalCode('')
     } catch (err) {
       setError(err.message || 'Could not save your subscription.')
     } finally {
@@ -87,21 +99,54 @@ export default function SubscribePage() {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="sub-address">Shipping address *</label>
-          <textarea
-            id="sub-address"
-            value={shippingAddress}
-            onChange={(e) => setShippingAddress(e.target.value)}
-            placeholder="Street, city, state, ZIP, country"
-            rows={3}
-            style={{ resize: 'vertical' }}
+          <label htmlFor="sub-street">Street address *</label>
+          <input
+            id="sub-street"
+            type="text"
+            value={street}
+            onChange={(e) => setStreet(e.target.value)}
+            placeholder="123 Main St"
             required
           />
+        </div>
+        <div className="form-group" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: '2 1 160px' }}>
+            <label htmlFor="sub-city">City</label>
+            <input
+              id="sub-city"
+              type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="City"
+            />
+          </div>
+          <div style={{ flex: '1 1 80px' }}>
+            <label htmlFor="sub-state">State/Region *</label>
+            <input
+              id="sub-state"
+              type="text"
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+              placeholder="AR"
+              required
+            />
+          </div>
+          <div style={{ flex: '1 1 100px' }}>
+            <label htmlFor="sub-postal">ZIP / Postal code *</label>
+            <input
+              id="sub-postal"
+              type="text"
+              value={postalCode}
+              onChange={(e) => setPostalCode(e.target.value)}
+              placeholder="12345"
+              required
+            />
+          </div>
         </div>
 
         <p style={{ color: 'var(--ym-muted)', marginBottom: '1rem', fontSize: '0.85rem' }}>
           By subscribing, you agree to receive occasional emails from YESMagic about live shows, special events, and
-          giveaways. You can unsubscribe at any time using the link in our emails.
+          giveaways. You can unsubscribe at any time.
         </p>
 
         {error && <p className="error-message">{error}</p>}

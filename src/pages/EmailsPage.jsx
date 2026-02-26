@@ -47,16 +47,43 @@ function EmailsPageInner() {
     )
   }
 
+  const removeSubscriber = (id) => {
+    setSubscribers((prev) => prev.filter((s) => s.id !== id))
+  }
+
   const handleExportXls = () => {
     if (!subscribers.length) return
-    const headers = ['Name', 'Email', 'Shipping address', 'Created at', 'Updated at']
-    const rows = subscribers.map((s) => [
-      s.name || '',
-      s.email || '',
-      s.shippingAddress || '',
-      s.createdAt || '',
-      s.updatedAt || '',
-    ])
+    const headers = [
+      'Name',
+      'Email',
+      'Street',
+      'City',
+      'State',
+      'ZIP',
+      'Full address',
+      'Created at',
+      'Updated at',
+    ]
+    const rows = subscribers.map((s) => {
+      const street = s.street || ''
+      const city = s.city || ''
+      const state = s.state || ''
+      const postal = s.postalCode || s.zip || ''
+      const fullAddress =
+        s.shippingAddress ||
+        [street, city, state, postal].filter(Boolean).join(', ')
+      return [
+        s.name || '',
+        s.email || '',
+        street,
+        city,
+        state,
+        postal,
+        fullAddress,
+        s.createdAt || '',
+        s.updatedAt || '',
+      ]
+    })
 
     const escapeCell = (value) => {
       const str = String(value).split('"').join('""')
@@ -197,7 +224,7 @@ function EmailsPageInner() {
             >
               This table shows everyone who has entered via the subscription
               form. Only one entry is allowed per shipping address, but you can
-              edit names, emails, or addresses here.
+              edit names, emails, and shipping details here.
             </p>
             <div className="admin-emails-table-wrapper">
               <table className="admin-emails-table">
@@ -205,7 +232,11 @@ function EmailsPageInner() {
                   <tr>
                     <th>Name</th>
                     <th>Email</th>
-                    <th>Shipping address</th>
+                    <th>Street</th>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>ZIP</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -230,24 +261,60 @@ function EmailsPageInner() {
                         />
                       </td>
                       <td>
-                        <textarea
-                          value={s.shippingAddress || ''}
+                        <input
+                          type="text"
+                          value={s.street || ''}
+                          onChange={(e) =>
+                            updateSubscriber(s.id, 'street', e.target.value)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          value={s.city || ''}
+                          onChange={(e) =>
+                            updateSubscriber(s.id, 'city', e.target.value)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          value={s.state || ''}
+                          onChange={(e) =>
+                            updateSubscriber(s.id, 'state', e.target.value)
+                          }
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          value={s.postalCode || s.zip || ''}
                           onChange={(e) =>
                             updateSubscriber(
                               s.id,
-                              'shippingAddress',
+                              'postalCode',
                               e.target.value,
                             )
                           }
-                          rows={2}
                         />
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="ym-btn ym-btn-sm ym-btn-danger"
+                          onClick={() => removeSubscriber(s.id)}
+                        >
+                          Remove
+                        </button>
                       </td>
                     </tr>
                   ))}
                   {subscribers.length === 0 && (
                     <tr>
                       <td
-                        colSpan={3}
+                        colSpan={7}
                         style={{
                           color: 'var(--ym-muted)',
                           fontSize: '0.85rem',

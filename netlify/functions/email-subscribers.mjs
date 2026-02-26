@@ -78,7 +78,11 @@ export default async (req) => {
 
     const name = String(body?.name ?? '').trim()
     const email = String(body?.email ?? '').trim()
-    const shippingAddress = String(body?.shippingAddress ?? '').trim()
+    const street = String(body?.street ?? '').trim()
+    const city = String(body?.city ?? '').trim()
+    const state = String(body?.state ?? '').trim()
+    const postalCode = String(body?.postalCode ?? '').trim()
+    const shippingAddressRaw = String(body?.shippingAddress ?? '').trim()
 
     if (!email) {
       return new Response(JSON.stringify({ error: 'Email is required.' }), {
@@ -86,14 +90,24 @@ export default async (req) => {
         headers: corsHeaders(origin),
       })
     }
-    if (!shippingAddress) {
+
+    const hasStructured = !!(street && state && postalCode)
+    if (!hasStructured && !shippingAddressRaw) {
       return new Response(JSON.stringify({ error: 'Shipping address is required.' }), {
         status: 400,
         headers: corsHeaders(origin),
       })
     }
 
-    const shippingKey = normalizeAddress(shippingAddress)
+    const shippingAddress = hasStructured
+      ? [street, city, state, postalCode].filter(Boolean).join(', ')
+      : shippingAddressRaw
+
+    const keySource = hasStructured
+      ? [street, city, state, postalCode].join(' ')
+      : shippingAddress
+
+    const shippingKey = normalizeAddress(keySource)
     if (!shippingKey) {
       return new Response(JSON.stringify({ error: 'Shipping address is required.' }), {
         status: 400,
@@ -107,7 +121,18 @@ export default async (req) => {
       const list = Array.isArray(existing) ? existing : []
 
       const now = new Date().toISOString()
-      const idx = list.findIndex((s) => normalizeAddress(s.shippingAddress) === shippingKey)
+      const idx = list.findIndex((s) => {
+        const existingSource = [
+          s.street,
+          s.city,
+          s.state,
+          s.postalCode || s.zip,
+          s.shippingAddress,
+        ]
+          .filter(Boolean)
+          .join(' ')
+        return normalizeAddress(existingSource) === shippingKey
+      })
 
       if (idx >= 0) {
         // Update existing entry for this shipping address
@@ -116,6 +141,10 @@ export default async (req) => {
           ...current,
           name: name || current.name || '',
           email,
+          street: street || current.street || '',
+          city: city || current.city || '',
+          state: state || current.state || '',
+          postalCode: postalCode || current.postalCode || current.zip || '',
           shippingAddress,
           updatedAt: now,
         }
@@ -124,6 +153,10 @@ export default async (req) => {
           id: body?.id ? String(body.id) : String(Date.now()) + Math.random().toString(36).slice(2),
           name,
           email,
+          street,
+          city,
+          state,
+          postalCode,
           shippingAddress,
           createdAt: now,
           updatedAt: now,
@@ -173,7 +206,19 @@ export default async (req) => {
       id: String(s.id ?? '') || String(Date.now()) + Math.random().toString(36).slice(2),
       name: String(s.name ?? '').trim(),
       email: String(s.email ?? '').trim(),
-      shippingAddress: String(s.shippingAddress ?? '').trim(),
+      street: String(s.street ?? '').trim(),
+      city: String(s.city ?? '').trim(),
+      state: String(s.state ?? '').trim(),
+      postalCode: String(s.postalCode ?? s.zip ?? '').trim(),
+      shippingAddress: (() => {
+        const street = String(s.street ?? '').trim()
+        const city = String(s.city ?? '').trim()
+        const state = String(s.state ?? '').trim()
+        const postal = String(s.postalCode ?? s.zip ?? '').trim()
+        const parts = [street, city, state, postal].filter(Boolean)
+        const combined = parts.join(', ')
+        return combined || String(s.shippingAddress ?? '').trim()
+      })(),
       createdAt: s.createdAt ? String(s.createdAt) : now,
       updatedAt: now,
     }))
