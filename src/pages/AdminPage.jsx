@@ -361,6 +361,7 @@ export default function AdminPage() {
         <button type="button" className="ym-btn ym-btn-secondary" onClick={() => reload()}>
           Refresh from server
         </button>
+        <Link to="/emails" className="ym-btn ym-btn-secondary">View email list</Link>
         <Link to="/" className="ym-btn ym-btn-secondary">Back to shop</Link>
       </div>
 

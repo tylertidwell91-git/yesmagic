@@ -24,6 +24,13 @@ const transporter =
       })
     : null
 
+function normalizeHttpUrl(raw, fallback) {
+  const trimmed = String(raw || '').trim()
+  if (!trimmed) return fallback
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  return `https://${trimmed}`
+}
+
 function corsHeaders(origin) {
   const allowed = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
@@ -102,7 +109,7 @@ function buildBaseHtml({ title, introHtml, bodyHtml, buttonLabel, buttonUrl }) {
 }
 
 function buildGoLiveEmail({ whatnotUrl }) {
-  const safeUrl = whatnotUrl || 'https://www.whatnot.com'
+  const safeUrl = normalizeHttpUrl(whatnotUrl, 'https://www.whatnot.com')
   const title = 'YESMagic is live on WhatNot!'
   const introHtml =
     '<p style="margin:0 0 12px 0;">Hi there,</p>' +
@@ -147,6 +154,9 @@ function buildCustomEmail({ subject, body, buttonLabel, buttonUrl }) {
     '<p style="margin:0 0 16px 0;">We wanted to share a quick update from <strong style="color:#c9a227;">YESMagic</strong>.</p>'
   const bodyHtml = `<p style="margin:0 0 12px 0;">${escapedBody}</p>`
 
+  const linkForText =
+    buttonUrl && buttonUrl.trim() ? normalizeHttpUrl(buttonUrl, '') : ''
+
   const textLines = [
     'Hi there,',
     '',
@@ -154,7 +164,7 @@ function buildCustomEmail({ subject, body, buttonLabel, buttonUrl }) {
     '',
     safeBody,
     '',
-    buttonUrl ? `More details: ${buttonUrl}` : '',
+    linkForText ? `More details: ${linkForText}` : '',
     '',
     'Best wishes,',
     'YESMagic',
@@ -168,7 +178,10 @@ function buildCustomEmail({ subject, body, buttonLabel, buttonUrl }) {
       introHtml,
       bodyHtml,
       buttonLabel: buttonLabel && buttonLabel.trim() ? buttonLabel.trim() : null,
-      buttonUrl: buttonUrl && buttonUrl.trim() ? buttonUrl.trim() : null,
+      buttonUrl:
+        buttonUrl && buttonUrl.trim()
+          ? normalizeHttpUrl(buttonUrl, '')
+          : null,
     }),
   }
 }

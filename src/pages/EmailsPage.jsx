@@ -163,8 +163,8 @@ function EmailsPageInner() {
         <h2 className="admin-title" style={{ marginBottom: 0 }}>
           Email subscribers
         </h2>
-        <Link to="/" className="ym-btn ym-btn-secondary">
-          Back to shop
+        <Link to="/admin" className="ym-btn ym-btn-secondary">
+          Go to admin page
         </Link>
       </div>
 
