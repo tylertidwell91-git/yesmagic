@@ -84,7 +84,8 @@ app.post('/api/create-payment-intent', async (req, res) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountCents,
       currency: 'usd',
-      automatic_payment_methods: { enabled: true },
+      // Only allow non-redirect methods (e.g. cards) so we don't need a return_url
+      automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
     })
     res.json({ clientSecret: paymentIntent.client_secret })
   } catch (err) {

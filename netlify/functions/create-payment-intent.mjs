@@ -48,7 +48,8 @@ export default async (req) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountCents,
       currency: 'usd',
-      automatic_payment_methods: { enabled: true },
+      // Only allow non-redirect methods (e.g. cards) so we don't need a return_url
+      automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
     })
     return new Response(JSON.stringify({ clientSecret: paymentIntent.client_secret }), {
       status: 200,
