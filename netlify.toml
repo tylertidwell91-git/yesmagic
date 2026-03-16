@@ -26,6 +26,11 @@
   status = 200
   force = true
 [[redirects]]
+  from = "/api/whatnot-shows"
+  to = "/.netlify/functions/whatnot-shows"
+  status = 200
+  force = true
+[[redirects]]
   from = "/api/contact"
   to = "/.netlify/functions/contact"
   status = 200
