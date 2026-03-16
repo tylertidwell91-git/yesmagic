@@ -130,6 +130,7 @@ export function AdminGate({ children }) {
 
 const SHOWS_API = '/api/shows'
 const SHIPPING_RULES_API = '/api/shipping-rules'
+const SYNC_WHATNOT_API = '/api/sync-whatnot-shows'
 
 export default function AdminPage() {
   const { inventory, loading, saveInventory, reload } = useInventory()
@@ -142,6 +143,8 @@ export default function AdminPage() {
   const [shows, setShows] = useState([])
   const [showsSaved, setShowsSaved] = useState(false)
   const [showsSaveError, setShowsSaveError] = useState('')
+  const [syncingShows, setSyncingShows] = useState(false)
+  const [syncError, setSyncError] = useState('')
   const [confirmEmail, setConfirmEmail] = useState('')
   const [confirmDescription, setConfirmDescription] = useState('')
   const [confirmEta, setConfirmEta] = useState('')
@@ -240,6 +243,27 @@ export default function AdminPage() {
       setTimeout(() => setShowsSaved(false), 3000)
     } catch (err) {
       setShowsSaveError(err.message || 'Failed to save schedule')
+    }
+  }
+
+  const syncShowsFromWhatnot = async () => {
+    setSyncError('')
+    setSyncingShows(true)
+    try {
+      const res = await fetch(SYNC_WHATNOT_API, { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to sync from Whatnot.')
+      }
+      const resShows = await fetch(SHOWS_API)
+      const showsData = await resShows.json().catch(() => [])
+      setShows(Array.isArray(showsData) ? showsData : [])
+      setShowsSaved(true)
+      setTimeout(() => setShowsSaved(false), 3000)
+    } catch (err) {
+      setSyncError(err.message || 'Failed to sync from Whatnot.')
+    } finally {
+      setSyncingShows(false)
     }
   }
 
@@ -733,6 +757,9 @@ export default function AdminPage() {
 
       <section className="admin-shows-section">
         <h3>Live Stream Schedule</h3>
+        {syncError && (
+          <div className="error-message" style={{ marginBottom: '0.75rem' }}>{syncError}</div>
+        )}
         {showsSaveError && (
           <div className="error-message" style={{ marginBottom: '1rem' }}>{showsSaveError}</div>
         )}
@@ -785,12 +812,22 @@ export default function AdminPage() {
             </li>
           ))}
         </ul>
-        <button type="button" className="ym-btn ym-btn-secondary" onClick={addShow} style={{ marginRight: '0.5rem' }}>
-          Add show
-        </button>
-        <button type="button" className="ym-btn ym-btn-primary" onClick={saveShows}>
-          Save schedule
-        </button>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <button type="button" className="ym-btn ym-btn-secondary" onClick={addShow}>
+            Add show
+          </button>
+          <button type="button" className="ym-btn ym-btn-primary" onClick={saveShows}>
+            Save schedule
+          </button>
+          <button
+            type="button"
+            className="ym-btn ym-btn-secondary"
+            onClick={syncShowsFromWhatnot}
+            disabled={syncingShows}
+          >
+            {syncingShows ? 'Syncing from Whatnot…' : 'Sync from Whatnot'}
+          </button>
+        </div>
       </section>
 
       <section className="admin-inventory-section" style={{ marginTop: '2rem' }}>
