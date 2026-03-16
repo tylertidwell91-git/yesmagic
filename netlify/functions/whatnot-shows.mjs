@@ -1,3 +1,5 @@
+import fetchModule from 'node-fetch'
+
 const WHATNOT_URL = 'https://www.whatnot.com/user/yes_magic?referringSource=autocomplete'
 
 function corsHeaders(origin) {
@@ -16,8 +18,21 @@ function corsHeaders(origin) {
 // Very lightweight HTML scraping to pull upcoming Whatnot live shows.
 // We intentionally keep this generic and resilient: we look for public
 // live-show links and their immediate text content.
+async function getFetch() {
+  if (typeof fetch === 'function') return fetch
+  const fn = fetchModule?.default || fetchModule
+  return fn
+}
+
 async function fetchWhatnotShows() {
-  const res = await fetch(WHATNOT_URL, { redirect: 'follow' })
+  const f = await getFetch()
+  const res = await f(WHATNOT_URL, {
+    redirect: 'follow',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; YESMagicBot/1.0; +https://yesmagicshop.com)',
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    },
+  })
   if (!res.ok) {
     throw new Error(`Whatnot fetch failed with status ${res.status}`)
   }

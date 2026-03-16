@@ -30,7 +30,7 @@ export default function SchedulePage() {
     <div className="yesmagic-main schedule-page">
       <h2 className="schedule-title">Upcoming Whatnot Live Shows</h2>
       <p style={{ color: 'var(--ym-muted)', marginBottom: '1.5rem' }}>
-        This schedule is pulled directly from our Whatnot profile. Click any show to view full details and time on Whatnot.
+        Click any show to view full details and time on Whatnot.
       </p>
 
       {loading && (
@@ -44,18 +44,31 @@ export default function SchedulePage() {
       )}
 
       {!loading && !error && shows.length === 0 && (
-        <p style={{ color: 'var(--ym-muted)' }}>
-          No upcoming shows are currently listed on Whatnot. Check back soon, or{' '}
-          <a
-            href={WHATNOT_PROFILE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: 'var(--ym-accent)' }}
-          >
-            visit our Whatnot profile
-          </a>
-          .
-        </p>
+        <div className="schedule-calendar">
+          <div className="schedule-calendar-header">
+            {/* Blank calendar when there are no upcoming shows */}
+          </div>
+          <table className="schedule-calendar-grid">
+            <thead>
+              <tr>
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+                  <th key={d}>{d}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 5 }).map((_, wi) => (
+                <tr key={wi}>
+                  {Array.from({ length: 7 }).map((__, di) => (
+                    <td key={di} className="schedule-day-cell">
+                      <div className="schedule-day-num">&nbsp;</div>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {!loading && !error && shows.length > 0 && (
