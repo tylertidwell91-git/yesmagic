@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useInventory } from '../context/InventoryContext'
+import { parseExternalShowPaste } from '../utils/parseShowPaste'
 
 const ADMIN_SESSION_KEY = 'yesmagic_admin_session'
 
@@ -145,6 +146,8 @@ export default function AdminPage() {
   const [showsSaveError, setShowsSaveError] = useState('')
   const [syncingShows, setSyncingShows] = useState(false)
   const [syncError, setSyncError] = useState('')
+  const [pasteImportText, setPasteImportText] = useState('')
+  const [pasteImportError, setPasteImportError] = useState('')
   const [confirmEmail, setConfirmEmail] = useState('')
   const [confirmDescription, setConfirmDescription] = useState('')
   const [confirmEta, setConfirmEta] = useState('')
@@ -244,6 +247,28 @@ export default function AdminPage() {
     } catch (err) {
       setShowsSaveError(err.message || 'Failed to save schedule')
     }
+  }
+
+  const parsePasteIntoShows = () => {
+    setPasteImportError('')
+    const parsed = parseExternalShowPaste(pasteImportText)
+    if (!parsed.length) {
+      setPasteImportError(
+        'Could not find any shows. Paste should include a date like 3/24/2026 and a time like 7:15 PM.'
+      )
+      return
+    }
+    setShows((prev) => [
+      ...prev,
+      ...parsed.map((p) => ({
+        id: generateId(),
+        date: p.date,
+        time: p.time,
+        title: p.title,
+        details: '',
+      })),
+    ])
+    setPasteImportText('')
   }
 
   const syncShowsFromWhatnot = async () => {
@@ -757,6 +782,33 @@ export default function AdminPage() {
 
       <section className="admin-shows-section">
         <h3>Live Stream Schedule</h3>
+        <div className="admin-show-paste-import" style={{ marginBottom: '1.25rem' }}>
+          <p style={{ color: 'var(--ym-muted)', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+            Paste a list from another selling site. We pull the title, date (M/D/YYYY), and time for each show
+            and add them below. Save schedule when you are done editing.
+          </p>
+          {pasteImportError && (
+            <div className="error-message" style={{ marginBottom: '0.5rem' }}>{pasteImportError}</div>
+          )}
+          <textarea
+            value={pasteImportText}
+            onChange={(e) => setPasteImportText(e.target.value)}
+            placeholder="Paste show list here…"
+            rows={8}
+            style={{
+              resize: 'vertical',
+              width: '100%',
+              maxWidth: '640px',
+              fontFamily: 'inherit',
+              fontSize: '0.9rem',
+            }}
+          />
+          <div style={{ marginTop: '0.5rem' }}>
+            <button type="button" className="ym-btn ym-btn-secondary" onClick={parsePasteIntoShows}>
+              Parse &amp; add to schedule
+            </button>
+          </div>
+        </div>
         {syncError && (
           <div className="error-message" style={{ marginBottom: '0.75rem' }}>{syncError}</div>
         )}
