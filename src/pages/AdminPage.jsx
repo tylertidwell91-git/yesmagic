@@ -132,6 +132,7 @@ export function AdminGate({ children }) {
 const SHOWS_API = '/api/shows'
 const SHIPPING_RULES_API = '/api/shipping-rules'
 const SYNC_WHATNOT_API = '/api/sync-whatnot-shows'
+const REPLY_NOTE_API = '/api/reply-note'
 
 export default function AdminPage() {
   const { inventory, loading, saveInventory, reload } = useInventory()
@@ -154,6 +155,10 @@ export default function AdminPage() {
   const [confirmSending, setConfirmSending] = useState(false)
   const [confirmSuccess, setConfirmSuccess] = useState(false)
   const [confirmError, setConfirmError] = useState('')
+  const [replyNote, setReplyNote] = useState('')
+  const [replyNoteSaving, setReplyNoteSaving] = useState(false)
+  const [replyNoteSaved, setReplyNoteSaved] = useState(false)
+  const [replyNoteError, setReplyNoteError] = useState('')
   const [newProduct, setNewProduct] = useState({
     price: '',
     quantity: '',
@@ -180,6 +185,13 @@ export default function AdminPage() {
       .then((res) => (res.ok ? res.json() : {}))
       .then((data) => setShippingRules(data.rules ?? null))
       .catch(() => setShippingRules(null))
+  }, [])
+
+  useEffect(() => {
+    fetch(REPLY_NOTE_API)
+      .then((res) => (res.ok ? res.json() : { note: '' }))
+      .then((data) => setReplyNote(String(data?.note ?? '')))
+      .catch(() => setReplyNote(''))
   }, [])
 
   const handleChange = (id, field, value) => {
@@ -324,6 +336,35 @@ export default function AdminPage() {
       setConfirmError(err.message || 'Could not send confirmation email.')
     } finally {
       setConfirmSending(false)
+    }
+  }
+
+  const saveReplyNote = async () => {
+    setReplyNoteError('')
+    setReplyNoteSaved(false)
+    const note = replyNote.trim()
+    if (!note) {
+      setReplyNoteError('Reply note cannot be empty.')
+      return
+    }
+    setReplyNoteSaving(true)
+    try {
+      const res = await fetch(REPLY_NOTE_API, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || 'Failed to save reply note.')
+      }
+      setReplyNoteSaved(true)
+      setReplyNote(note)
+      setTimeout(() => setReplyNoteSaved(false), 3000)
+    } catch (err) {
+      setReplyNoteError(err.message || 'Failed to save reply note.')
+    } finally {
+      setReplyNoteSaving(false)
     }
   }
 
@@ -934,6 +975,40 @@ export default function AdminPage() {
             disabled={confirmSending}
           >
             {confirmSending ? 'Sending…' : 'Send confirmation email'}
+          </button>
+        </div>
+      </section>
+
+      <section className="admin-inventory-section" style={{ marginTop: '2rem' }}>
+        <h3 className="admin-section-heading">Reply page message</h3>
+        <p style={{ color: 'var(--ym-muted)', marginBottom: '0.75rem', fontSize: '0.85rem' }}>
+          This note appears on <code>/Reply</code>. The page is not in the main menu and can be shared directly.
+        </p>
+        {replyNoteError && (
+          <div className="error-message" style={{ marginBottom: '0.75rem' }}>{replyNoteError}</div>
+        )}
+        {replyNoteSaved && (
+          <div className="success-message" style={{ marginBottom: '0.75rem' }}>Reply message saved.</div>
+        )}
+        <div className="admin-order-confirmation-form">
+          <div className="form-group">
+            <label htmlFor="reply-note">Message</label>
+            <textarea
+              id="reply-note"
+              value={replyNote}
+              onChange={(e) => setReplyNote(e.target.value)}
+              placeholder="Type the message customers should see on /Reply"
+              rows={5}
+              style={{ resize: 'vertical' }}
+            />
+          </div>
+          <button
+            type="button"
+            className="ym-btn ym-btn-primary"
+            onClick={saveReplyNote}
+            disabled={replyNoteSaving}
+          >
+            {replyNoteSaving ? 'Saving…' : 'Save reply message'}
           </button>
         </div>
       </section>

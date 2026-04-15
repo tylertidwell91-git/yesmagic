@@ -65,6 +65,11 @@
   to = "/.netlify/functions/email-broadcast"
   status = 200
   force = true
+[[redirects]]
+  from = "/api/reply-note"
+  to = "/.netlify/functions/reply-note"
+  status = 200
+  force = true
 
 # SPA fallback: serve index.html for all other routes (/admin, /checkout, etc.)
 [[redirects]]

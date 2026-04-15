@@ -10,6 +10,7 @@ import SchedulePage from './pages/SchedulePage'
 import ContactPage from './pages/ContactPage'
 import SubscribePage from './pages/SubscribePage'
 import EmailsPage from './pages/EmailsPage'
+import ReplyPage from './pages/ReplyPage'
 import yesmagicLogo from './assets/yesmagic-logo.png'
 import './App.css'
 
@@ -89,6 +90,7 @@ function Layout() {
         <Route path="contact" element={<ContactPage />} />
         <Route path="subscribe" element={<SubscribePage />} />
         <Route path="emails" element={<EmailsPage />} />
+        <Route path="Reply" element={<ReplyPage />} />
       </Routes>
     </div>
   )
