@@ -41,7 +41,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 app.use(cors({ origin: allowedOrigins, credentials: false }))
 app.use(express.json())
 
-const ORDER_EMAIL = process.env.ORDER_EMAIL || ''
+const ORDER_EMAIL = process.env.ORDER_EMAIL || 'yes.enterprises0123@gmail.com'
 const PORT = process.env.PORT || 3001
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' }) : null
 

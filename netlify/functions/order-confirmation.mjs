@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 
-const ORDER_EMAIL = process.env.ORDER_EMAIL || ''
+const ORDER_EMAIL = process.env.ORDER_EMAIL || 'yes.enterprises0123@gmail.com'
 const port = Number(process.env.SMTP_PORT) || 587
 const secure = process.env.SMTP_SECURE === 'true'
 const transporter =
@@ -168,7 +168,7 @@ export default async (req) => {
     const html = buildConfirmationHtml({ description, eta })
 
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER || 'orders@yesmagicshop.com',
+      from: process.env.SMTP_FROM || process.env.SMTP_USER || 'yes.enterprises0123@gmail.com',
       to: customerEmail,
       subject: 'Your YESMagic order confirmation',
       text,

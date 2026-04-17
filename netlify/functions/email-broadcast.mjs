@@ -5,7 +5,7 @@ import { hasValidAdminSession } from './_admin-auth.mjs'
 const STORE_NAME = 'yesmagic-inventory'
 const KEY = 'email-subscribers'
 
-const ORDER_EMAIL = process.env.ORDER_EMAIL || ''
+const ORDER_EMAIL = process.env.ORDER_EMAIL || 'yes.enterprises0123@gmail.com'
 const port = Number(process.env.SMTP_PORT) || 587
 const secure = process.env.SMTP_SECURE === 'true'
 const transporter =
@@ -282,7 +282,7 @@ export default async (req) => {
   for (const email of recipients) {
     try {
       await transporter.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER || 'orders@yesmagicshop.com',
+        from: process.env.SMTP_FROM || process.env.SMTP_USER || 'yes.enterprises0123@gmail.com',
         to: email,
         subject: template.subject,
         text: template.text,

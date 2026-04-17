@@ -926,7 +926,7 @@ export default function AdminPage() {
       <section className="admin-inventory-section" style={{ marginTop: '2rem' }}>
         <h3 className="admin-section-heading">Manual order confirmation email</h3>
         <p style={{ color: 'var(--ym-muted)', marginBottom: '0.75rem', fontSize: '0.85rem' }}>
-          Generate and send a clean order confirmation email from <code>orders@yesmagicshop.com</code>.
+          Generate and send a clean order confirmation email from <code>yes.enterprises0123@gmail.com</code>.
         </p>
         {confirmError && (
           <div className="error-message" style={{ marginBottom: '0.75rem' }}>{confirmError}</div>

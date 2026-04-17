@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 
-const ORDER_EMAIL = process.env.ORDER_EMAIL || ''
+const ORDER_EMAIL = process.env.ORDER_EMAIL || 'yes.enterprises0123@gmail.com'
 const port = Number(process.env.SMTP_PORT) || 587
 const secure = process.env.SMTP_SECURE === 'true'
 const transporter =
