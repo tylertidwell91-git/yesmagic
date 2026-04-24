@@ -76,6 +76,11 @@
   to = "/.netlify/functions/spellbook-trade-offer-email"
   status = 200
   force = true
+[[redirects]]
+  from = "/api/spellbook-signup-notify"
+  to = "/.netlify/functions/spellbook-signup-notify"
+  status = 200
+  force = true
 
 # Spellbook (public/spellbook/index.html): subdomain + short path on primary domain.
 # Root URL must be explicit: "/*" alone does not match path "/". Do not re-add

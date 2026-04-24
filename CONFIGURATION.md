@@ -231,6 +231,20 @@ Ensure **`ALLOWED_ORIGINS`** includes your Spellbook origin (e.g. `https://spell
 
 If the Spellbook UI is served from a different hostname than the Netlify site that hosts functions, set **`SPELLBOOK_TRADE_NOTIFY_BASE`** to the Netlify site origin (e.g. `https://yesmagicshop.com`) so `config.js` points trade emails at the correct API. Rebuild after changing env vars.
 
+### New Spellbook registration → email `ORDER_EMAIL`
+
+To get an admin email when someone creates an account in Supabase Auth:
+
+1. On **Netlify**, set a long random **`SPELLBOOK_SIGNUP_NOTIFY_SECRET`** (Functions scope). Use the **same** value in step 3.
+2. The function emails **`ORDER_EMAIL`** (same as shop order mail). To use a different inbox, set **`SIGNUP_NOTIFY_EMAIL`** instead.
+3. In **Supabase → Integrations → Database Webhooks** (or **Database → Webhooks**), create a webhook:
+   - **Table:** `users` · **Schema:** `auth` · **Events:** Insert  
+   - **URL:** `https://YOUR_NETLIFY_SITE/api/spellbook-signup-notify` (HTTPS, the site that deploys these functions)  
+   - **HTTP Headers:** add **`X-Spellbook-Signup-Secret`** = your `SPELLBOOK_SIGNUP_NOTIFY_SECRET` value  
+   (Alternatively send **`Authorization: Bearer <secret>`** — the function accepts either.)
+
+SMTP must already work on Netlify (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, optional `SMTP_FROM`), same as other transactional mail.
+
 ### Sign-up error: “Invalid path specified in request URL”
 
 1. **Netlify `SPELLBOOK_SUPABASE_URL`** must be **only** the Supabase **project URL** (Dashboard → Project Settings → API → **Project URL**), for example `https://abcdefgh.supabase.co` — **no** `/rest/v1`, `/auth/v1`, or trailing path.
