@@ -2913,7 +2913,7 @@
         Mediated trades include a higher oversight fee so YesMagic can verify both ends. Stripe checkout for Spellbook will be wired to the shop in a follow-up release — for now proposals are recorded and you can coordinate off-site.
       </div>
       <nav class="trade-subtabs" role="tablist" aria-label="Trading hub sections">
-        <button type="button" class="on" data-trade-sub="browse">Browse</button>
+        <button type="button" class="on" data-trade-sub="browse">All listings</button>
         <button type="button" data-trade-sub="bloc">My trading bloc</button>
         <button type="button" data-trade-sub="activity">Trade activity</button>
       </nav>
@@ -2921,10 +2921,10 @@
       <div id="tradeSubBrowse" class="trade-subpanel">
         <div class="collection-shell">
           <aside class="collection-rail">
-            <h3>Hub filters</h3>
-            <details class="filter-drawer" open>
+            <h3>Narrow results</h3>
+            <details class="filter-drawer">
               <summary>Colors, types, rarity, finish</summary>
-              <p class="filter-hint">Same logic as the library filter rail. Listings from other members only.</p>
+              <p class="filter-hint">Same logic as the library filter rail. Only <strong>active</strong> listings from other members appear here (not your own bloc).</p>
               <div class="chip-section">
                 <h4>Mana colors (all required)</h4>
                 <div class="chip-grid" id="tradeHubFilterColors">
@@ -2975,6 +2975,9 @@
             </details>
           </aside>
           <div class="collection-content">
+            <p class="hint" style="margin:0 0 0.75rem;max-width:44rem;line-height:1.5;">
+              Browse <strong>all available</strong> community listings below. Open <strong>Narrow results</strong> to filter; use <strong>Show all available listings</strong> to clear filters and reload everything from the hub.
+            </p>
             <div class="collection-toolbar">
               <div class="field-inline">
                 <label for="tradeHubSearch">Search</label>
@@ -2993,14 +2996,19 @@
                 </select>
               </div>
               <div class="field-inline" style="align-self:flex-end;">
-                <button type="button" class="secondary" id="btnTradeHubBrowseAll">
-                  Browse all
+                <button
+                  type="button"
+                  class="primary"
+                  id="btnTradeHubBrowseAll"
+                  title="Clear filters and reload every active listing from other members"
+                >
+                  Show all available listings
                 </button>
               </div>
             </div>
             <p id="tradeHubStats" class="collection-stats" aria-live="polite"></p>
             <div id="tradeHubGrid" class="card-grid"></div>
-            <p id="tradeHubEmpty" class="hint" style="display:none;margin-top:1rem;">No listings match — check back later or adjust filters.</p>
+            <p id="tradeHubEmpty" class="hint" style="display:none;margin-top:1rem;">No listings match your filters — try <strong>Show all available listings</strong> or check back later.</p>
           </div>
         </div>
       </div>
@@ -10175,12 +10183,12 @@
     if (stats) {
       stats.innerHTML =
         tradeHubRows.length === 0
-          ? "No community listings yet."
+          ? "No available listings from other members yet."
           : "Showing <strong>" +
             rows.length +
             "</strong> of <strong>" +
             tradeHubRows.length +
-            "</strong> listings from other members.";
+            "</strong> available listings from other members.";
     }
     grid.innerHTML = "";
     if (!rows.length) {
@@ -10653,9 +10661,10 @@
     }
     var browseAll = document.getElementById("btnTradeHubBrowseAll");
     if (browseAll) {
-      browseAll.addEventListener("click", function () {
+      browseAll.addEventListener("click", async function () {
         tradeHubClearBrowseFilters();
-        tradeRenderBrowse();
+        await tradeHubRefreshAll();
+        tradeHubSetSubtab("browse");
       });
     }
     var pTr = document.getElementById("panel-trading");
