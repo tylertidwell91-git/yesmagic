@@ -7,3 +7,6 @@ netlify-env.txt
 
 # Local Netlify folder
 .netlify
+
+.DS_Store
+yesmagic-1/

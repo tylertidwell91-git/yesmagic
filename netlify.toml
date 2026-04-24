@@ -71,6 +71,23 @@
   status = 200
   force = true
 
+# Spellbook (public/spellbook/index.html): subdomain + short path on primary domain
+[[redirects]]
+  from = "https://spellbook.yesmagicshop.com/*"
+  to = "/spellbook/index.html"
+  status = 200
+  force = true
+[[redirects]]
+  from = "http://spellbook.yesmagicshop.com/*"
+  to = "/spellbook/index.html"
+  status = 200
+  force = true
+[[redirects]]
+  from = "/spellbook"
+  to = "/spellbook/index.html"
+  status = 200
+  force = true
+
 # SPA fallback: serve index.html for all other routes (/admin, /checkout, etc.)
 [[redirects]]
   from = "/*"
