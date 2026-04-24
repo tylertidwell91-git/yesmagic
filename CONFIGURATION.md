@@ -212,6 +212,10 @@ Running **`npm run dev`** or **`npm run build`** runs **`scripts/inject-spellboo
 
 The anon key is safe in the browser; **Row Level Security** on `spellbook_data` restricts reads and writes to `auth.uid()`.
 
+### Community Trading Hub (Spellbook tab)
+
+After the main Spellbook table exists, run **`scripts/spellbook-trading-schema.sql`** in the Supabase SQL Editor. That creates `trade_listings` and `trade_offers` with RLS so members can list cards and exchange proposals. Fees shown in the UI are placeholders until Stripe checkout is wired for Spellbook.
+
 ### Sign-up error: “Invalid path specified in request URL”
 
 1. **Netlify `SPELLBOOK_SUPABASE_URL`** must be **only** the Supabase **project URL** (Dashboard → Project Settings → API → **Project URL**), for example `https://abcdefgh.supabase.co` — **no** `/rest/v1`, `/auth/v1`, or trailing path.
