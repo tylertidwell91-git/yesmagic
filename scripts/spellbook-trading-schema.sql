@@ -37,28 +37,34 @@ alter table public.trade_listings enable row level security;
 alter table public.trade_offers enable row level security;
 
 -- Listings: anyone signed in can browse active listings; sellers manage their rows
+-- (drop + create so the script is safe to re-run)
+drop policy if exists "trade_listings_select_authed" on public.trade_listings;
 create policy "trade_listings_select_authed"
   on public.trade_listings for select
   to authenticated
   using (true);
 
+drop policy if exists "trade_listings_insert_own" on public.trade_listings;
 create policy "trade_listings_insert_own"
   on public.trade_listings for insert
   to authenticated
   with check (seller_id = auth.uid());
 
+drop policy if exists "trade_listings_update_own" on public.trade_listings;
 create policy "trade_listings_update_own"
   on public.trade_listings for update
   to authenticated
   using (seller_id = auth.uid())
   with check (seller_id = auth.uid());
 
+drop policy if exists "trade_listings_delete_own" on public.trade_listings;
 create policy "trade_listings_delete_own"
   on public.trade_listings for delete
   to authenticated
   using (seller_id = auth.uid());
 
 -- Offers: proposer and listing owner can see; proposer inserts; both can update within rules
+drop policy if exists "trade_offers_select_parties" on public.trade_offers;
 create policy "trade_offers_select_parties"
   on public.trade_offers for select
   to authenticated
@@ -70,6 +76,7 @@ create policy "trade_offers_select_parties"
     )
   );
 
+drop policy if exists "trade_offers_insert_proposer" on public.trade_offers;
 create policy "trade_offers_insert_proposer"
   on public.trade_offers for insert
   to authenticated
@@ -81,6 +88,7 @@ create policy "trade_offers_insert_proposer"
     )
   );
 
+drop policy if exists "trade_offers_update_parties" on public.trade_offers;
 create policy "trade_offers_update_parties"
   on public.trade_offers for update
   to authenticated
