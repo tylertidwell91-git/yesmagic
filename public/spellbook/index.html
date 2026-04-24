@@ -2047,6 +2047,117 @@
       padding: 0.35rem 0.65rem;
     }
 
+    .spellbook-user-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      justify-content: flex-end;
+    }
+
+    .notify-badge {
+      display: inline-block;
+      min-width: 1.1rem;
+      padding: 0.12rem 0.4rem;
+      margin-left: 0.3rem;
+      border-radius: 999px;
+      background: var(--danger);
+      color: #fff;
+      font-size: 0.62rem;
+      font-weight: 700;
+      vertical-align: middle;
+      line-height: 1.2;
+    }
+
+    .inbox-layout {
+      display: grid;
+      grid-template-columns: minmax(12rem, 22%) 1fr;
+      gap: 1.25rem;
+      margin-top: 1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 720px) {
+      .inbox-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .inbox-threads {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .inbox-thread-item {
+      display: block;
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      text-align: left;
+      background: transparent;
+      font: inherit;
+      color: inherit;
+    }
+
+    .inbox-thread-item:hover,
+    .inbox-thread-item.on {
+      background: rgba(201, 162, 39, 0.12);
+    }
+
+    .inbox-thread-item .preview {
+      display: block;
+      font-size: var(--text-xs);
+      color: var(--muted);
+      margin-top: 0.25rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .inbox-messages {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.75rem;
+      max-height: 45vh;
+      overflow-y: auto;
+      background: var(--surface);
+      margin-bottom: 1rem;
+    }
+
+    .inbox-msg {
+      margin-bottom: 0.75rem;
+      padding: 0.5rem 0.65rem;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .inbox-msg.mine {
+      background: rgba(201, 162, 39, 0.15);
+      margin-left: 1.25rem;
+    }
+
+    .inbox-msg .inbox-msg-meta {
+      font-size: var(--text-xs);
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .inbox-compose textarea {
+      width: 100%;
+      max-width: 40rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font: inherit;
+      background: var(--surface);
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
     .spellbook-main-shell[hidden] {
       display: none !important;
     }
@@ -2158,7 +2269,12 @@
       </div>
       <div class="spellbook-user-bar" id="spellbookUserBar" hidden>
         <span id="spellbookUserEmail"></span>
-        <button type="button" class="secondary" id="btnSpellbookSignOut">Sign out</button>
+        <div class="spellbook-user-actions">
+          <button type="button" class="secondary" id="btnSpellbookInbox">
+            Inbox <span id="spellbookNotifyBadge" class="notify-badge" hidden>0</span>
+          </button>
+          <button type="button" class="secondary" id="btnSpellbookSignOut">Sign out</button>
+        </div>
       </div>
     </header>
 
@@ -2169,6 +2285,7 @@
       <button type="button" data-tab="cmdrbuild">Commander Deck Builder</button>
       <button type="button" data-tab="advisor">Deck advisor</button>
       <button type="button" data-tab="trading">Trading hub</button>
+      <button type="button" data-tab="inbox">Inbox</button>
       <button type="button" data-tab="settings">Settings</button>
     </nav>
 
@@ -2910,6 +3027,29 @@
       </div>
     </section>
 
+    <section id="panel-inbox" class="panel">
+      <h2>Inbox</h2>
+      <p class="hint" style="max-width:46rem;line-height:1.55;">
+        Conversations tied to trade offers. When someone proposes a trade on your listing, you get a notification here (and an email if the site has trade-offer email configured). Use replies to coordinate with your trading partner.
+      </p>
+      <div class="inbox-layout">
+        <aside class="inbox-threads" id="inboxThreadList" aria-label="Conversations"></aside>
+        <div class="inbox-conversation">
+          <p id="inboxThreadEmpty" class="hint">Select a conversation to read and reply.</p>
+          <div id="inboxThreadPanel" style="display:none;">
+            <h3 id="inboxThreadTitle" style="margin-top:0;"></h3>
+            <p id="inboxThreadMeta" class="hint"></p>
+            <div id="inboxMessages" class="inbox-messages"></div>
+            <div class="inbox-compose">
+              <label for="inboxReplyBody">Reply</label>
+              <textarea id="inboxReplyBody" rows="4" maxlength="8000" placeholder="Write a message…"></textarea>
+              <button type="button" class="primary" id="btnInboxSend">Send message</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="panel-settings" class="panel">
       <h2>Mana conduit</h2>
       <div class="grid2">
@@ -3377,6 +3517,7 @@
     panelCmdrBuild: document.getElementById("panel-cmdr-build"),
     panelAdvisor: document.getElementById("panel-advisor"),
     panelTrading: document.getElementById("panel-trading"),
+    panelInbox: document.getElementById("panel-inbox"),
     panelSettings: document.getElementById("panel-settings"),
     searchInput: document.getElementById("searchInput"),
     suggestions: document.getElementById("suggestions"),
@@ -3665,6 +3806,8 @@
     await spellbookLoadCloudRow();
     spellbookShowAppChrome(session.user);
     spellbookFinishInit();
+    tradeNotifyPollStart();
+    tradeRefreshNotificationBadge();
   }
 
   function spellbookFinishInit() {
@@ -3695,6 +3838,10 @@
 
     sbClient.auth.onAuthStateChange(function (event, session) {
       if (event === "SIGNED_OUT") {
+        tradeNotifyPollStop();
+        spellbookInboxActiveOfferId = null;
+        var nb = document.getElementById("spellbookNotifyBadge");
+        if (nb) nb.hidden = true;
         spellbookAuthUser = null;
         settings = {};
         collection = [];
@@ -3794,6 +3941,12 @@
       if (sbClient) await sbClient.auth.signOut();
     });
   }
+  var btnSpellbookInbox = document.getElementById("btnSpellbookInbox");
+  if (btnSpellbookInbox) {
+    btnSpellbookInbox.addEventListener("click", function () {
+      showTab("inbox");
+    });
+  }
 
   var selectedSuggest = null;
   var resolvedCard = null;
@@ -3812,6 +3965,7 @@
     if (els.panelCmdrBuild) els.panelCmdrBuild.classList.toggle("active", id === "cmdrbuild");
     if (els.panelAdvisor) els.panelAdvisor.classList.toggle("active", id === "advisor");
     if (els.panelTrading) els.panelTrading.classList.toggle("active", id === "trading");
+    if (els.panelInbox) els.panelInbox.classList.toggle("active", id === "inbox");
     els.panelSettings.classList.toggle("active", id === "settings");
     if (id === "collection") renderCollection();
     if (id === "decks") renderDeck();
@@ -3823,6 +3977,7 @@
       }
     }
     if (id === "trading") tradeHubRefreshAll();
+    if (id === "inbox") tradeInboxRefreshThreads();
     if (id !== "collection" && id !== "decks") {
       updateValueBanner(sumCardValue(collection), "Library total value");
     }
@@ -9547,6 +9702,260 @@
   var tradeActiveListingForPropose = null;
   var tradeProposeStackByKey = Object.create(null);
   var tradeHubEventsWired = false;
+  var tradeNotifyPollTimer = null;
+  var spellbookInboxActiveOfferId = null;
+
+  function tradeNotifyEmailEndpoint() {
+    var base = (typeof window !== "undefined" && window.SPELLBOOK_TRADE_NOTIFY_BASE) || "";
+    base = String(base || "").replace(/\/+$/, "");
+    var path = "/api/spellbook-trade-offer-email";
+    if (base) return base + path;
+    return path;
+  }
+
+  async function tradeNotifySellerByEmail(offerId) {
+    if (!sbClient || !offerId) return;
+    try {
+      var sess = await sbClient.auth.getSession();
+      if (!sess.data || !sess.data.session) return;
+      var token = sess.data.session.access_token;
+      var origin =
+        typeof window !== "undefined" ? String(window.location.origin || "").replace(/\/+$/, "") : "";
+      await fetch(tradeNotifyEmailEndpoint(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ offer_id: offerId, spellbook_origin: origin }),
+      });
+    } catch (e) {
+      console.warn("Trade offer email notify:", e);
+    }
+  }
+
+  async function tradeRefreshNotificationBadge() {
+    var badge = document.getElementById("spellbookNotifyBadge");
+    if (!sbClient || !spellbookAuthUser || !badge) return;
+    var res = await sbClient
+      .from("trade_notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", spellbookAuthUser.id)
+      .is("read_at", null);
+    if (res.error) return;
+    var n = res.count != null ? res.count : 0;
+    if (n > 0) {
+      badge.hidden = false;
+      badge.textContent = n > 99 ? "99+" : String(n);
+    } else {
+      badge.hidden = true;
+    }
+  }
+
+  function tradeNotifyPollStop() {
+    if (tradeNotifyPollTimer) {
+      clearInterval(tradeNotifyPollTimer);
+      tradeNotifyPollTimer = null;
+    }
+  }
+
+  function tradeNotifyPollStart() {
+    tradeNotifyPollStop();
+    if (!sbClient || !spellbookAuthUser) return;
+    tradeNotifyPollTimer = setInterval(function () {
+      tradeRefreshNotificationBadge();
+      if (typeof activeTab !== "undefined" && activeTab === "inbox" && spellbookInboxActiveOfferId) {
+        tradeInboxReloadThread();
+      }
+    }, 45000);
+  }
+
+  async function tradeInboxMarkNotificationsReadForOffer(offerId) {
+    if (!sbClient || !spellbookAuthUser || !offerId) return;
+    await sbClient
+      .from("trade_notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("user_id", spellbookAuthUser.id)
+      .eq("offer_id", offerId)
+      .is("read_at", null);
+    await tradeRefreshNotificationBadge();
+  }
+
+  async function tradeInboxListRelevantOffers() {
+    if (!sbClient || !spellbookAuthUser) return [];
+    var uid = spellbookAuthUser.id;
+    var lr = await sbClient.from("trade_listings").select("id").eq("seller_id", uid);
+    if (lr.error) return [];
+    var listingIds = (lr.data || []).map(function (r) {
+      return r.id;
+    });
+    var q = sbClient
+      .from("trade_offers")
+      .select("id, listing_id, proposer_id, status, created_at, updated_at, mode")
+      .order("updated_at", { ascending: false });
+    if (listingIds.length) {
+      q = q.or("proposer_id.eq." + uid + ",listing_id.in.(" + listingIds.join(",") + ")");
+    } else {
+      q = q.eq("proposer_id", uid);
+    }
+    var offRes = await q;
+    if (offRes.error) return [];
+    return offRes.data || [];
+  }
+
+  async function tradeInboxRefreshThreads() {
+    var listEl = document.getElementById("inboxThreadList");
+    if (!listEl || !sbClient || !spellbookAuthUser) return;
+    listEl.innerHTML = "";
+    var offers = await tradeInboxListRelevantOffers();
+    if (!offers.length) {
+      var emptyL = document.createElement("p");
+      emptyL.className = "hint";
+      emptyL.style.padding = "0.75rem";
+      emptyL.textContent = "No conversations yet.";
+      listEl.appendChild(emptyL);
+      return;
+    }
+    var lids = [];
+    offers.forEach(function (o) {
+      if (lids.indexOf(o.listing_id) < 0) lids.push(o.listing_id);
+    });
+    var cardByLid = Object.create(null);
+    if (lids.length) {
+      var lres = await sbClient.from("trade_listings").select("id, card").in("id", lids);
+      if (!lres.error && lres.data) {
+        lres.data.forEach(function (row) {
+          cardByLid[row.id] = row.card || {};
+        });
+      }
+    }
+    var offerIds = offers.map(function (o) {
+      return o.id;
+    });
+    var lastByOffer = Object.create(null);
+    if (offerIds.length) {
+      var mres = await sbClient
+        .from("trade_offer_messages")
+        .select("offer_id, body, created_at, sender_id")
+        .in("offer_id", offerIds)
+        .order("created_at", { ascending: true });
+      if (!mres.error && mres.data) {
+        mres.data.forEach(function (m) {
+          lastByOffer[m.offer_id] = m;
+        });
+      }
+    }
+    var uid = spellbookAuthUser.id;
+    offers.forEach(function (o) {
+      var card = cardByLid[o.listing_id] || {};
+      var title = card.name || "Trade";
+      var role = o.proposer_id === uid ? "You proposed" : "On your listing";
+      var last = lastByOffer[o.id];
+      var preview = last
+        ? (last.body || "").slice(0, 80) + ((last.body || "").length > 80 ? "…" : "")
+        : "No messages yet — open to discuss.";
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "inbox-thread-item" + (spellbookInboxActiveOfferId === o.id ? " on" : "");
+      btn.innerHTML =
+        "<strong>" +
+        escapeHtml(title) +
+        "</strong><span class=\"hint\" style=\"display:block;font-size:0.72rem;margin-top:0.2rem;\">" +
+        escapeHtml(o.status || "") +
+        " · " +
+        escapeHtml(role) +
+        "</span><span class=\"preview\">" +
+        escapeHtml(preview) +
+        "</span>";
+      btn.addEventListener("click", function () {
+        tradeInboxSelectOffer(o, card, title);
+      });
+      listEl.appendChild(btn);
+    });
+  }
+
+  async function tradeInboxSelectOffer(offer, card, title) {
+    spellbookInboxActiveOfferId = offer.id;
+    await tradeInboxMarkNotificationsReadForOffer(offer.id);
+    var empty = document.getElementById("inboxThreadEmpty");
+    var panel = document.getElementById("inboxThreadPanel");
+    var titleEl = document.getElementById("inboxThreadTitle");
+    var metaEl = document.getElementById("inboxThreadMeta");
+    if (empty) empty.style.display = "none";
+    if (panel) panel.style.display = "";
+    if (titleEl) titleEl.textContent = title || "Trade";
+    var modeL = offer.mode === "mediated" ? "Mediated" : "Peer";
+    if (metaEl)
+      metaEl.textContent =
+        "Status: " +
+        (offer.status || "") +
+        " · " +
+        modeL +
+        " · Ref " +
+        String(offer.id || "").slice(0, 8);
+    await tradeInboxReloadThread();
+    await tradeInboxRefreshThreads();
+  }
+
+  async function tradeInboxReloadThread() {
+    var box = document.getElementById("inboxMessages");
+    if (!box || !spellbookInboxActiveOfferId || !sbClient || !spellbookAuthUser) return;
+    var uid = spellbookAuthUser.id;
+    var res = await sbClient
+      .from("trade_offer_messages")
+      .select("id, sender_id, body, created_at")
+      .eq("offer_id", spellbookInboxActiveOfferId)
+      .order("created_at", { ascending: true });
+    box.innerHTML = "";
+    if (res.error) {
+      box.innerHTML = "<p class=\"hint\">Could not load messages.</p>";
+      return;
+    }
+    var rows = res.data || [];
+    if (!rows.length) {
+      var ph = document.createElement("p");
+      ph.className = "hint";
+      ph.textContent = "No messages yet. Say hello below.";
+      box.appendChild(ph);
+    } else {
+      rows.forEach(function (m) {
+        var div = document.createElement("div");
+        div.className = "inbox-msg" + (m.sender_id === uid ? " mine" : "");
+        var meta = document.createElement("div");
+        meta.className = "inbox-msg-meta";
+        meta.textContent =
+          (m.sender_id === uid ? "You" : "Partner") +
+          " · " +
+          new Date(m.created_at || Date.now()).toLocaleString();
+        var bod = document.createElement("div");
+        bod.textContent = m.body || "";
+        div.appendChild(meta);
+        div.appendChild(bod);
+        box.appendChild(div);
+      });
+    }
+    box.scrollTop = box.scrollHeight;
+  }
+
+  async function tradeInboxSendReply() {
+    var ta = document.getElementById("inboxReplyBody");
+    if (!ta || !spellbookInboxActiveOfferId || !sbClient || !spellbookAuthUser) return;
+    var body = (ta.value || "").trim();
+    if (!body) return;
+    var ins = await sbClient.from("trade_offer_messages").insert({
+      offer_id: spellbookInboxActiveOfferId,
+      sender_id: spellbookAuthUser.id,
+      body: body,
+    });
+    if (ins.error) {
+      alert(ins.error.message || String(ins.error));
+      return;
+    }
+    ta.value = "";
+    await tradeInboxReloadThread();
+    await tradeRefreshNotificationBadge();
+    await tradeInboxRefreshThreads();
+  }
 
   function tradeFeeMoney(cents) {
     return formatMoney(cents / 100);
@@ -9687,6 +10096,7 @@
     tradeRenderBrowse();
     tradeRenderBloc();
     await tradeLoadActivity();
+    await tradeRefreshNotificationBadge();
   }
 
   function tradeHubFilteredRows() {
@@ -10178,23 +10588,32 @@
       return tradeListingCardPayload(tradeProposeStackByKey[k] || {});
     });
     var oversight = mode === "mediated" ? TRADE_OVERSIGHT_SURCHARGE_CENTS : 0;
-    var ins = await sbClient.from("trade_offers").insert({
-      listing_id: tradeActiveListingForPropose.id,
-      proposer_id: spellbookAuthUser.id,
-      offer_cards: offerCards,
-      mode: mode,
-      status: "pending",
-      trading_fee_cents: TRADE_BASE_FEE_CENTS,
-      oversight_fee_cents: oversight,
-    });
+    var ins = await sbClient
+      .from("trade_offers")
+      .insert({
+        listing_id: tradeActiveListingForPropose.id,
+        proposer_id: spellbookAuthUser.id,
+        offer_cards: offerCards,
+        mode: mode,
+        status: "pending",
+        trading_fee_cents: TRADE_BASE_FEE_CENTS,
+        oversight_fee_cents: oversight,
+      })
+      .select("id")
+      .maybeSingle();
     if (ins.error) {
       if (err) err.textContent = ins.error.message || String(ins.error);
       return;
     }
+    var newOfferId = ins.data && ins.data.id;
     document.getElementById("tradeProposeDialog").close();
     tradeActiveListingForPropose = null;
     await tradeHubRefreshAll();
     tradeHubSetSubtab("activity");
+    if (newOfferId) {
+      await tradeNotifySellerByEmail(newOfferId);
+      await tradeRefreshNotificationBadge();
+    }
     alert("Proposal sent. Fees will be collected via YesMagic checkout in a future update.");
   }
 
@@ -10265,6 +10684,8 @@
       });
     var sub = document.getElementById("tradeProposeSubmit");
     if (sub) sub.addEventListener("click", tradeSubmitPropose);
+    var inboxSend = document.getElementById("btnInboxSend");
+    if (inboxSend) inboxSend.addEventListener("click", tradeInboxSendReply);
   }
 
   function renderCollection() {

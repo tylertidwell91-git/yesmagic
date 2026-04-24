@@ -216,6 +216,21 @@ The anon key is safe in the browser; **Row Level Security** on `spellbook_data` 
 
 After the main Spellbook table exists, run **`scripts/spellbook-trading-schema.sql`** in the Supabase SQL Editor. That creates `trade_listings` and `trade_offers` with RLS so members can list cards and exchange proposals. Fees shown in the UI are placeholders until Stripe checkout is wired for Spellbook.
 
+Then run **`scripts/spellbook-trade-messaging-schema.sql`**. That adds `trade_offer_messages`, `trade_notifications`, and triggers so sellers get an in-app notification when they receive an offer, and either party gets notified on new messages. The Spellbook **Inbox** tab uses these tables.
+
+### Trade offer emails (seller’s account email)
+
+After a member submits a trade proposal, the app calls **`/api/spellbook-trade-offer-email`** on the same Netlify site. The function verifies the caller’s Supabase session, loads the offer, and emails the **listing owner** using the same SMTP settings as the shop (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, optional `SMTP_FROM`).
+
+On **Netlify → Site settings → Environment variables**, add:
+
+- **`SPELLBOOK_SUPABASE_SERVICE_ROLE_KEY`** — from Supabase **Project Settings → API** (server only; never put this in `config.js` or the browser).
+- Optionally **`SPELLBOOK_PUBLIC_URL`** — e.g. `https://spellbook.yesmagicshop.com` (link in the email body).
+
+Ensure **`ALLOWED_ORIGINS`** includes your Spellbook origin (e.g. `https://spellbook.yesmagicshop.com`) so CORS allows the browser request.
+
+If the Spellbook UI is served from a different hostname than the Netlify site that hosts functions, set **`SPELLBOOK_TRADE_NOTIFY_BASE`** to the Netlify site origin (e.g. `https://yesmagicshop.com`) so `config.js` points trade emails at the correct API. Rebuild after changing env vars.
+
 ### Sign-up error: “Invalid path specified in request URL”
 
 1. **Netlify `SPELLBOOK_SUPABASE_URL`** must be **only** the Supabase **project URL** (Dashboard → Project Settings → API → **Project URL**), for example `https://abcdefgh.supabase.co` — **no** `/rest/v1`, `/auth/v1`, or trailing path.
