@@ -2610,6 +2610,103 @@
       display: none;
     }
 
+    /* Propose-trade dialog: opaque shell + body text (not .hint muted) */
+    #tradeProposeDialog .card-lightbox-inner {
+      align-items: stretch;
+      width: min(94vw, 520px);
+      max-width: min(94vw, 520px);
+      padding: 1.15rem 1.2rem 1.25rem;
+      margin: 0 auto;
+      text-align: left;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: linear-gradient(175deg, var(--elevated) 0%, var(--surface) 100%);
+      box-shadow:
+        0 24px 64px rgba(15, 23, 42, 0.22),
+        0 0 0 1px rgba(255, 255, 255, 0.06);
+      color: var(--text);
+    }
+
+    #tradeProposeDialog #tradeProposeTitle {
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      width: 100%;
+    }
+
+    #tradeProposeDialog #tradeProposeTargetSummary {
+      font-size: 0.95rem;
+      font-weight: 500;
+      font-style: normal;
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    #tradeProposeDialog #tradeProposeTargetSummary strong {
+      font-weight: 700;
+    }
+
+    #tradeProposeDialog .trade-propose-preview-deal {
+      margin-bottom: 1rem;
+      padding: 0.85rem 0.65rem 0.95rem;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: linear-gradient(165deg, var(--elevated), var(--surface));
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    #tradeProposeDialog .trade-offer-pole-label {
+      font-size: 0.68rem;
+      color: var(--text);
+      letter-spacing: 0.1em;
+      opacity: 0.9;
+    }
+
+    #tradeProposeDialog .trade-offer-pole-title {
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+
+    #tradeProposeDialog .trade-offer-pole-meta {
+      font-size: 0.76rem;
+      color: var(--text);
+      opacity: 0.85;
+    }
+
+    #tradeProposeDialog .trade-offer-swap-icon {
+      color: var(--text);
+      opacity: 0.8;
+    }
+
+    #tradeProposeDialog fieldset legend {
+      font-size: 0.92rem;
+      font-weight: 700;
+      font-style: normal;
+      color: var(--text);
+      margin-bottom: 0.55rem;
+    }
+
+    #tradeProposeDialog fieldset label {
+      font-size: 0.9rem;
+      line-height: 1.45;
+      color: var(--text);
+    }
+
+    #tradeProposeDialog fieldset label span {
+      color: var(--text);
+    }
+
+    #tradeProposeDialog .trade-propose-offer-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-style: normal;
+      color: var(--text);
+      margin: 1rem 0 0.5rem;
+    }
+
     .trade-propose-placeholder {
       width: 100%;
       max-width: 108px;
@@ -3568,20 +3665,20 @@
       <div class="card-lightbox-inner" style="min-width:min(94vw,520px);max-height:min(88vh,640px);overflow:auto;">
         <button type="button" class="card-lightbox-close" id="tradeProposeClose" aria-label="Close">Close</button>
         <h4 id="tradeProposeTitle" class="pv-name" style="margin:0 0 0.5rem;">Propose a trade</h4>
-        <p id="tradeProposeTargetSummary" class="hint" style="margin:0 0 0.65rem;line-height:1.5;"></p>
+        <p id="tradeProposeTargetSummary" style="margin:0 0 0.65rem;line-height:1.5;"></p>
         <div id="tradeProposeDealPreview" class="trade-propose-preview-host"></div>
         <fieldset style="border:none;margin:0;padding:0;">
-          <legend class="hint" style="margin-bottom:0.5rem;font-weight:600;">Trade mode</legend>
+          <legend style="margin-bottom:0.5rem;">Trade mode</legend>
           <label style="display:flex;gap:0.5rem;align-items:flex-start;margin-bottom:0.5rem;cursor:pointer;">
             <input type="radio" name="tradeMode" id="tradeModePeer" value="peer" checked />
-            <span><strong>Peer</strong> — coordinate shipping yourselves. Platform trading fee <span id="tradeFeePeerDisplay"></span> (checkout coming soon).</span>
+            <span><strong>Peer</strong> — coordinate shipping yourselves. Platform fee <span id="tradeFeePeerDisplay"></span> (checkout when enabled).</span>
           </label>
           <label style="display:flex;gap:0.5rem;align-items:flex-start;cursor:pointer;">
             <input type="radio" name="tradeMode" id="tradeModeMediated" value="mediated" />
-            <span><strong>YesMagic mediated</strong> — we confirm both sides. Trading fee + oversight <span id="tradeFeeMediatedDisplay"></span> (checkout coming soon).</span>
+            <span><strong>YesMagic mediated</strong> — we confirm both sides. <span id="tradeFeeMediatedDisplay"></span> (checkout when enabled).</span>
           </label>
         </fieldset>
-        <p class="hint" style="margin:1rem 0 0.5rem;">Your cards offered (from library)</p>
+        <p class="trade-propose-offer-label">Your cards offered (from library)</p>
         <div id="tradeProposeOfferPick" class="chip-grid" style="flex-direction:column;align-items:stretch;gap:0.35rem;"></div>
         <p id="tradeProposeError" class="hint" style="color:var(--danger);min-height:1.2rem;margin:0.75rem 0 0;"></p>
         <div class="row" style="margin-top:1rem;gap:0.5rem;">
@@ -3595,11 +3692,11 @@
       <h2>Community trading hub</h2>
       <p class="hint" style="max-width:46rem;line-height:1.55;">
         List stacks from your <strong>library</strong> in your trading bloc so other signed-in members can discover them — your library stays as-is; listings are copies on the hub.
-        When you find a card you want, propose a trade with your own cards — either <strong>peer-to-peer</strong> or with <strong>YesMagic mediation</strong> (we confirm both shipments). Fees apply per exchange; card payments will use YesMagic checkout in a future update.
+        When you find a card you want, propose a trade with your own cards — either <strong>peer-to-peer</strong> (no platform fee) or with <strong>YesMagic mediation</strong> (we confirm both shipments; <strong>$10 per side</strong>, billed at checkout when enabled).
       </p>
       <div class="trade-fee-callout" role="note">
         <strong>Fees (preview):</strong> <span id="tradeFeeSummaryLine"></span>
-        Mediated trades include a higher oversight fee so YesMagic can verify both ends. Stripe checkout for Spellbook will be wired to the shop in a follow-up release — for now proposals are recorded and you can coordinate off-site.
+        Mediated trades charge <strong>$10 per participant</strong> ($20 per exchange) so YesMagic can verify both shipments. Checkout for Spellbook will be wired in a follow-up release — for now proposals are recorded and you can coordinate off-site.
       </div>
       <nav class="trade-subtabs" role="tablist" aria-label="Trading hub sections">
         <button type="button" class="on" data-trade-sub="browse">All listings</button>
@@ -10850,8 +10947,11 @@
     if (bDeck) bDeck.addEventListener("click", function () { preconRunImport("deck_only"); });
   })();
 
-  var TRADE_BASE_FEE_CENTS = 99;
-  var TRADE_OVERSIGHT_SURCHARGE_CENTS = 299;
+  /** Peer trades: no platform fee. Mediated: $10 per participant (stored split across two columns). */
+  var TRADE_PEER_TOTAL_FEE_CENTS = 0;
+  var TRADE_MEDIATED_PER_SIDE_CENTS = 1000;
+  var TRADE_MEDIATED_TOTAL_FEE_CENTS =
+    TRADE_MEDIATED_PER_SIDE_CENTS + TRADE_MEDIATED_PER_SIDE_CENTS;
   var tradeHubRows = [];
   var tradeBlocRows = [];
   var tradeActiveListingForPropose = null;
@@ -11507,6 +11607,11 @@
 
   function tradeFeeMoney(cents) {
     return formatMoney(cents / 100);
+  }
+
+  function tradeOfferStoredTotalFeeCents(offer) {
+    if (!offer) return 0;
+    return (Number(offer.trading_fee_cents) || 0) + (Number(offer.oversight_fee_cents) || 0);
   }
 
   function tradeListingCardPayload(stack) {
@@ -12365,15 +12470,24 @@
     var footer = document.createElement("div");
     footer.className = "trade-offer-card-footer";
 
-    var totalCents =
-      (offer.trading_fee_cents || TRADE_BASE_FEE_CENTS) +
-      (offer.oversight_fee_cents || 0);
+    var totalCents = tradeOfferStoredTotalFeeCents(offer);
     var feeP = document.createElement("p");
     feeP.className = "trade-offer-fees";
-    feeP.innerHTML =
+    var feeInner =
       "Fees (preview) for this exchange: <strong>" +
-      escapeHtml(tradeFeeMoney(totalCents)) +
-      "</strong> total.";
+      (totalCents <= 0
+        ? "Free"
+        : escapeHtml(tradeFeeMoney(totalCents))) +
+      "</strong>";
+    if (totalCents > 0 && offer.mode === "mediated") {
+      feeInner +=
+        " total (" +
+        escapeHtml(tradeFeeMoney(TRADE_MEDIATED_PER_SIDE_CENTS)) +
+        " per side)";
+    } else if (totalCents > 0) {
+      feeInner += " total";
+    }
+    feeP.innerHTML = feeInner + ".";
     footer.appendChild(feeP);
 
     if (offer.status === "awaiting_confirmation" && offer.mode === "mediated") {
@@ -12652,11 +12766,13 @@
     }
     var peer = document.getElementById("tradeFeePeerDisplay");
     var med = document.getElementById("tradeFeeMediatedDisplay");
-    if (peer) peer.textContent = tradeFeeMoney(TRADE_BASE_FEE_CENTS);
+    if (peer) peer.textContent = "Free";
     if (med)
-      med.textContent = tradeFeeMoney(
-        TRADE_BASE_FEE_CENTS + TRADE_OVERSIGHT_SURCHARGE_CENTS
-      );
+      med.textContent =
+        tradeFeeMoney(TRADE_MEDIATED_PER_SIDE_CENTS) +
+        " per side (" +
+        tradeFeeMoney(TRADE_MEDIATED_TOTAL_FEE_CENTS) +
+        " total)";
     var pick = document.getElementById("tradeProposeOfferPick");
     var err = document.getElementById("tradeProposeError");
     if (err) err.textContent = "";
@@ -12707,7 +12823,7 @@
     var offerCards = keys.map(function (k) {
       return tradeListingCardPayload(tradeProposeStackByKey[k] || {});
     });
-    var oversight = mode === "mediated" ? TRADE_OVERSIGHT_SURCHARGE_CENTS : 0;
+    var isMediated = mode === "mediated";
     var ins = await sbClient
       .from("trade_offers")
       .insert({
@@ -12716,8 +12832,12 @@
         offer_cards: offerCards,
         mode: mode,
         status: "pending",
-        trading_fee_cents: TRADE_BASE_FEE_CENTS,
-        oversight_fee_cents: oversight,
+        trading_fee_cents: isMediated
+          ? TRADE_MEDIATED_PER_SIDE_CENTS
+          : TRADE_PEER_TOTAL_FEE_CENTS,
+        oversight_fee_cents: isMediated
+          ? TRADE_MEDIATED_PER_SIDE_CENTS
+          : TRADE_PEER_TOTAL_FEE_CENTS,
       })
       .select("id")
       .maybeSingle();
@@ -12734,7 +12854,15 @@
       await tradeNotifySellerByEmail(newOfferId);
       await tradeRefreshNotificationBadge();
     }
-    alert("Proposal sent. Fees will be collected via YesMagic checkout in a future update.");
+    alert(
+      mode === "mediated"
+        ? "Proposal sent. Mediated trades bill $" +
+            (TRADE_MEDIATED_PER_SIDE_CENTS / 100).toFixed(0) +
+            " per side ($" +
+            (TRADE_MEDIATED_TOTAL_FEE_CENTS / 100).toFixed(0) +
+            " total) at checkout when billing is enabled."
+        : "Proposal sent. Peer trades have no platform fee; coordinate shipping with your partner."
+    );
   }
 
   function tradeHubWireEvents() {
@@ -12743,11 +12871,11 @@
     var feeLine = document.getElementById("tradeFeeSummaryLine");
     if (feeLine) {
       feeLine.innerHTML =
-        "Peer trade <strong>" +
-        tradeFeeMoney(TRADE_BASE_FEE_CENTS) +
-        "</strong> · Mediated (YesMagic) <strong>" +
-        tradeFeeMoney(TRADE_BASE_FEE_CENTS + TRADE_OVERSIGHT_SURCHARGE_CENTS) +
-        "</strong> total.";
+        "Peer trades: <strong>free</strong>. Mediated (YesMagic): <strong>" +
+        tradeFeeMoney(TRADE_MEDIATED_PER_SIDE_CENTS) +
+        " per side</strong> (" +
+        tradeFeeMoney(TRADE_MEDIATED_TOTAL_FEE_CENTS) +
+        " per exchange).";
     }
     document.querySelectorAll(".trade-subtabs [data-trade-sub]").forEach(function (btn) {
       btn.addEventListener("click", function () {
