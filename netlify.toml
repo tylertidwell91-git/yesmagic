@@ -71,9 +71,22 @@
   status = 200
   force = true
 
-# Spellbook (public/spellbook/index.html): subdomain + short path on primary domain
+# Spellbook (public/spellbook/index.html): subdomain + short path on primary domain.
+# Root URL must be explicit: "/*" alone does not match path "/". Do not re-add
+# public/_redirects with /* → index.html — Netlify applies _redirects BEFORE this
+# file and it would override these rules on every hostname.
+[[redirects]]
+  from = "https://spellbook.yesmagicshop.com/"
+  to = "/spellbook/index.html"
+  status = 200
+  force = true
 [[redirects]]
   from = "https://spellbook.yesmagicshop.com/*"
+  to = "/spellbook/index.html"
+  status = 200
+  force = true
+[[redirects]]
+  from = "http://spellbook.yesmagicshop.com/"
   to = "/spellbook/index.html"
   status = 200
   force = true
