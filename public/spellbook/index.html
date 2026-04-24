@@ -2465,6 +2465,9 @@
               </select>
             </div>
             <button type="button" class="secondary" id="btnSendToDeck" disabled>Send to deck</button>
+            <button type="button" class="secondary" id="btnListSelectedForTrade" disabled>
+              List selected for trade
+            </button>
             <div class="hint" id="sendDeckCountHint" style="margin:0;align-self:center;">0 selected</div>
             <button type="button" class="secondary" id="btnExport">Export JSON</button>
             <button type="button" class="secondary danger" id="btnClearAll">Clear all</button>
@@ -2904,7 +2907,7 @@
     <section id="panel-trading" class="panel">
       <h2>Community trading hub</h2>
       <p class="hint" style="max-width:46rem;line-height:1.55;">
-        Move stacks from your <strong>library</strong> into your trading bloc so other signed-in members can discover them.
+        List stacks from your <strong>library</strong> in your trading bloc so other signed-in members can discover them — your library stays as-is; listings are copies on the hub.
         When you find a card you want, propose a trade with your own cards — either <strong>peer-to-peer</strong> or with <strong>YesMagic mediation</strong> (we confirm both shipments). Fees apply per exchange; card payments will use YesMagic checkout in a future update.
       </p>
       <div class="trade-fee-callout" role="note">
@@ -3534,6 +3537,7 @@
     sendDeckSelect: document.getElementById("sendDeckSelect"),
     sendDeckZoneSelect: document.getElementById("sendDeckZoneSelect"),
     btnSendToDeck: document.getElementById("btnSendToDeck"),
+    btnListSelectedForTrade: document.getElementById("btnListSelectedForTrade"),
     sendDeckCountHint: document.getElementById("sendDeckCountHint"),
     sendDeckDialog: document.getElementById("sendDeckDialog"),
     dialogDeckSelect: document.getElementById("dialogDeckSelect"),
@@ -9265,11 +9269,15 @@
   }
 
   function updateSendButtonState() {
-    if (!els.btnSendToDeck) return;
     var selCount = Object.keys(selectedLibraryStacks).length;
     var hasSel = selCount > 0;
     var hasDeck = !!(els.sendDeckSelect && els.sendDeckSelect.value);
-    els.btnSendToDeck.disabled = !(hasSel && hasDeck);
+    if (els.btnSendToDeck) {
+      els.btnSendToDeck.disabled = !(hasSel && hasDeck);
+    }
+    if (els.btnListSelectedForTrade) {
+      els.btnListSelectedForTrade.disabled = !hasSel;
+    }
     if (els.sendDeckCountHint) {
       els.sendDeckCountHint.textContent = selCount + " selected";
     }
@@ -9993,18 +10001,16 @@
     return s ? "Member · " + s.slice(0, 8) : "Member";
   }
 
-  async function tradePublishListing(stack) {
+  /**
+   * @param {{ navigate?: boolean }} opts navigate: go to Trading → bloc and refresh hub (default true).
+   */
+  async function tradePublishListing(stack, opts) {
+    opts = opts || {};
+    var navigate = opts.navigate !== false;
     if (!sbClient || !spellbookAuthUser) {
       alert("Sign in to list cards for trade.");
-      return;
+      return { ok: false };
     }
-    var msg =
-      "Move this stack (" +
-      stack.count +
-      "× " +
-      stack.name +
-      ") from your library to the public trading hub? It will leave your library here.";
-    if (!confirm(msg)) return;
     var card = tradeListingCardPayload(stack);
     var ins = await sbClient
       .from("trade_listings")
@@ -10018,20 +10024,48 @@
       .maybeSingle();
     if (ins.error) {
       alert(ins.error.message || String(ins.error));
+      return { ok: false, error: ins.error };
+    }
+    if (navigate) {
+      await tradeHubRefreshAll();
+      showTab("trading");
+      tradeHubSetSubtab("bloc");
+      if (els.addMessage) {
+        els.addMessage.textContent =
+          "Listed " + (stack.count || 1) + "× " + (stack.name || "card") + " for trade (library unchanged).";
+      }
+    }
+    return { ok: true };
+  }
+
+  async function tradePublishSelectedForTrade() {
+    if (!sbClient || !spellbookAuthUser) {
+      alert("Sign in to list cards for trade.");
       return;
     }
-    var uidSet = Object.create(null);
-    (stack.uids || []).forEach(function (id) {
-      uidSet[id] = true;
+    var grouped = groupCollectionStacks(collection);
+    var toList = [];
+    grouped.forEach(function (g) {
+      var k = collectionStackKey(g);
+      if (selectedLibraryStacks[k]) toList.push(g);
     });
-    collection = collection.filter(function (x) {
-      return !uidSet[x.uid];
-    });
-    saveCollection(collection);
-    renderCollection();
+    if (!toList.length) return;
+    var okCount = 0;
+    for (var i = 0; i < toList.length; i++) {
+      var res = await tradePublishListing(toList[i], { navigate: false });
+      if (!res || !res.ok) break;
+      okCount++;
+    }
+    selectedLibraryStacks = Object.create(null);
+    updateSendButtonState();
     await tradeHubRefreshAll();
+    if (els.addMessage) {
+      els.addMessage.textContent =
+        "Listed " + okCount + " stack(s) for trade (library unchanged).";
+    }
     showTab("trading");
     tradeHubSetSubtab("bloc");
+    renderCollection();
   }
 
   async function tradeDelistListing(listingId) {
@@ -10916,7 +10950,7 @@
       listTrade.type = "button";
       listTrade.className = "secondary";
       listTrade.textContent = "List for trade";
-      listTrade.title = "Move this stack to your public trading bloc";
+      listTrade.title = "Add this stack to your public trading bloc (library unchanged)";
       listTrade.addEventListener("click", function () {
         tradePublishListing(c);
       });
@@ -10927,7 +10961,7 @@
       pick.type = "checkbox";
       pick.className = "stack-select";
       pick.checked = !!selectedLibraryStacks[stackKey];
-      pick.title = "Select this card stack to send to a deck";
+      pick.title = "Select stack for Send to deck or List selected for trade";
       pick.addEventListener("click", function (ev) {
         ev.stopPropagation();
       });
@@ -11371,6 +11405,12 @@
         els.dialogDeckZoneSelect.value = els.sendDeckZoneSelect.value || "main";
       }
       if (els.sendDeckDialog) els.sendDeckDialog.showModal();
+    });
+  }
+
+  if (els.btnListSelectedForTrade) {
+    els.btnListSelectedForTrade.addEventListener("click", function () {
+      tradePublishSelectedForTrade();
     });
   }
 
