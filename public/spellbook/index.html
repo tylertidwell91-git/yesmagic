@@ -2286,7 +2286,6 @@
       <button type="button" data-tab="advisor">Deck advisor</button>
       <button type="button" data-tab="trading">Trading hub</button>
       <button type="button" data-tab="inbox">Inbox</button>
-      <button type="button" data-tab="settings">Settings</button>
     </nav>
 
     <div id="valueBanner" class="value-banner" aria-live="polite">
@@ -3058,49 +3057,6 @@
       </div>
     </section>
 
-    <section id="panel-settings" class="panel">
-      <h2>Mana conduit</h2>
-      <div class="grid2">
-        <div>
-          <label for="apiBase">API base URL</label>
-          <input type="text" id="apiBase" placeholder="https://api.manapool.com" autocomplete="off" />
-        </div>
-        <div>
-          <label for="apiToken">Bearer token</label>
-          <input type="password" id="apiToken" placeholder="Paste API token" autocomplete="off" />
-        </div>
-      </div>
-
-      <label for="searchUrlTpl" style="margin-top:1rem;">Search request URL template</label>
-      <input type="text" id="searchUrlTpl"
-        placeholder="Example: {{base}}/v1/catalog/search?q={{q}}" autocomplete="off" />
-      <p class="hint">Use <code style="color:var(--accent);">{{base}}</code> and <code style="color:var(--accent);">{{q}}</code> placeholders. Must match your docs at manapool.com/api/docs/v1.</p>
-
-      <label for="detailUrlTpl" style="margin-top:0.75rem;">Card detail URL template (optional)</label>
-      <input type="text" id="detailUrlTpl"
-        placeholder="{{base}}/v1/catalog/cards/{{id}}" autocomplete="off" />
-      <p class="hint">Placeholders: <code style="color:var(--accent);">{{id}}</code>, <code style="color:var(--accent);">{{name}}</code>.</p>
-
-      <label style="margin-top:1rem;">
-        <input type="checkbox" id="useDemoBridge" />
-        Prefer catalog lookup for search &amp; previews (even when Mana Pool URLs are set)
-      </label>
-      <p class="hint">
-        If your Mana Pool base URL and search template are not filled in, the app automatically uses the public card catalog for suggestions and card images so everything works out of the box.
-        Check this if you want that catalog even after you configure Mana Pool (for example while testing).
-      </p>
-
-      <div class="row" style="margin-top:1rem;">
-        <button type="button" class="primary" id="btnSaveSettings">Save settings</button>
-        <button type="button" class="secondary" id="btnTestSearch">Test search: “Lightning Bolt”</button>
-      </div>
-      <div id="settingsAlert" class="alert" style="display:none;"></div>
-
-      <h2 style="margin-top:1.75rem;">Arcane mapping</h2>
-      <p class="hint">If Mana Pool returns a custom JSON shape, adjust <code style="color:var(--accent);">window.MANAPOOL_PARSE_SEARCH</code> and <code style="color:var(--accent);">window.MANAPOOL_PARSE_CARD</code> in this file’s script block.</p>
-      <textarea id="mapperNote" readonly rows="4" style="margin-top:0.5rem;">Default parsers normalize arrays under results / data / cards / items; card objects may include name, id, image (url string or {small,normal}), price / prices / market / categories.</textarea>
-    </section>
-
     <footer class="fine"></footer>
   </div>
   </div>
@@ -3473,6 +3429,27 @@
     scheduleSpellbookCloudSave();
   }
 
+  /** Build settings object for save, preserving Mana Pool fields from cloud `settings` (no Settings UI). */
+  function spellbookSnapshotSettings(overrides) {
+    var o = {
+      apiBase: String(settings.apiBase || "").trim(),
+      apiToken: settings.apiToken || "",
+      searchUrlTpl: String(settings.searchUrlTpl || "").trim(),
+      detailUrlTpl: String(settings.detailUrlTpl || "").trim(),
+      useDemoBridge: settings.useDemoBridge === undefined ? true : !!settings.useDemoBridge,
+      deckRulesMode: deckRulesMode,
+      libraryViewMode:
+        (els.libraryViewMode && els.libraryViewMode.value) ||
+        (settings.libraryViewMode === "condensed" ? "condensed" : "standard"),
+    };
+    if (overrides && typeof overrides === "object") {
+      Object.keys(overrides).forEach(function (k) {
+        o[k] = overrides[k];
+      });
+    }
+    return o;
+  }
+
   function saveCollection(items) {
     collection = items || [];
     scheduleSpellbookCloudSave();
@@ -3526,7 +3503,6 @@
     panelAdvisor: document.getElementById("panel-advisor"),
     panelTrading: document.getElementById("panel-trading"),
     panelInbox: document.getElementById("panel-inbox"),
-    panelSettings: document.getElementById("panel-settings"),
     searchInput: document.getElementById("searchInput"),
     suggestions: document.getElementById("suggestions"),
     finishSelect: document.getElementById("finishSelect"),
@@ -3571,14 +3547,6 @@
     btnClearFilters: document.getElementById("btnClearFilters"),
     btnExport: document.getElementById("btnExport"),
     btnClearAll: document.getElementById("btnClearAll"),
-    apiBase: document.getElementById("apiBase"),
-    apiToken: document.getElementById("apiToken"),
-    searchUrlTpl: document.getElementById("searchUrlTpl"),
-    detailUrlTpl: document.getElementById("detailUrlTpl"),
-    useDemoBridge: document.getElementById("useDemoBridge"),
-    btnSaveSettings: document.getElementById("btnSaveSettings"),
-    btnTestSearch: document.getElementById("btnTestSearch"),
-    settingsAlert: document.getElementById("settingsAlert"),
     valueBanner: document.getElementById("valueBanner"),
     activeDeckSelect: document.getElementById("activeDeckSelect"),
     activeDeckZoneSelect: document.getElementById("activeDeckZoneSelect"),
@@ -3736,12 +3704,6 @@
   }
 
   function spellbookPopulateFormsFromSettings() {
-    els.apiBase.value = settings.apiBase || "";
-    els.apiToken.value = settings.apiToken || "";
-    els.searchUrlTpl.value = settings.searchUrlTpl || "";
-    els.detailUrlTpl.value = settings.detailUrlTpl || "";
-    els.useDemoBridge.checked =
-      settings.useDemoBridge === undefined ? true : !!settings.useDemoBridge;
     if (els.deckRulesModeSelect) els.deckRulesModeSelect.value = deckRulesMode;
     if (els.libraryViewMode) {
       els.libraryViewMode.value = settings.libraryViewMode === "condensed" ? "condensed" : "standard";
@@ -3974,7 +3936,6 @@
     if (els.panelAdvisor) els.panelAdvisor.classList.toggle("active", id === "advisor");
     if (els.panelTrading) els.panelTrading.classList.toggle("active", id === "trading");
     if (els.panelInbox) els.panelInbox.classList.toggle("active", id === "inbox");
-    els.panelSettings.classList.toggle("active", id === "settings");
     if (id === "collection") renderCollection();
     if (id === "decks") renderDeck();
     if (id === "cmdrbuild" && cmdrPreviewDeck) renderCmdrPreviewDeck();
@@ -3999,22 +3960,21 @@
 
   function authHeaders() {
     var h = { Accept: "application/json" };
-    if (els.apiToken.value.trim()) {
-      h.Authorization = "Bearer " + els.apiToken.value.trim();
-    }
+    var tok = String(settings.apiToken || "").trim();
+    if (tok) h.Authorization = "Bearer " + tok;
     return h;
   }
 
   function hasManaPoolSearchConfig() {
-    var base = els.apiBase.value.replace(/\/$/, "").trim();
-    var tpl = els.searchUrlTpl.value.trim();
+    var base = String(settings.apiBase || "").replace(/\/$/, "").trim();
+    var tpl = String(settings.searchUrlTpl || "").trim();
     return !!(base && tpl);
   }
 
   /** When true: Scryfall-backed autocomplete + printings (always works without API keys). */
   function useScryfallLookup() {
     if (!hasManaPoolSearchConfig()) return true;
-    return !!els.useDemoBridge.checked;
+    return settings.useDemoBridge === undefined ? true : !!settings.useDemoBridge;
   }
 
   function expandUrl(tpl, vars) {
@@ -4026,9 +3986,13 @@
   }
 
   async function searchManaPool(q, signal) {
-    var base = els.apiBase.value.replace(/\/$/, "");
-    var tpl = els.searchUrlTpl.value.trim();
-    if (!base || !tpl) throw new Error("Configure API base and search URL template in settings.");
+    var base = String(settings.apiBase || "").replace(/\/$/, "");
+    var tpl = String(settings.searchUrlTpl || "").trim();
+    if (!base || !tpl) {
+      throw new Error(
+        "Mana Pool search is not configured in your saved account data (API base and search URL template)."
+      );
+    }
     var url = expandUrl(tpl, { base: base, q: encodeURIComponent(q) });
     var res = await fetch(url, { headers: authHeaders(), signal: signal });
     if (!res.ok) throw new Error("Search HTTP " + res.status);
@@ -4037,9 +4001,9 @@
   }
 
   async function detailManaPool(id, name) {
-    var tpl = els.detailUrlTpl.value.trim();
+    var tpl = String(settings.detailUrlTpl || "").trim();
     if (!tpl) return null;
-    var base = els.apiBase.value.replace(/\/$/, "");
+    var base = String(settings.apiBase || "").replace(/\/$/, "");
     var url = expandUrl(tpl, {
       base: base,
       id: encodeURIComponent(id || ""),
@@ -8600,15 +8564,12 @@
       activeDeck = finalName;
       deckRulesMode = "commander";
       if (els.deckRulesModeSelect) els.deckRulesModeSelect.value = "commander";
-      saveSettings({
-        apiBase: els.apiBase.value.trim(),
-        apiToken: els.apiToken.value,
-        searchUrlTpl: els.searchUrlTpl.value.trim(),
-        detailUrlTpl: els.detailUrlTpl.value.trim(),
-        useDemoBridge: els.useDemoBridge.checked,
-        deckRulesMode: "commander",
-        libraryViewMode: (els.libraryViewMode && els.libraryViewMode.value) || "standard",
-      });
+      saveSettings(
+        spellbookSnapshotSettings({
+          deckRulesMode: "commander",
+          libraryViewMode: (els.libraryViewMode && els.libraryViewMode.value) || "standard",
+        })
+      );
       saveDecks(decks);
       populateDeckSelects();
       discardCmdrPreview();
@@ -11321,15 +11282,11 @@
   els.filterCollection.addEventListener("input", renderCollection);
   if (els.libraryViewMode) {
     els.libraryViewMode.addEventListener("change", function () {
-      saveSettings({
-        apiBase: els.apiBase.value.trim(),
-        apiToken: els.apiToken.value,
-        searchUrlTpl: els.searchUrlTpl.value.trim(),
-        detailUrlTpl: els.detailUrlTpl.value.trim(),
-        useDemoBridge: els.useDemoBridge.checked,
-        deckRulesMode: deckRulesMode,
-        libraryViewMode: els.libraryViewMode.value || "standard",
-      });
+      saveSettings(
+        spellbookSnapshotSettings({
+          libraryViewMode: els.libraryViewMode.value || "standard",
+        })
+      );
       renderCollection();
       if (activeTab === "decks") renderDeck();
     });
@@ -11445,14 +11402,7 @@
     els.deckRulesModeSelect.addEventListener("change", function () {
       deckRulesMode = els.deckRulesModeSelect.value === "commander" ? "commander" : "casual";
       if (deckRulesMode !== "commander") deckRulesMode = "standard";
-      saveSettings({
-        apiBase: els.apiBase.value.trim(),
-        apiToken: els.apiToken.value,
-        searchUrlTpl: els.searchUrlTpl.value.trim(),
-        detailUrlTpl: els.detailUrlTpl.value.trim(),
-        useDemoBridge: els.useDemoBridge.checked,
-        deckRulesMode: deckRulesMode,
-      });
+      saveSettings(spellbookSnapshotSettings({ deckRulesMode: deckRulesMode }));
       renderDeck();
     });
   }
@@ -11580,40 +11530,6 @@
     collection = [];
     saveCollection(collection);
     renderCollection();
-  });
-
-  els.btnSaveSettings.addEventListener("click", function () {
-    saveSettings({
-      apiBase: els.apiBase.value.trim(),
-      apiToken: els.apiToken.value,
-      searchUrlTpl: els.searchUrlTpl.value.trim(),
-      detailUrlTpl: els.detailUrlTpl.value.trim(),
-      useDemoBridge: els.useDemoBridge.checked,
-      deckRulesMode: deckRulesMode,
-      libraryViewMode: (els.libraryViewMode && els.libraryViewMode.value) || "standard",
-    });
-    els.settingsAlert.style.display = "block";
-    els.settingsAlert.textContent = "Settings saved to your account.";
-  });
-
-  els.btnTestSearch.addEventListener("click", async function () {
-    els.settingsAlert.style.display = "none";
-    try {
-      if (useScryfallLookup()) {
-        var list = await searchScryfallAutocomplete("Lightning Bolt");
-        els.settingsAlert.style.display = "block";
-        els.settingsAlert.textContent =
-          "Catalog search OK — " + list.length + " suggestion(s) for “Lightning Bolt”.";
-      } else {
-        var rows = await searchManaPool("Lightning Bolt");
-        els.settingsAlert.style.display = "block";
-        els.settingsAlert.textContent =
-          "Mana Pool search OK — " + rows.length + " row(s). Check mapping if zero.";
-      }
-    } catch (e) {
-      els.settingsAlert.style.display = "block";
-      els.settingsAlert.textContent = "Test failed: " + e.message;
-    }
   });
 
   document.addEventListener("click", function (ev) {
