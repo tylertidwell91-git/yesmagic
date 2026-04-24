@@ -185,3 +185,29 @@ This usually means the **browser can’t reach the order server**. Do this:
 
 4. **Restart after changing .env**  
    If you change any `.env` file, restart both the server and the website (`npm start` and `npm run dev`).
+
+---
+
+## The Spellbook — cloud storage (Supabase)
+
+The Spellbook (`public/spellbook/`, e.g. **spellbook.yesmagicshop.com**) saves each signed-in user’s library, decks, and settings in **Supabase**, not in the browser’s localStorage.
+
+### One-time Supabase setup
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Open **SQL Editor**, paste the contents of **`scripts/spellbook-supabase-schema.sql`**, and run it.
+3. Under **Authentication → Providers**, enable **Email** (and adjust “Confirm email” if you want instant sign-in without a confirmation message during testing).
+4. Copy **Project URL** and the **anon public** key from **Project Settings → API**.
+
+### Deploy / local env
+
+In **`yesmagic/.env`** (local) or **`.env.production`** (build) or **Netlify environment variables**, set:
+
+```env
+SPELLBOOK_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+SPELLBOOK_SUPABASE_ANON_KEY=eyJhbGciOiJI...
+```
+
+Running **`npm run dev`** or **`npm run build`** runs **`scripts/inject-spellbook-config.cjs`**, which writes **`public/spellbook/config.js`** (gitignored). Netlify should define the same two variables on the site that builds YESMagic.
+
+The anon key is safe in the browser; **Row Level Security** on `spellbook_data` restricts reads and writes to `auth.uid()`.

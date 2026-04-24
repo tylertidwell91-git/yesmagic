@@ -143,6 +143,9 @@
     header {
       margin-bottom: 0;
       padding: clamp(1.15rem, 2.8vw, 1.75rem) clamp(1rem, 2.5vw, 1.5rem);
+      display: flex;
+      justify-content: center;
+      position: relative;
       border-radius: var(--radius);
       border: 1px solid rgba(255, 255, 255, 0.28);
       background:
@@ -1932,17 +1935,159 @@
       background: rgba(47, 84, 235, 0.22);
       color: var(--text);
     }
+
+    .spellbook-auth-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-5);
+      background: rgba(11, 15, 22, 0.82);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .spellbook-auth-overlay[hidden] {
+      display: none !important;
+    }
+
+    .spellbook-auth-card {
+      width: 100%;
+      max-width: 22rem;
+      padding: var(--space-5) var(--space-6);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--elevated);
+      box-shadow: var(--shadow-card);
+    }
+
+    .spellbook-auth-card h2 {
+      margin: 0 0 var(--space-3);
+      font-family: var(--font-head);
+      font-size: 1.05rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .spellbook-auth-card label {
+      display: block;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      margin: var(--space-3) 0 var(--space-1);
+      color: var(--muted);
+    }
+
+    .spellbook-auth-card input[type="email"],
+    .spellbook-auth-card input[type="password"] {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font: inherit;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .spellbook-auth-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-4);
+    }
+
+    .spellbook-auth-toggle {
+      margin-top: var(--space-3);
+      font-size: var(--text-sm);
+      color: var(--muted);
+    }
+
+    .spellbook-auth-toggle button {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--accent);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    #spellbookAuthMessage {
+      margin: var(--space-3) 0 0;
+      font-size: var(--text-sm);
+      color: var(--danger);
+      min-height: 1.25rem;
+    }
+
+    .spellbook-user-bar {
+      position: absolute;
+      top: clamp(0.65rem, 1.8vw, 0.95rem);
+      right: clamp(0.65rem, 1.8vw, 0.95rem);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.35rem;
+      max-width: min(16rem, 42vw);
+    }
+
+    .spellbook-user-bar span {
+      font-size: var(--text-xs);
+      color: rgba(252, 251, 247, 0.88);
+      word-break: break-all;
+      text-align: right;
+      line-height: 1.35;
+    }
+
+    .spellbook-user-bar button {
+      font-size: var(--text-xs);
+      padding: 0.35rem 0.65rem;
+    }
+
+    .spellbook-main-shell[hidden] {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
   <div class="mana-ribbon" aria-hidden="true"></div>
   <div class="planes-layer" aria-hidden="true"></div>
+
+  <div id="spellbookAuthOverlay" class="spellbook-auth-overlay">
+    <div class="spellbook-auth-card">
+      <h2 id="spellbookAuthTitle">Sign in to The Spellbook</h2>
+      <p class="hint" style="margin:0;line-height:1.5;">
+        Your collection, decks, and settings are saved to your account so they follow you on any device.
+      </p>
+      <label for="spellbookAuthEmail">Email</label>
+      <input type="email" id="spellbookAuthEmail" autocomplete="username" required />
+      <label for="spellbookAuthPassword">Password</label>
+      <input type="password" id="spellbookAuthPassword" autocomplete="current-password" required />
+      <p id="spellbookAuthMessage" role="alert"></p>
+      <div class="spellbook-auth-actions">
+        <button type="button" class="primary" id="spellbookAuthPrimary">Sign in</button>
+      </div>
+      <p class="spellbook-auth-toggle">
+        <span id="spellbookAuthToggleLabel">New here?</span>
+        <button type="button" id="spellbookAuthToggle">Create an account</button>
+      </p>
+    </div>
+  </div>
+
+  <div id="spellbookMainShell" class="spellbook-main-shell" hidden>
   <div class="wrap">
     <header>
       <div>
         <span class="badge">Collection ★ Valuation ★ Analysis</span>
         <h1>The Spellbook</h1>
         <p class="tagline">Your binder — Brought online</p>
+      </div>
+      <div class="spellbook-user-bar" id="spellbookUserBar" hidden>
+        <span id="spellbookUserEmail"></span>
+        <button type="button" class="secondary" id="btnSpellbookSignOut">Sign out</button>
       </div>
     </header>
 
@@ -2586,10 +2731,13 @@
     </section>
 
     <footer class="fine">
-      Collection data is stored locally in your browser (localStorage). For seller inventory workflows, pair this UI with authenticated Mana Pool endpoints per official documentation.
+      Signed-in users: collection, decks, and settings are stored in your Supabase account (not only in this browser). Configure Supabase keys for this deployment in <strong>CONFIGURATION.md</strong> (YESMagic repo). Mana Pool API settings in the Settings tab are included in that sync.
     </footer>
   </div>
+  </div>
 
+  <script src="/spellbook/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
   <script>
 (function () {
   "use strict";
@@ -2780,7 +2928,16 @@
     return isNaN(n) ? null : n;
   }
 
-  function loadSettings() {
+  var sbClient = null;
+  var spellbookAuthUser = null;
+  var spellbookCloudSaveTimer = null;
+  var spellbookAuthModeSignIn = true;
+
+  function spellbookDefaultDecks() {
+    return { "New Deck": { main: [], side: [], commanderId: "" } };
+  }
+
+  function spellbookReadLocalLegacySettings() {
     try {
       var s = localStorage.getItem(STORAGE_KEY + ":settings");
       return s ? JSON.parse(s) : {};
@@ -2789,11 +2946,7 @@
     }
   }
 
-  function saveSettings(o) {
-    localStorage.setItem(STORAGE_KEY + ":settings", JSON.stringify(o));
-  }
-
-  function loadCollection() {
+  function spellbookReadLocalLegacyCollection() {
     try {
       var s = localStorage.getItem(STORAGE_KEY + ":items");
       return s ? JSON.parse(s) : [];
@@ -2802,8 +2955,129 @@
     }
   }
 
+  function spellbookReadLocalLegacyDecks() {
+    try {
+      var s = localStorage.getItem(DECKS_STORAGE_KEY);
+      if (!s) return null;
+      var v = JSON.parse(s);
+      if (!v || typeof v !== "object" || Array.isArray(v)) return null;
+      return v;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function spellbookClearLocalLegacy() {
+    try {
+      localStorage.removeItem(STORAGE_KEY + ":settings");
+      localStorage.removeItem(STORAGE_KEY + ":items");
+      localStorage.removeItem(DECKS_STORAGE_KEY);
+    } catch (_e) {}
+  }
+
+  function spellbookGetSupabaseConfig() {
+    var u = (window.SPELLBOOK_SUPABASE_URL || "").trim();
+    var k = (window.SPELLBOOK_SUPABASE_ANON_KEY || "").trim();
+    return { url: u, anonKey: k };
+  }
+
+  function spellbookCreateSb() {
+    var cfg = spellbookGetSupabaseConfig();
+    var create =
+      typeof supabase !== "undefined" && supabase.createClient
+        ? supabase.createClient
+        : null;
+    if (!create || !cfg.url || !cfg.anonKey) return null;
+    return create(cfg.url, cfg.anonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    });
+  }
+
+  function spellbookSyncDeckRulesFromSettings() {
+    deckRulesMode = settings.deckRulesMode === "commander" ? "commander" : "standard";
+  }
+
+  function spellbookApplyServerPayload(payload) {
+    if (!payload || typeof payload !== "object") return;
+    settings =
+      payload.settings && typeof payload.settings === "object" ? payload.settings : {};
+    collection = Array.isArray(payload.items) ? payload.items : [];
+    if (payload.decks && typeof payload.decks === "object" && !Array.isArray(payload.decks)) {
+      decks = {};
+      Object.keys(payload.decks).forEach(function (k) {
+        decks[k] = normalizeDeckEntry(payload.decks[k]);
+      });
+      if (!Object.keys(decks).length) decks = spellbookDefaultDecks();
+    } else {
+      decks = spellbookDefaultDecks();
+    }
+    selectedLibraryStacks = Object.create(null);
+    activeDeck = Object.keys(decks)[0] || "New Deck";
+    spellbookSyncDeckRulesFromSettings();
+  }
+
+  function spellbookMaybeMigrateLocalToCloud() {
+    var hasLocal =
+      !!localStorage.getItem(STORAGE_KEY + ":items") ||
+      !!localStorage.getItem(DECKS_STORAGE_KEY) ||
+      !!localStorage.getItem(STORAGE_KEY + ":settings");
+    if (!hasLocal) return;
+    settings = spellbookReadLocalLegacySettings();
+    collection = spellbookReadLocalLegacyCollection();
+    var rawDecks = spellbookReadLocalLegacyDecks();
+    if (rawDecks) {
+      decks = {};
+      Object.keys(rawDecks).forEach(function (k) {
+        decks[k] = normalizeDeckEntry(rawDecks[k]);
+      });
+      if (!Object.keys(decks).length) decks = spellbookDefaultDecks();
+    } else {
+      decks = spellbookDefaultDecks();
+    }
+    activeDeck = Object.keys(decks)[0] || "New Deck";
+    spellbookSyncDeckRulesFromSettings();
+    spellbookClearLocalLegacy();
+  }
+
+  function scheduleSpellbookCloudSave() {
+    if (!sbClient || !spellbookAuthUser) return;
+    if (spellbookCloudSaveTimer) clearTimeout(spellbookCloudSaveTimer);
+    spellbookCloudSaveTimer = setTimeout(function () {
+      spellbookCloudSaveTimer = null;
+      spellbookPersistCloud().catch(function (err) {
+        console.error(err);
+      });
+    }, 450);
+  }
+
+  function spellbookPersistCloud() {
+    if (!sbClient || !spellbookAuthUser) return Promise.resolve();
+    var row = {
+      user_id: spellbookAuthUser.id,
+      data: {
+        settings: settings,
+        items: collection,
+        decks: decks,
+      },
+      updated_at: new Date().toISOString(),
+    };
+    return sbClient.from("spellbook_data").upsert(row, { onConflict: "user_id" }).then(function (res) {
+      if (res.error) throw res.error;
+    });
+  }
+
+  function saveSettings(o) {
+    settings = o || {};
+    scheduleSpellbookCloudSave();
+  }
+
   function saveCollection(items) {
-    localStorage.setItem(STORAGE_KEY + ":items", JSON.stringify(items));
+    collection = items || [];
+    scheduleSpellbookCloudSave();
   }
 
   function normalizeDeckEntry(entry) {
@@ -2821,27 +3095,12 @@
   }
 
   function loadDecks() {
-    try {
-      var s = localStorage.getItem(DECKS_STORAGE_KEY);
-      if (!s) return { "New Deck": { main: [], side: [], commanderId: "" } };
-      var v = JSON.parse(s);
-      if (!v || typeof v !== "object" || Array.isArray(v)) {
-        return { "New Deck": { main: [], side: [], commanderId: "" } };
-      }
-      if (!Object.keys(v).length) {
-        v["New Deck"] = { main: [], side: [], commanderId: "" };
-      }
-      Object.keys(v).forEach(function (k) {
-        v[k] = normalizeDeckEntry(v[k]);
-      });
-      return v;
-    } catch (e) {
-      return { "New Deck": { main: [], side: [], commanderId: "" } };
-    }
+    return decks;
   }
 
   function saveDecks(decksObj) {
-    localStorage.setItem(DECKS_STORAGE_KEY, JSON.stringify(decksObj));
+    decks = decksObj || spellbookDefaultDecks();
+    scheduleSpellbookCloudSave();
   }
 
   function uuid() {
@@ -2852,13 +3111,13 @@
     });
   }
 
-  var settings = loadSettings();
-  var collection = loadCollection();
-  var decks = loadDecks();
+  var settings = {};
+  var collection = [];
+  var decks = spellbookDefaultDecks();
   var selectedLibraryStacks = Object.create(null);
-  var activeDeck = Object.keys(decks)[0] || "New Deck";
+  var activeDeck = "New Deck";
   var activeDeckZone = "main";
-  var deckRulesMode = settings.deckRulesMode === "commander" ? "commander" : "standard";
+  var deckRulesMode = "standard";
 
   var els = {
     tabs: document.querySelectorAll("nav.tabs button"),
@@ -3076,16 +3335,202 @@
     });
   }
 
-  els.apiBase.value = settings.apiBase || "";
-  els.apiToken.value = settings.apiToken || "";
-  els.searchUrlTpl.value = settings.searchUrlTpl || "";
-  els.detailUrlTpl.value = settings.detailUrlTpl || "";
-  /** Default on for new installs so search works before Settings are opened. */
-  els.useDemoBridge.checked =
-    settings.useDemoBridge === undefined ? true : !!settings.useDemoBridge;
-  if (els.deckRulesModeSelect) els.deckRulesModeSelect.value = deckRulesMode;
-  if (els.libraryViewMode) {
-    els.libraryViewMode.value = settings.libraryViewMode === "condensed" ? "condensed" : "standard";
+  function spellbookPopulateFormsFromSettings() {
+    els.apiBase.value = settings.apiBase || "";
+    els.apiToken.value = settings.apiToken || "";
+    els.searchUrlTpl.value = settings.searchUrlTpl || "";
+    els.detailUrlTpl.value = settings.detailUrlTpl || "";
+    els.useDemoBridge.checked =
+      settings.useDemoBridge === undefined ? true : !!settings.useDemoBridge;
+    if (els.deckRulesModeSelect) els.deckRulesModeSelect.value = deckRulesMode;
+    if (els.libraryViewMode) {
+      els.libraryViewMode.value = settings.libraryViewMode === "condensed" ? "condensed" : "standard";
+    }
+  }
+
+  function spellbookSetAuthMessage(t) {
+    var el = document.getElementById("spellbookAuthMessage");
+    if (el) el.textContent = t || "";
+  }
+
+  function spellbookUpdateAuthModeUI() {
+    var title = document.getElementById("spellbookAuthTitle");
+    var primary = document.getElementById("spellbookAuthPrimary");
+    var toggleLabel = document.getElementById("spellbookAuthToggleLabel");
+    var toggleBtn = document.getElementById("spellbookAuthToggle");
+    if (spellbookAuthModeSignIn) {
+      if (title) title.textContent = "Sign in to The Spellbook";
+      if (primary) primary.textContent = "Sign in";
+      if (toggleLabel) toggleLabel.textContent = "New here?";
+      if (toggleBtn) toggleBtn.textContent = "Create an account";
+    } else {
+      if (title) title.textContent = "Create your Spellbook account";
+      if (primary) primary.textContent = "Sign up";
+      if (toggleLabel) toggleLabel.textContent = "Already have an account?";
+      if (toggleBtn) toggleBtn.textContent = "Sign in instead";
+    }
+  }
+
+  function spellbookShowAuthChrome() {
+    var overlay = document.getElementById("spellbookAuthOverlay");
+    var shell = document.getElementById("spellbookMainShell");
+    var bar = document.getElementById("spellbookUserBar");
+    if (overlay) overlay.removeAttribute("hidden");
+    if (shell) shell.setAttribute("hidden", "");
+    if (bar) bar.setAttribute("hidden", "");
+  }
+
+  function spellbookShowAppChrome(user) {
+    var overlay = document.getElementById("spellbookAuthOverlay");
+    var shell = document.getElementById("spellbookMainShell");
+    var bar = document.getElementById("spellbookUserBar");
+    var emailEl = document.getElementById("spellbookUserEmail");
+    if (overlay) overlay.setAttribute("hidden", "");
+    if (shell) shell.removeAttribute("hidden");
+    if (bar) bar.removeAttribute("hidden");
+    if (emailEl && user) emailEl.textContent = user.email || "Signed in";
+  }
+
+  async function spellbookLoadCloudRow() {
+    if (!sbClient || !spellbookAuthUser) return;
+    var res = await sbClient
+      .from("spellbook_data")
+      .select("data")
+      .eq("user_id", spellbookAuthUser.id)
+      .maybeSingle();
+    if (res.error) throw res.error;
+    if (res.data && res.data.data) {
+      spellbookApplyServerPayload(res.data.data);
+    } else {
+      spellbookMaybeMigrateLocalToCloud();
+      await spellbookPersistCloud();
+    }
+  }
+
+  async function spellbookAfterSignIn(session) {
+    if (!session || !session.user) return;
+    spellbookAuthUser = session.user;
+    spellbookSetAuthMessage("");
+    await spellbookLoadCloudRow();
+    spellbookShowAppChrome(session.user);
+    spellbookFinishInit();
+  }
+
+  function spellbookFinishInit() {
+    spellbookPopulateFormsFromSettings();
+    populateDeckSelects();
+    updateSendButtonState();
+    renderCollection();
+    renderDeck();
+  }
+
+  async function spellbookBootstrap() {
+    spellbookUpdateAuthModeUI();
+    var cfg = spellbookGetSupabaseConfig();
+    if (!cfg.url || !cfg.anonKey) {
+      spellbookShowAuthChrome();
+      spellbookSetAuthMessage(
+        "This Spellbook deployment is missing Supabase configuration. Add SPELLBOOK_SUPABASE_URL and SPELLBOOK_SUPABASE_ANON_KEY to the site environment and rebuild."
+      );
+      return;
+    }
+    sbClient = spellbookCreateSb();
+    if (!sbClient) {
+      spellbookShowAuthChrome();
+      spellbookSetAuthMessage("Could not initialize sign-in. Check the browser console.");
+      return;
+    }
+
+    sbClient.auth.onAuthStateChange(function (event, session) {
+      if (event === "SIGNED_OUT") {
+        spellbookAuthUser = null;
+        settings = {};
+        collection = [];
+        decks = spellbookDefaultDecks();
+        selectedLibraryStacks = Object.create(null);
+        activeDeck = "New Deck";
+        deckRulesMode = "standard";
+        spellbookShowAuthChrome();
+        spellbookSetAuthMessage("");
+      }
+    });
+
+    var sessRes = await sbClient.auth.getSession();
+    if (sessRes.error) {
+      spellbookShowAuthChrome();
+      spellbookSetAuthMessage(sessRes.error.message || String(sessRes.error));
+      return;
+    }
+    if (sessRes.data.session) {
+      await spellbookAfterSignIn(sessRes.data.session);
+      return;
+    }
+    spellbookShowAuthChrome();
+  }
+
+  async function spellbookRun() {
+    try {
+      await spellbookBootstrap();
+    } catch (e) {
+      console.error(e);
+      spellbookShowAuthChrome();
+      spellbookSetAuthMessage((e && e.message) || String(e));
+    }
+  }
+
+  var spellbookAuthToggle = document.getElementById("spellbookAuthToggle");
+  if (spellbookAuthToggle) {
+    spellbookAuthToggle.addEventListener("click", function () {
+      spellbookAuthModeSignIn = !spellbookAuthModeSignIn;
+      spellbookUpdateAuthModeUI();
+      spellbookSetAuthMessage("");
+    });
+  }
+  var spellbookPrimary = document.getElementById("spellbookAuthPrimary");
+  if (spellbookPrimary) {
+    spellbookPrimary.addEventListener("click", async function () {
+      spellbookSetAuthMessage("");
+      var emailEl = document.getElementById("spellbookAuthEmail");
+      var passEl = document.getElementById("spellbookAuthPassword");
+      var email = (emailEl && emailEl.value) || "";
+      var password = (passEl && passEl.value) || "";
+      if (!email || !password) {
+        spellbookSetAuthMessage("Enter email and password.");
+        return;
+      }
+      if (!sbClient) {
+        spellbookSetAuthMessage("Sign-in is not ready yet.");
+        return;
+      }
+      spellbookPrimary.disabled = true;
+      try {
+        if (spellbookAuthModeSignIn) {
+          var inRes = await sbClient.auth.signInWithPassword({ email: email, password: password });
+          if (inRes.error) throw inRes.error;
+          if (inRes.data.session) await spellbookAfterSignIn(inRes.data.session);
+        } else {
+          var upRes = await sbClient.auth.signUp({ email: email, password: password });
+          if (upRes.error) throw upRes.error;
+          if (upRes.data.session) {
+            await spellbookAfterSignIn(upRes.data.session);
+          } else {
+            spellbookSetAuthMessage(
+              "Check your email to confirm your account, then sign in. (You can disable email confirmation in Supabase for testing.)"
+            );
+          }
+        }
+      } catch (err) {
+        spellbookSetAuthMessage((err && err.message) || String(err));
+      } finally {
+        spellbookPrimary.disabled = false;
+      }
+    });
+  }
+  var btnSpellbookSignOut = document.getElementById("btnSpellbookSignOut");
+  if (btnSpellbookSignOut) {
+    btnSpellbookSignOut.addEventListener("click", async function () {
+      if (sbClient) await sbClient.auth.signOut();
+    });
   }
 
   var selectedSuggest = null;
@@ -9700,7 +10145,7 @@
   });
 
   els.btnClearAll.addEventListener("click", function () {
-    if (!confirm("Remove every card from this browser’s collection?")) return;
+    if (!confirm("Remove every card from your saved collection? This updates your cloud data.")) return;
     collection = [];
     saveCollection(collection);
     renderCollection();
@@ -9717,7 +10162,7 @@
       libraryViewMode: (els.libraryViewMode && els.libraryViewMode.value) || "standard",
     });
     els.settingsAlert.style.display = "block";
-    els.settingsAlert.textContent = "Settings saved in this browser.";
+    els.settingsAlert.textContent = "Settings saved to your account.";
   });
 
   els.btnTestSearch.addEventListener("click", async function () {
@@ -9749,10 +10194,7 @@
     }
   });
 
-  populateDeckSelects();
-  updateSendButtonState();
-  renderCollection();
-  renderDeck();
+  spellbookRun();
 })();
   </script>
 </body>

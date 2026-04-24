@@ -10,3 +10,6 @@ netlify-env.txt
 
 .DS_Store
 yesmagic-1/
+
+# Generated at build/dev by scripts/inject-spellbook-config.cjs
+public/spellbook/config.js

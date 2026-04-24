@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/inject-spellbook-config.cjs",
+    "prebuild": "node scripts/inject-spellbook-config.cjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
