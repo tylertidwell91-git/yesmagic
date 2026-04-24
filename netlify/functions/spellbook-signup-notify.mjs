@@ -1,7 +1,6 @@
 import nodemailer from 'nodemailer'
 
 const NOTIFY_TO = process.env.SIGNUP_NOTIFY_EMAIL || process.env.ORDER_EMAIL || ''
-const WEBHOOK_SECRET = (process.env.SPELLBOOK_SIGNUP_NOTIFY_SECRET || '').trim()
 
 const port = Number(process.env.SMTP_PORT) || 587
 const secure = process.env.SMTP_SECURE === 'true'
@@ -21,56 +20,72 @@ const transporter =
       })
     : null
 
-function jsonResponse(body, status, extraHeaders) {
-  const h = Object.assign(
-    {
-      'Content-Type': 'application/json',
+function corsHeaders(origin) {
+  const allowed = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+    : []
+  const allowOrigin = origin && allowed.includes(origin) ? origin : allowed[0] || '*'
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json',
+  }
+}
+
+function jsonResponse(body, status, origin) {
+  return new Response(JSON.stringify(body), { status, headers: corsHeaders(origin) })
+}
+
+async function userFromAccessToken(supabaseUrl, anonKey, accessToken) {
+  const r = await fetch(`${supabaseUrl}/auth/v1/user`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      apikey: anonKey,
     },
-    extraHeaders || {}
-  )
-  return new Response(JSON.stringify(body), { status, headers: h })
+  })
+  if (!r.ok) return null
+  return r.json()
 }
 
-function verifySecret(req) {
-  if (!WEBHOOK_SECRET) return false
-  const h =
-    req.headers.get('x-spellbook-signup-secret') ||
-    req.headers.get('X-Spellbook-Signup-Secret') ||
-    ''
-  if (h && h === WEBHOOK_SECRET) return true
-  const auth = req.headers.get('authorization') || ''
-  const m = auth.match(/^Bearer\s+(.+)$/i)
-  if (m && m[1].trim() === WEBHOOK_SECRET) return true
-  return false
+async function adminUserById(supabaseUrl, serviceKey, userId) {
+  const r = await fetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, {
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+    },
+  })
+  if (!r.ok) return null
+  const j = await r.json()
+  return j.user || j
 }
 
-/**
- * Supabase Database Webhook payload (INSERT on auth.users):
- * { type, table, schema, record, old_record }
- */
 export default async (req) => {
+  const origin = req.headers.get('origin') || ''
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders(origin) })
+  }
   if (req.method !== 'POST') {
-    return jsonResponse({ error: 'Method not allowed' }, 405)
+    return jsonResponse({ error: 'Method not allowed' }, 405, origin)
   }
 
-  if (!WEBHOOK_SECRET) {
+  const supabaseUrl = (process.env.SPELLBOOK_SUPABASE_URL || '').replace(/\/+$/, '')
+  const anonKey = process.env.SPELLBOOK_SUPABASE_ANON_KEY || ''
+  const serviceKey = process.env.SPELLBOOK_SUPABASE_SERVICE_ROLE_KEY || ''
+
+  if (!supabaseUrl || !anonKey) {
     return jsonResponse(
-      {
-        error:
-          'SPELLBOOK_SIGNUP_NOTIFY_SECRET is not set. Add it in Netlify and configure the Supabase webhook with the same value in a header.',
-      },
-      503
+      { error: 'Server missing SPELLBOOK_SUPABASE_URL or SPELLBOOK_SUPABASE_ANON_KEY.' },
+      503,
+      origin
     )
-  }
-
-  if (!verifySecret(req)) {
-    return jsonResponse({ error: 'Unauthorized' }, 401)
   }
 
   if (!NOTIFY_TO) {
     return jsonResponse(
-      { error: 'ORDER_EMAIL or SIGNUP_NOTIFY_EMAIL must be set for signup notifications.' },
-      503
+      { error: 'ORDER_EMAIL or SIGNUP_NOTIFY_EMAIL must be set.' },
+      503,
+      origin
     )
   }
 
@@ -78,48 +93,80 @@ export default async (req) => {
     return jsonResponse(
       {
         error:
-          'SMTP not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASS (and optional SMTP_FROM) like other site emails.',
+          'SMTP not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASS (and optional SMTP_FROM).',
       },
-      503
+      503,
+      origin
     )
   }
 
-  let payload
-  try {
-    payload = await req.json()
-  } catch (_e) {
-    return jsonResponse({ error: 'Invalid JSON body' }, 400)
+  const authHeader = req.headers.get('authorization') || ''
+  const m = authHeader.match(/^Bearer\s+(.+)$/i)
+  const accessToken = m ? m[1].trim() : ''
+
+  let email = ''
+  let userId = ''
+  let createdAt = ''
+
+  if (accessToken) {
+    const u = await userFromAccessToken(supabaseUrl, anonKey, accessToken)
+    if (!u || !u.id) {
+      return jsonResponse({ error: 'Invalid or expired session' }, 401, origin)
+    }
+    email = String(u.email || '').trim()
+    userId = String(u.id || '').trim()
+    createdAt = u.created_at != null ? String(u.created_at) : ''
+  } else {
+    if (!serviceKey) {
+      return jsonResponse(
+        {
+          error:
+            'For sign-ups that require email confirmation (no session yet), the server needs SPELLBOOK_SUPABASE_SERVICE_ROLE_KEY to verify the new user.',
+        },
+        503,
+        origin
+      )
+    }
+    let body
+    try {
+      body = await req.json()
+    } catch (_e) {
+      return jsonResponse({ error: 'Invalid JSON body' }, 400, origin)
+    }
+    const uid = String(body?.user_id || '').trim()
+    const em = String(body?.email || '').trim().toLowerCase()
+    if (!uid || !em) {
+      return jsonResponse(
+        { error: 'Send Authorization: Bearer <access_token> or JSON { user_id, email }.' },
+        400,
+        origin
+      )
+    }
+    const adminUser = await adminUserById(supabaseUrl, serviceKey, uid)
+    if (!adminUser) {
+      return jsonResponse({ error: 'Could not verify user' }, 400, origin)
+    }
+    const resolvedEmail = String(adminUser.email || '').trim().toLowerCase()
+    if (!resolvedEmail || resolvedEmail !== em) {
+      return jsonResponse({ error: 'Email does not match this account' }, 403, origin)
+    }
+    email = adminUser.email
+    userId = uid
+    createdAt = adminUser.created_at != null ? String(adminUser.created_at) : ''
   }
-
-  const type = String(payload?.type || '')
-  const schema = String(payload?.schema || '')
-  const table = String(payload?.table || '')
-  const record = payload?.record
-
-  if (type !== 'INSERT' || schema !== 'auth' || table !== 'users') {
-    return jsonResponse({ ok: true, skipped: true, reason: 'not auth.users INSERT' }, 200)
-  }
-
-  if (!record || typeof record !== 'object') {
-    return jsonResponse({ ok: true, skipped: true, reason: 'no record' }, 200)
-  }
-
-  const email = String(record.email || '').trim()
-  const id = String(record.id || '').trim()
-  const createdAt = record.created_at != null ? String(record.created_at) : ''
 
   if (!email) {
-    return jsonResponse({ ok: true, skipped: true, reason: 'no email on record' }, 200)
+    return jsonResponse({ error: 'No email for user' }, 400, origin)
   }
 
   const text = [
-    'A new user registered on The Spellbook (Supabase Auth).',
+    'Someone completed sign-up on The Spellbook.',
     '',
     `Email: ${email}`,
-    `User id: ${id || '(unknown)'}`,
+    `User id: ${userId || '(unknown)'}`,
     createdAt ? `Created at: ${createdAt}` : '',
     '',
-    '— Automated message from spellbook-signup-notify',
+    '— spellbook-signup-notify (called from the Spellbook after sign-up)',
   ]
     .filter(Boolean)
     .join('\n')
@@ -133,10 +180,10 @@ export default async (req) => {
       subject: `[Spellbook] New registration: ${email}`,
       text,
     })
-    return jsonResponse({ ok: true }, 200)
+    return jsonResponse({ ok: true }, 200, origin)
   } catch (err) {
     console.error('spellbook-signup-notify', err)
-    return jsonResponse({ error: err.message || 'Failed to send email' }, 500)
+    return jsonResponse({ error: err.message || 'Failed to send email' }, 500, origin)
   }
 }
 

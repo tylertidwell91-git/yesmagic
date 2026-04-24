@@ -233,17 +233,17 @@ If the Spellbook UI is served from a different hostname than the Netlify site th
 
 ### New Spellbook registration → email `ORDER_EMAIL`
 
-To get an admin email when someone creates an account in Supabase Auth:
+When someone signs up in the Spellbook, the app calls **`/api/spellbook-signup-notify`** on your Netlify site. That function emails **`ORDER_EMAIL`** (or **`SIGNUP_NOTIFY_EMAIL`** if set) with their address—no Supabase webhooks.
 
-1. On **Netlify**, set a long random **`SPELLBOOK_SIGNUP_NOTIFY_SECRET`** (Functions scope). Use the **same** value in step 3.
-2. The function emails **`ORDER_EMAIL`** (same as shop order mail). To use a different inbox, set **`SIGNUP_NOTIFY_EMAIL`** instead.
-3. In **Supabase → Integrations → Database Webhooks** (or **Database → Webhooks**), create a webhook:
-   - **Table:** `users` · **Schema:** `auth` · **Events:** Insert  
-   - **URL:** `https://YOUR_NETLIFY_SITE/api/spellbook-signup-notify` (HTTPS, the site that deploys these functions)  
-   - **HTTP Headers:** add **`X-Spellbook-Signup-Secret`** = your `SPELLBOOK_SIGNUP_NOTIFY_SECRET` value  
-   (Alternatively send **`Authorization: Bearer <secret>`** — the function accepts either.)
+**Netlify environment (Functions):**
 
-SMTP must already work on Netlify (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, optional `SMTP_FROM`), same as other transactional mail.
+- **`SPELLBOOK_SUPABASE_URL`** and **`SPELLBOOK_SUPABASE_ANON_KEY`** — same as Spellbook / trade-offer mail.
+- **`SPELLBOOK_SUPABASE_SERVICE_ROLE_KEY`** — needed when **email confirmation** is on in Supabase (new users have no session until they confirm; the function verifies `user_id` + `email` with the Admin API).
+- **`ORDER_EMAIL`** (or **`SIGNUP_NOTIFY_EMAIL`**) plus **`SMTP_*`** — same as your other site mail.
+
+**CORS:** **`ALLOWED_ORIGINS`** must include your Spellbook origin (e.g. `https://spellbook.yesmagicshop.com`).
+
+If Spellbook is on a different host than the Netlify site that runs functions, set **`SPELLBOOK_TRADE_NOTIFY_BASE`** to that site’s origin so `config.js` points at the correct API (same as trade-offer email).
 
 ### Sign-up error: “Invalid path specified in request URL”
 

@@ -3885,6 +3885,7 @@
             options: { emailRedirectTo: redirectTo },
           });
           if (upRes.error) throw upRes.error;
+          spellbookNotifyAdminNewUser(upRes.data.session, upRes.data.user);
           if (upRes.data.session) {
             await spellbookAfterSignIn(upRes.data.session);
           } else {
@@ -9673,6 +9674,41 @@
   var tradeHubEventsWired = false;
   var tradeNotifyPollTimer = null;
   var spellbookInboxActiveOfferId = null;
+
+  function spellbookSignupNotifyEndpoint() {
+    var base = (typeof window !== "undefined" && window.SPELLBOOK_TRADE_NOTIFY_BASE) || "";
+    base = String(base || "").replace(/\/+$/, "");
+    var path = "/api/spellbook-signup-notify";
+    if (base) return base + path;
+    return path;
+  }
+
+  /** Tell Netlify to email ORDER_EMAIL after a successful sign-up (no Supabase webhook). */
+  async function spellbookNotifyAdminNewUser(session, user) {
+    try {
+      var url = spellbookSignupNotifyEndpoint();
+      if (session && session.access_token) {
+        await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + session.access_token,
+          },
+          body: "{}",
+        });
+        return;
+      }
+      if (user && user.id && user.email) {
+        await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: user.id, email: user.email }),
+        });
+      }
+    } catch (e) {
+      console.warn("Signup admin notify:", e);
+    }
+  }
 
   function tradeNotifyEmailEndpoint() {
     var base = (typeof window !== "undefined" && window.SPELLBOOK_TRADE_NOTIFY_BASE) || "";
