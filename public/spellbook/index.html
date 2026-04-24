@@ -2875,6 +2875,11 @@
                   <option value="price">Price (high)</option>
                 </select>
               </div>
+              <div class="field-inline" style="align-self:flex-end;">
+                <button type="button" class="secondary" id="btnTradeHubBrowseAll">
+                  Browse all
+                </button>
+              </div>
             </div>
             <p id="tradeHubStats" class="collection-stats" aria-live="polite"></p>
             <div id="tradeHubGrid" class="card-grid"></div>
@@ -9629,14 +9634,45 @@
     await tradeHubRefreshAll();
   }
 
+  async function tradeHubFetchAllActiveListings() {
+    if (!sbClient) return { error: { message: "No Supabase client" }, data: [] };
+    var pageSize = 1000;
+    var out = [];
+    var from = 0;
+    for (;;) {
+      var res = await sbClient
+        .from("trade_listings")
+        .select("id, seller_id, card, note, created_at, active")
+        .eq("active", true)
+        .order("created_at", { ascending: false })
+        .range(from, from + pageSize - 1);
+      if (res.error) return { error: res.error, data: out };
+      var chunk = res.data || [];
+      out = out.concat(chunk);
+      if (chunk.length < pageSize) break;
+      from += pageSize;
+    }
+    return { error: null, data: out };
+  }
+
+  function tradeHubClearBrowseFilters() {
+    var tSearch = document.getElementById("tradeHubSearch");
+    var tSet = document.getElementById("tradeHubSetSelect");
+    if (tSearch) tSearch.value = "";
+    if (tSet) tSet.value = "";
+    document
+      .querySelectorAll(
+        "#tradeHubFilterColors input, #tradeHubFilterTypes input, #tradeHubFilterRarity input, #tradeHubFilterFinish input"
+      )
+      .forEach(function (x) {
+        x.checked = false;
+      });
+  }
+
   async function tradeHubRefreshAll() {
     if (!sbClient || !spellbookAuthUser) return;
     var uid = spellbookAuthUser.id;
-    var all = await sbClient
-      .from("trade_listings")
-      .select("id, seller_id, card, note, created_at, active")
-      .eq("active", true)
-      .order("created_at", { ascending: false });
+    var all = await tradeHubFetchAllActiveListings();
     if (all.error) {
       console.error(all.error);
       return;
@@ -10192,15 +10228,14 @@
     var clr = document.getElementById("btnTradeHubClearFilters");
     if (clr) {
       clr.addEventListener("click", function () {
-        if (tSearch) tSearch.value = "";
-        if (tSet) tSet.value = "";
-        document
-          .querySelectorAll(
-            "#tradeHubFilterColors input, #tradeHubFilterTypes input, #tradeHubFilterRarity input, #tradeHubFilterFinish input"
-          )
-          .forEach(function (x) {
-            x.checked = false;
-          });
+        tradeHubClearBrowseFilters();
+        tradeRenderBrowse();
+      });
+    }
+    var browseAll = document.getElementById("btnTradeHubBrowseAll");
+    if (browseAll) {
+      browseAll.addEventListener("click", function () {
+        tradeHubClearBrowseFilters();
         tradeRenderBrowse();
       });
     }
