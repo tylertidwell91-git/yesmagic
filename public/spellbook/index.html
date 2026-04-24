@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>The Spellbook — Mana Pool Collection</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -2076,12 +2076,6 @@
       align-items: start;
     }
 
-    @media (max-width: 720px) {
-      .inbox-layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
     .inbox-threads {
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -2211,11 +2205,427 @@
     }
 
     .trade-offer-card {
-      margin-bottom: 0.85rem;
-      padding: 0.75rem 0.9rem;
-      border-radius: 12px;
+      margin-bottom: 1rem;
+      padding: 0;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: linear-gradient(160deg, var(--elevated) 0%, var(--surface) 100%);
+      box-shadow:
+        var(--shadow-card),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      overflow: hidden;
+    }
+
+    .trade-offer-card-header {
+      padding: 0.75rem 1rem;
+      background: linear-gradient(135deg, rgba(47, 84, 235, 0.09), rgba(99, 102, 241, 0.05));
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.65rem;
+    }
+
+    .trade-offer-headline {
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: var(--text);
+      max-width: 36rem;
+    }
+
+    .trade-offer-headline strong {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .trade-offer-headline-sub {
+      display: block;
+      margin-top: 0.2rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .trade-offer-status-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+      justify-content: flex-end;
+    }
+
+    .trade-offer-status-badge {
+      font-family: var(--font-head);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.28rem 0.55rem;
+      border-radius: 999px;
       border: 1px solid var(--border);
       background: var(--surface);
+      color: var(--muted);
+    }
+
+    .trade-offer-status-badge.trade-offer-status--pending {
+      border-color: rgba(202, 138, 4, 0.45);
+      background: rgba(254, 243, 199, 0.65);
+      color: #854d0e;
+    }
+
+    .trade-offer-status-badge.trade-offer-status--accepted,
+    .trade-offer-status-badge.trade-offer-status--completed {
+      border-color: rgba(22, 163, 74, 0.4);
+      background: rgba(220, 252, 231, 0.85);
+      color: #166534;
+    }
+
+    .trade-offer-status-badge.trade-offer-status--declined,
+    .trade-offer-status-badge.trade-offer-status--cancelled {
+      border-color: rgba(220, 38, 38, 0.35);
+      background: rgba(254, 226, 226, 0.75);
+      color: #991b1b;
+    }
+
+    .trade-offer-status-badge.trade-offer-status--awaiting_confirmation {
+      border-color: rgba(47, 84, 235, 0.4);
+      background: rgba(47, 84, 235, 0.1);
+      color: #1e3a8a;
+    }
+
+    .trade-offer-mode-chip {
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+
+    .trade-offer-mode-chip--mediated {
+      color: var(--text);
+    }
+
+    .trade-offer-mode-chip .trade-mediator-badge {
+      margin-left: 0;
+    }
+
+    .trade-activity-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .trade-tx-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+      gap: 1.25rem;
+      align-items: start;
+      margin-top: 0.75rem;
+    }
+
+    @media (max-width: 720px) {
+      .trade-tx-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .trade-tx-rail {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.35rem;
+      background: var(--surface);
+      max-height: 55vh;
+      overflow-y: auto;
+    }
+
+    .trade-tx-compose {
+      margin-top: 0.75rem;
+      display: grid;
+      gap: 0.45rem;
+      max-width: 40rem;
+    }
+
+    .trade-tx-compose label {
+      font-size: var(--text-xs);
+      color: var(--muted);
+    }
+
+    .trade-tx-compose input,
+    .trade-tx-compose select,
+    .trade-tx-compose textarea {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font: inherit;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .trade-msg-shipment {
+      font-size: 0.85rem;
+      margin: 0.35rem 0 0.25rem;
+      padding: 0.35rem 0.5rem;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.2);
+      word-break: break-word;
+    }
+
+    .trade-msg-proof-wrap {
+      margin: 0.35rem 0;
+    }
+
+    .trade-msg-proof-img {
+      display: block;
+      max-width: min(100%, 320px);
+      max-height: 220px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .inbox-msg.trade-msg--shipment_update {
+      border-left: 3px solid rgba(100, 180, 255, 0.65);
+    }
+
+    .inbox-msg.trade-msg--proof {
+      border-left: 3px solid rgba(120, 220, 160, 0.65);
+    }
+
+    .trade-offer-deal {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 0.65rem 0.5rem;
+      padding: 1rem 1rem 1.1rem;
+      align-items: center;
+    }
+
+    .trade-offer-pole {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.45rem;
+      min-width: 0;
+    }
+
+    .trade-offer-pole-label {
+      font-family: var(--font-head);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      line-height: 1.35;
+    }
+
+    .trade-offer-pole-hint {
+      display: block;
+      margin-top: 0.15rem;
+      font-family: var(--font);
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      color: var(--muted);
+    }
+
+    .trade-offer-pole-visual {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    .trade-offer-thumb {
+      position: relative;
+      width: 100%;
+      max-width: 132px;
+      aspect-ratio: 63 / 88;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      background: linear-gradient(180deg, #e2e8f0, #f1f5f9);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+    }
+
+    .trade-offer-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .trade-offer-thumb--zoom {
+      cursor: zoom-in;
+    }
+
+    .trade-offer-thumb--placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-head);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .trade-offer-count {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      z-index: 1;
+      min-width: 1.35rem;
+      padding: 0.1rem 0.38rem;
+      border-radius: 999px;
+      border: 1px solid rgba(47, 84, 235, 0.35);
+      background: rgba(var(--elevated-rgb), 0.95);
+      color: var(--accent);
+      font-family: var(--font-head);
+      font-size: 0.58rem;
+      font-weight: 700;
+      line-height: 1.25;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .trade-offer-bundle {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      justify-content: center;
+      max-width: 200px;
+    }
+
+    .trade-offer-bundle--single {
+      max-width: 132px;
+    }
+
+    .trade-offer-bundle--single .trade-offer-thumb {
+      max-width: 132px;
+    }
+
+    .trade-offer-thumb--stacked {
+      max-width: 56px;
+      flex: 0 0 auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
+    }
+
+    .trade-offer-thumb--stacked .trade-offer-count {
+      font-size: 0.5rem;
+      padding: 0.06rem 0.28rem;
+      top: 2px;
+      right: 2px;
+    }
+
+    .trade-offer-bundle-more {
+      flex: 0 0 auto;
+      align-self: center;
+      min-width: 2.25rem;
+      padding: 0.35rem 0.45rem;
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      background: var(--surface);
+      font-family: var(--font-head);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .trade-offer-swap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 0.15rem;
+    }
+
+    .trade-offer-swap-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.35rem;
+      height: 2.35rem;
+      border-radius: 999px;
+      border: 1px solid rgba(47, 84, 235, 0.35);
+      background: linear-gradient(180deg, rgba(47, 84, 235, 0.12), rgba(47, 84, 235, 0.05));
+      font-size: 1.05rem;
+      line-height: 1;
+      color: var(--accent);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .trade-offer-pole-title {
+      font-family: var(--font-head);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      line-height: 1.3;
+      max-width: 100%;
+    }
+
+    .trade-offer-pole-meta {
+      font-size: 0.72rem;
+      line-height: 1.4;
+      color: var(--muted);
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    .trade-offer-card-footer {
+      padding: 0.75rem 1rem 1rem;
+      border-top: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.02);
+    }
+
+    .trade-offer-fees {
+      margin: 0 0 0.65rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .trade-offer-fees strong {
+      color: var(--text);
+    }
+
+    .trade-offer-actions {
+      margin-top: 0.35rem;
+    }
+
+    .trade-offer-mediation-note {
+      margin: 0 0 0.65rem !important;
+    }
+
+    .trade-propose-preview-host {
+      margin: 0 0 1rem;
+    }
+
+    .trade-propose-preview-host:empty {
+      display: none;
+    }
+
+    .trade-propose-placeholder {
+      width: 100%;
+      max-width: 108px;
+      aspect-ratio: 63 / 88;
+      border-radius: 12px;
+      border: 2px dashed rgba(47, 84, 235, 0.35);
+      background: rgba(47, 84, 235, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0.5rem;
+      font-size: 0.68rem;
+      line-height: 1.35;
+      color: var(--muted);
+      box-sizing: border-box;
     }
 
     .trade-mediator-badge {
@@ -2231,6 +2641,252 @@
       padding: 0.2rem 0.5rem;
       border-radius: 999px;
       margin-left: 0.35rem;
+    }
+
+    @media (max-width: 720px) {
+      .wrap {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+        padding-bottom: max(4.25rem, env(safe-area-inset-bottom));
+      }
+
+      header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+      }
+
+      header > div:first-child {
+        max-width: none;
+      }
+
+      .spellbook-user-bar {
+        position: static;
+        max-width: none;
+        align-items: center;
+        align-self: center;
+      }
+
+      .spellbook-user-bar span {
+        text-align: center;
+        word-break: break-word;
+      }
+
+      .spellbook-user-actions {
+        justify-content: center;
+      }
+
+      .spellbook-user-bar button {
+        min-height: 44px;
+        padding: 0.5rem 0.85rem;
+      }
+
+      nav.tabs {
+        width: 100%;
+        max-width: none;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        gap: 0.45rem;
+        padding: 0.35rem 0.45rem;
+      }
+
+      nav.tabs button {
+        flex-shrink: 0;
+        min-height: 44px;
+      }
+
+      .trade-subtabs {
+        width: 100%;
+        max-width: none;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 0.4rem;
+      }
+
+      .trade-subtabs button {
+        flex-shrink: 0;
+        min-height: 44px;
+      }
+
+      .collection-toolbar,
+      .deck-admin {
+        grid-template-columns: 1fr;
+      }
+
+      .collection-toolbar input[type="text"],
+      .collection-toolbar select {
+        max-width: none;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .card-grid.condensed {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .collection-card:not(.condensed) {
+        grid-template-columns: 1fr;
+        min-height: 0;
+      }
+
+      .collection-card:not(.condensed) .thumb {
+        width: 100%;
+        max-height: min(240px, 44vh);
+        aspect-ratio: 63 / 88;
+      }
+
+      .collection-card:not(.condensed) .body {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "title"
+          "meta"
+          "stats"
+          "actions";
+        max-height: none;
+        overflow: visible;
+        height: auto;
+        padding: 0.55rem 0.75rem 0.65rem;
+        row-gap: 0.4rem;
+      }
+
+      .collection-card:not(.condensed) .body h3 {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        align-self: start;
+      }
+
+      .collection-card:not(.condensed) .collection-card-meta-row .variants {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+      }
+
+      .card-grid .collection-card:not(.condensed) dl {
+        overflow: visible;
+      }
+
+      .card-grid .collection-card:not(.condensed) dl dd {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+      }
+
+      .collection-card:not(.condensed) .actions {
+        justify-self: stretch;
+        width: 100%;
+        justify-content: stretch;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-self: start;
+      }
+
+      .collection-card:not(.condensed) .actions button {
+        flex: 1 1 calc(50% - 0.25rem);
+        min-width: min(100%, 8rem);
+        min-height: 44px;
+        padding: 0.45rem 0.6rem;
+      }
+
+      .collection-card .stack-select {
+        width: 26px;
+        height: 26px;
+        right: 10px;
+        bottom: 10px;
+      }
+
+      .suggest {
+        max-height: min(50dvh, 320px);
+      }
+
+      .trade-offer-card-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .trade-offer-status-row {
+        justify-content: flex-start;
+      }
+
+      .trade-offer-deal {
+        grid-template-columns: 1fr;
+        gap: 0.35rem 0.5rem;
+        padding: 0.85rem 0.85rem 1rem;
+      }
+
+      .trade-offer-swap {
+        order: 2;
+        padding: 0.15rem 0;
+      }
+
+      .trade-offer-swap-icon {
+        transform: rotate(90deg);
+      }
+
+      .trade-offer-pole:first-of-type {
+        order: 1;
+      }
+
+      .trade-offer-pole:last-of-type {
+        order: 3;
+      }
+
+      .trade-propose-preview-deal {
+        margin-bottom: 1rem;
+        padding: 0.65rem 0.5rem 0.75rem;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: linear-gradient(165deg, var(--elevated), var(--surface));
+      }
+
+      .trade-propose-preview-deal .trade-offer-thumb {
+        max-width: 108px;
+      }
+
+      .trade-propose-preview-deal .trade-offer-bundle {
+        max-width: 180px;
+      }
+
+      .inbox-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .spellbook-auth-overlay {
+        padding-top: max(var(--space-4), env(safe-area-inset-top));
+        padding-right: max(var(--space-4), env(safe-area-inset-right));
+        padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+        padding-left: max(var(--space-4), env(safe-area-inset-left));
+      }
+
+      .card-lightbox {
+        padding-top: max(1rem, env(safe-area-inset-top));
+        padding-right: max(1rem, env(safe-area-inset-right));
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        padding-left: max(1rem, env(safe-area-inset-left));
+      }
+
+      #cardLightboxImg {
+        max-height: min(82dvh, 900px);
+      }
+
+      .advisor-score-dialog {
+        width: min(720px, calc(100vw - max(1rem, env(safe-area-inset-left)) - max(1rem, env(safe-area-inset-right))));
+        max-height: min(90dvh, 820px);
+      }
+
+      .advisor-score-dialog-inner {
+        padding-top: max(1rem, env(safe-area-inset-top));
+        padding-right: max(1rem, env(safe-area-inset-right));
+        padding-bottom: 1.1rem;
+        padding-left: max(1rem, env(safe-area-inset-left));
+      }
     }
   </style>
 </head>
@@ -2350,6 +3006,33 @@
           </div>
         </aside>
       </div>
+
+      <details class="filter-drawer" id="preconImportDrawer" style="margin-top: var(--space-5);">
+        <summary>Import a Commander precon</summary>
+        <p class="filter-hint">
+          Official <strong>Commander</strong> decklists from <a href="https://mtgjson.com/" rel="noopener noreferrer" target="_blank">MTGJSON</a> (Wizards-published lists). Each card is resolved against the
+          <a href="https://scryfall.com/docs/api" rel="noopener noreferrer" target="_blank">Scryfall</a> catalog by printing <code>id</code> when present, then <strong>set + collector number</strong>, then <strong>exact name</strong>.
+          Requires catalog lookup (same as Add cards when Scryfall is enabled).
+        </p>
+        <div class="row" style="flex-wrap: wrap; align-items: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+          <div class="field-inline" style="flex: 1; min-width: min(100%, 14rem);">
+            <label for="preconSearchInput">Filter decks</label>
+            <input type="search" id="preconSearchInput" autocomplete="off" placeholder="Name or set code…" />
+          </div>
+          <button type="button" class="secondary" id="btnPreconReloadIndex">Reload list</button>
+        </div>
+        <label for="preconSelectDeck" style="margin-top: 0.65rem; display: block;">Deck</label>
+        <select id="preconSelectDeck" size="9" style="width: 100%; max-height: 14rem; margin-top: 0.3rem; font-size: 0.84rem;"></select>
+        <p id="preconDeckMeta" class="hint" style="margin: 0.35rem 0 0.65rem; line-height: 1.45;"></p>
+        <label for="preconDeckNameInput">New deck name (for deck imports)</label>
+        <input type="text" id="preconDeckNameInput" placeholder="Defaults to precon name" style="max-width: 28rem; width: 100%;" />
+        <div class="row" style="gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem;">
+          <button type="button" class="primary" id="btnPreconImportLibrary">Add precon to library</button>
+          <button type="button" class="primary" id="btnPreconImportLibraryAndDeck">Add to library &amp; new deck</button>
+          <button type="button" class="secondary" id="btnPreconImportDeckOnly">Add to new deck only</button>
+        </div>
+        <p id="preconImportStatus" class="hint" style="margin-top: 0.65rem; min-height: 1.35rem" aria-live="polite"></p>
+      </details>
     </section>
 
     <section id="panel-collection" class="panel">
@@ -2511,6 +3194,9 @@
         </div>
         <button type="button" class="secondary" id="btnCreateDeck">Create</button>
         <button type="button" class="secondary danger" id="btnDeleteDeck">Delete deck</button>
+        <button type="button" class="secondary" id="btnListDeckForTrade" title="Publish the active deck as one item in your trading bloc (saved deck unchanged)">
+          List deck for trade
+        </button>
         <button type="button" class="secondary" id="btnExportDecks">Export decks</button>
         <button type="button" class="secondary" id="btnImportDecks">Import decks</button>
         <input type="file" id="deckImportFile" accept="application/json,.json" style="display:none;" />
@@ -2882,7 +3568,8 @@
       <div class="card-lightbox-inner" style="min-width:min(94vw,520px);max-height:min(88vh,640px);overflow:auto;">
         <button type="button" class="card-lightbox-close" id="tradeProposeClose" aria-label="Close">Close</button>
         <h4 id="tradeProposeTitle" class="pv-name" style="margin:0 0 0.5rem;">Propose a trade</h4>
-        <p id="tradeProposeTargetSummary" class="hint" style="margin:0 0 1rem;line-height:1.5;"></p>
+        <p id="tradeProposeTargetSummary" class="hint" style="margin:0 0 0.65rem;line-height:1.5;"></p>
+        <div id="tradeProposeDealPreview" class="trade-propose-preview-host"></div>
         <fieldset style="border:none;margin:0;padding:0;">
           <legend class="hint" style="margin-bottom:0.5rem;font-weight:600;">Trade mode</legend>
           <label style="display:flex;gap:0.5rem;align-items:flex-start;margin-bottom:0.5rem;cursor:pointer;">
@@ -2918,6 +3605,7 @@
         <button type="button" class="on" data-trade-sub="browse">All listings</button>
         <button type="button" data-trade-sub="bloc">My trading bloc</button>
         <button type="button" data-trade-sub="activity">Trade activity</button>
+        <button type="button" data-trade-sub="transactions">Transaction hubs</button>
       </nav>
 
       <div id="tradeSubBrowse" class="trade-subpanel">
@@ -3018,11 +3706,11 @@
       <div id="tradeSubBloc" class="trade-subpanel" style="display:none;">
         <p class="hint">Cards you have published to the hub. Removing a listing returns it only in the database — re-add from the library if you still own the physical card.</p>
         <div id="tradeBlocGrid" class="card-grid" style="margin-top:1rem;"></div>
-        <p id="tradeBlocEmpty" class="hint" style="display:none;">Your trading bloc is empty. Use <strong>List for trade</strong> on a library stack.</p>
+        <p id="tradeBlocEmpty" class="hint" style="display:none;">Your trading bloc is empty. Use <strong>List for trade</strong> on a library stack, or <strong>List deck for trade</strong> in Deck Builder for a whole deck as one listing.</p>
       </div>
 
       <div id="tradeSubActivity" class="trade-subpanel" style="display:none;">
-        <div class="grid2" style="align-items:start;">
+        <div class="trade-activity-layout">
           <div>
             <h3 style="margin-top:0;">Incoming offers</h3>
             <p class="hint">Others proposing trades for your listings.</p>
@@ -3035,12 +3723,47 @@
           </div>
         </div>
       </div>
+
+      <div id="tradeSubTransactions" class="trade-subpanel" style="display:none;">
+        <p class="hint" style="max-width:46rem;line-height:1.55;">
+          For each <strong>accepted</strong> or <strong>active</strong> deal, both you and your partner can use this hub to ask questions, post shipment updates, and share proof image links.
+          Messages from the last <strong>60 days</strong> are shown here and in Inbox; run the optional delete in
+          <code>spellbook-trade-transaction-hub-migration.sql</code> if you want rows purged from the database after 60 days.
+        </p>
+        <div class="trade-tx-layout">
+          <aside class="trade-tx-rail" id="tradeTxList" aria-label="Active transactions"></aside>
+          <div id="tradeTxHubShell">
+            <p id="tradeTxEmpty" class="hint">Select an active deal to open its transaction hub.</p>
+            <div id="tradeTxPanel" style="display:none;">
+              <h3 id="tradeTxTitle" style="margin-top:0;"></h3>
+              <p id="tradeTxMeta" class="hint"></p>
+              <p id="tradeTxLive" class="hint" style="font-size:0.72rem;color:var(--muted);margin-top:0.25rem;"></p>
+              <div id="tradeTxMessages" class="inbox-messages"></div>
+              <div class="trade-tx-compose">
+                <label for="tradeTxKind">Post type</label>
+                <select id="tradeTxKind">
+                  <option value="chat">Message / question</option>
+                  <option value="shipment_update">Shipment update</option>
+                  <option value="proof">Proof (image link)</option>
+                </select>
+                <label for="tradeTxTracking">Tracking / carrier note (optional)</label>
+                <input type="text" id="tradeTxTracking" placeholder="e.g. UPS 1Z999…" maxlength="500" />
+                <label for="tradeTxImageUrl">Image URL (for proof)</label>
+                <input type="url" id="tradeTxImageUrl" placeholder="https://…" maxlength="2000" />
+                <label for="tradeTxBody">Details</label>
+                <textarea id="tradeTxBody" rows="4" maxlength="8000" placeholder="Describe the update or question…"></textarea>
+                <button type="button" class="primary" id="btnTradeTxSend">Post to hub</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section id="panel-inbox" class="panel">
       <h2>Inbox</h2>
       <p class="hint" style="max-width:46rem;line-height:1.55;">
-        Conversations tied to trade offers. When someone proposes a trade on your listing, you get a notification here (and an email if the site has trade-offer email configured). Use replies to coordinate with your trading partner.
+        Conversations tied to trade offers. When someone proposes a trade on your listing, you get a notification here (and an email if the site has trade-offer email configured). Use replies to coordinate; for accepted deals, use <strong>Trading → Transaction hubs</strong> for shipment updates and proof links (same thread, last 60 days of posts).
       </p>
       <div class="inbox-layout">
         <aside class="inbox-threads" id="inboxThreadList" aria-label="Conversations"></aside>
@@ -3813,6 +4536,9 @@
     sbClient.auth.onAuthStateChange(function (event, session) {
       if (event === "SIGNED_OUT") {
         tradeNotifyPollStop();
+        tradeOfferMsgsRealtimeOff();
+        tradeTxActiveOfferId = null;
+        tradeTxPendingOfferId = null;
         spellbookInboxActiveOfferId = null;
         var nb = document.getElementById("spellbookNotifyBadge");
         if (nb) nb.hidden = true;
@@ -3951,7 +4677,19 @@
       }
     }
     if (id === "trading") tradeHubRefreshAll();
-    if (id === "inbox") tradeInboxRefreshThreads();
+    if (id === "inbox") {
+      tradeInboxRefreshThreads().then(function () {
+        if (spellbookInboxActiveOfferId) {
+          return tradeInboxReloadThread().then(function () {
+            tradeOfferMsgsRealtimeOn(
+              spellbookInboxActiveOfferId,
+              tradeInboxReloadThread,
+              "inbox"
+            );
+          });
+        }
+      });
+    }
     if (id !== "collection" && id !== "decks") {
       updateValueBanner(sumCardValue(collection), "Library total value");
     }
@@ -4675,6 +5413,21 @@
   }
 
   function cardSearchHaystack(c) {
+    if (tradeListingIsDeckBundle(c)) {
+      var parts = [
+        c.name || "",
+        c.deckName || "",
+        c.commanderName || "",
+        c.oracleText || "",
+        c.typeLine || "",
+        c.keywords || "",
+        c.mainCardTypes || "",
+      ];
+      tradeDeckBundleCardRows(c).forEach(function (sub) {
+        parts.push(cardSearchHaystack(sub));
+      });
+      return parts.join(" ").toLowerCase();
+    }
     return [
       c.name || "",
       c.oracleText || "",
@@ -6826,6 +7579,370 @@
       });
     }
     return map;
+  }
+
+  var preconDeckListIndex = null;
+  var preconDeckListFiltered = null;
+  var preconSelectedMeta = null;
+
+  function preconDelay(ms) {
+    return new Promise(function (resolve) {
+      setTimeout(resolve, ms);
+    });
+  }
+
+  function spellbookUniqueDeckName(base) {
+    var n = (base || "Imported deck").trim() || "Imported deck";
+    if (!decks[n]) return n;
+    var i = 2;
+    while (decks[n + " (" + i + ")"]) i++;
+    return n + " (" + i + ")";
+  }
+
+  function preconFinishTreatmentFromMtgRow(row) {
+    if (row.isEtched) return { finish: "etched", treatment: "normal" };
+    var finishes = row.finishes || [];
+    if (finishes.indexOf("nonfoil") >= 0 && !row.isFoil) {
+      return { finish: "nonfoil", treatment: "normal" };
+    }
+    if (finishes.indexOf("etched") >= 0) {
+      return { finish: "etched", treatment: "normal" };
+    }
+    if (finishes.indexOf("foil") >= 0) {
+      return { finish: "foil", treatment: "normal" };
+    }
+    return { finish: "nonfoil", treatment: "normal" };
+  }
+
+  function libraryCardFromSfPrintingForPrecon(sf, ft, categories) {
+    if (!sf) return null;
+    var picked = pickPrinting([sf], ft.finish, ft.treatment) || sf;
+    var gpSf = gameplayFromScryfallPrinting(picked);
+    return {
+      uid: uuid(),
+      name: picked.name,
+      finish: ft.finish,
+      treatment: ft.treatment,
+      image: cardImageUrl(picked),
+      typeLine: gpSf.typeLine || "",
+      mainCardTypes: gpSf.mainCardTypes || "",
+      colors: gpSf.colors || "",
+      colorIdentity: gpSf.colorIdentity || "",
+      manaCost: gpSf.manaCost || "",
+      manaValue:
+        gpSf.manaValue !== undefined && gpSf.manaValue !== null ? gpSf.manaValue : null,
+      oracleText: gpSf.oracleText || "",
+      power: gpSf.power || "",
+      toughness: gpSf.toughness || "",
+      keywords: gpSf.keywords || "",
+      rarity: picked.rarity || "",
+      setCode: (picked.set || "").toUpperCase(),
+      collectorNumber: picked.collector_number || "",
+      price: scryfallPrice(picked),
+      categories: categories ? categories.slice() : ["Precon"],
+      source: "scryfall-precon",
+      scryfallId: picked.id || "",
+      addedAt: new Date().toISOString(),
+    };
+  }
+
+  async function preconPostScryfallCollection(identifiers) {
+    var res = await fetch("https://api.scryfall.com/cards/collection", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ identifiers: identifiers }),
+    });
+    if (!res.ok) throw new Error("Scryfall cards/collection HTTP " + res.status);
+    return res.json();
+  }
+
+  async function preconScryfallNamedExact(name) {
+    var n = String(name || "").trim();
+    if (!n) return null;
+    var res = await fetch(
+      "https://api.scryfall.com/cards/named?exact=" + encodeURIComponent(n)
+    );
+    if (!res.ok) return null;
+    return res.json();
+  }
+
+  function preconFlattenMtgjsonDeck(data) {
+    var rows = [];
+    function pushList(list, zone) {
+      (list || []).forEach(function (row) {
+        rows.push({ row: row, zone: zone });
+      });
+    }
+    pushList(data.commander, "commander");
+    pushList(data.mainBoard, "main");
+    pushList(data.sideBoard, "side");
+    return rows;
+  }
+
+  async function preconResolveDeckRowsToLibraryCards(rows, deckLabel) {
+    var catTag = ["Precon: " + (deckLabel || "deck")];
+    var errors = [];
+    var idToSf = Object.create(null);
+    var ids = [];
+    var seenId = Object.create(null);
+    rows.forEach(function (entry) {
+      var row = entry.row;
+      var id = row.identifiers && row.identifiers.scryfallId;
+      if (id && !seenId[id]) {
+        seenId[id] = true;
+        ids.push(id);
+      }
+    });
+    for (var i = 0; i < ids.length; i += 75) {
+      var chunk = ids.slice(i, i + 75).map(function (sid) {
+        return { id: sid };
+      });
+      var j = await preconPostScryfallCollection(chunk);
+      (j.data || []).forEach(function (c) {
+        if (c && c.id) idToSf[c.id] = c;
+      });
+      await preconDelay(75);
+    }
+    var out = [];
+    for (var r = 0; r < rows.length; r++) {
+      var entry = rows[r];
+      var row = entry.row;
+      var zone = entry.zone;
+      var ft = preconFinishTreatmentFromMtgRow(row);
+      var count = Math.max(1, parseInt(row.count, 10) || 1);
+      var sf = null;
+      var sid = row.identifiers && row.identifiers.scryfallId;
+      if (sid) sf = idToSf[sid];
+      if (!sf && row.setCode && row.number != null && row.number !== "") {
+        var j2 = await preconPostScryfallCollection([
+          {
+            set: String(row.setCode).toLowerCase(),
+            collector_number: String(row.number),
+          },
+        ]);
+        sf = (j2.data && j2.data[0]) || null;
+        await preconDelay(50);
+      }
+      if (!sf && row.name) {
+        sf = await preconScryfallNamedExact(row.name);
+        await preconDelay(50);
+      }
+      if (!sf) {
+        errors.push(row.name || sid || "(unknown card)");
+        continue;
+      }
+      for (var k = 0; k < count; k++) {
+        var card = libraryCardFromSfPrintingForPrecon(sf, ft, catTag);
+        if (card) out.push({ card: card, zone: zone });
+      }
+    }
+    return { list: out, errors: errors };
+  }
+
+  async function preconEnsureDeckListIndex(force) {
+    if (preconDeckListIndex && !force) return preconDeckListIndex;
+    var res = await fetch("https://mtgjson.com/api/v5/DeckList.json");
+    if (!res.ok) throw new Error("MTGJSON DeckList HTTP " + res.status);
+    var j = await res.json();
+    var data = j.data || [];
+    preconDeckListIndex = data.filter(function (x) {
+      return x && x.type === "Commander Deck";
+    });
+    preconDeckListIndex.sort(function (a, b) {
+      return String(b.releaseDate || "").localeCompare(String(a.releaseDate || ""));
+    });
+    return preconDeckListIndex;
+  }
+
+  function preconApplyFilter(query) {
+    var q = String(query || "")
+      .toLowerCase()
+      .trim();
+    if (!preconDeckListIndex) return [];
+    if (!q) return preconDeckListIndex.slice();
+    return preconDeckListIndex.filter(function (d) {
+      var name = (d.name || "").toLowerCase();
+      var code = (d.code || "").toLowerCase();
+      var file = (d.fileName || "").toLowerCase();
+      return name.indexOf(q) >= 0 || code.indexOf(q) >= 0 || file.indexOf(q) >= 0;
+    });
+  }
+
+  function preconPopulateSelect(list) {
+    var sel = document.getElementById("preconSelectDeck");
+    if (!sel) return;
+    preconDeckListFiltered = list || [];
+    var prev = sel.value;
+    sel.innerHTML = "";
+    preconDeckListFiltered.forEach(function (d) {
+      var opt = document.createElement("option");
+      opt.value = d.fileName;
+      opt.textContent =
+        (d.name || d.fileName) +
+        " (" +
+        (d.code || "?") +
+        ") · " +
+        (d.releaseDate || "");
+      opt.dataset.meta = JSON.stringify({
+        name: d.name,
+        code: d.code,
+        source: d.source || "",
+        releaseDate: d.releaseDate || "",
+      });
+      sel.appendChild(opt);
+    });
+    if (prev && [].some.call(sel.options, function (o) { return o.value === prev; })) {
+      sel.value = prev;
+    }
+  }
+
+  function preconUpdateMetaFromSelection() {
+    var sel = document.getElementById("preconSelectDeck");
+    var metaEl = document.getElementById("preconDeckMeta");
+    var nameInput = document.getElementById("preconDeckNameInput");
+    if (!sel || !metaEl) return;
+    var opt = sel.options[sel.selectedIndex];
+    preconSelectedMeta = null;
+    if (!opt || !opt.dataset.meta) {
+      metaEl.textContent = "";
+      return;
+    }
+    try {
+      preconSelectedMeta = JSON.parse(opt.dataset.meta);
+    } catch (e) {
+      preconSelectedMeta = null;
+    }
+    if (preconSelectedMeta) {
+      metaEl.innerHTML =
+        "<strong>" +
+        escapeHtml(preconSelectedMeta.name || "") +
+        "</strong> · " +
+        escapeHtml(preconSelectedMeta.code || "") +
+        " · " +
+        escapeHtml(preconSelectedMeta.releaseDate || "") +
+        (preconSelectedMeta.source
+          ? " · <a href=\"" +
+            escapeHtml(preconSelectedMeta.source) +
+            "\" rel=\"noopener noreferrer\" target=\"_blank\">Source</a>"
+          : "");
+      if (nameInput && !nameInput.value.trim()) {
+        nameInput.value = preconSelectedMeta.name || "";
+      }
+    }
+  }
+
+  async function preconRunImport(mode) {
+    var statusEl = document.getElementById("preconImportStatus");
+    var sel = document.getElementById("preconSelectDeck");
+    function setStatus(t) {
+      if (statusEl) statusEl.textContent = t || "";
+    }
+    if (!useScryfallLookup()) {
+      setStatus(
+        "Enable the Scryfall catalog (Settings → prefer catalog lookup, or leave Mana Pool search unset) to import precons."
+      );
+      return;
+    }
+    if (!sel || !sel.value) {
+      setStatus("Choose a deck from the list.");
+      return;
+    }
+    var fileName = sel.value;
+    var deckEntry = (preconDeckListFiltered || []).filter(function (d) {
+      return d.fileName === fileName;
+    })[0];
+    var deckTitle =
+      (deckEntry && deckEntry.name) ||
+      (preconSelectedMeta && preconSelectedMeta.name) ||
+      fileName;
+    var nameInput = document.getElementById("preconDeckNameInput");
+    var deckNameRaw = (nameInput && nameInput.value.trim()) || deckTitle;
+    setStatus("Loading " + deckTitle + "…");
+    try {
+      var res = await fetch("https://mtgjson.com/api/v5/decks/" + encodeURIComponent(fileName) + ".json");
+      if (!res.ok) throw new Error("MTGJSON deck HTTP " + res.status);
+      var j = await res.json();
+      var data = j.data;
+      if (!data) throw new Error("No deck data.");
+      var flat = preconFlattenMtgjsonDeck(data);
+      if (!flat.length) throw new Error("Deck list is empty.");
+      setStatus("Resolving " + flat.length + " stack(s) via Scryfall…");
+      var resolved = await preconResolveDeckRowsToLibraryCards(flat, deckTitle);
+      if (!resolved.list.length) {
+        setStatus(
+          resolved.errors.length
+            ? "No cards resolved. Missing: " + resolved.errors.slice(0, 16).join(", ") + (resolved.errors.length > 16 ? "…" : "")
+            : "No cards resolved."
+        );
+        return;
+      }
+      var libraryCopies = resolved.list.map(function (x) {
+        return x.card;
+      });
+      if (mode === "library" || mode === "library_deck") {
+        libraryCopies.forEach(function (c) {
+          collection.push(c);
+        });
+        saveCollection(collection);
+        renderCollection();
+        updateValueBanner(sumCardValue(collection), "Library total value");
+      }
+      var createdDeckName = null;
+      if (mode === "library_deck" || mode === "deck_only") {
+        createdDeckName = spellbookUniqueDeckName(deckNameRaw);
+        var deckObj = normalizeDeckEntry({ main: [], side: [], commanderId: "" });
+        var cmdrAssigned = false;
+        resolved.list.forEach(function (item) {
+          var copy = Object.assign({}, item.card, {
+            uid: uuid(),
+            addedAt: new Date().toISOString(),
+          });
+          if (item.zone === "side") {
+            deckObj.side.push(copy);
+          } else {
+            deckObj.main.push(copy);
+            if (item.zone === "commander" && !cmdrAssigned) {
+              deckObj.commanderId = copy.uid;
+              cmdrAssigned = true;
+            }
+          }
+        });
+        decks[createdDeckName] = deckObj;
+        saveDecks(decks);
+        populateDeckSelects();
+        activeDeck = createdDeckName;
+        if (els.sendDeckSelect) els.sendDeckSelect.value = createdDeckName;
+        renderDeck();
+        showTab("decks");
+      }
+      var msgParts = [
+        "\"" + deckTitle + "\": " + resolved.list.length + " card(s) resolved from MTGJSON.",
+      ];
+      if (resolved.errors.length) {
+        msgParts.push(
+          "Unmatched (" +
+            resolved.errors.length +
+            "): " +
+            resolved.errors.slice(0, 8).join(", ") +
+            (resolved.errors.length > 8 ? "…" : "")
+        );
+      }
+      if (mode === "library") msgParts.push("Added to your library.");
+      if (mode === "deck_only") {
+        msgParts.push('New deck "' + createdDeckName + '" (library unchanged).');
+      }
+      if (mode === "library_deck") {
+        msgParts.push('Added to library and new deck "' + createdDeckName + '".');
+      }
+      var msg = msgParts.join(" ");
+      setStatus(msg);
+      if (els.addMessage) els.addMessage.textContent = msg;
+    } catch (err) {
+      setStatus(err.message || String(err));
+    }
   }
 
   async function advisorScryfallSearchPaged(baseQuery, maxCards, order) {
@@ -9673,6 +10790,66 @@
     renderCollection();
   });
 
+  (function preconImportWireEvents() {
+    var preconDrawer = document.getElementById("preconImportDrawer");
+    var preconSearchTimer = null;
+    var psi = document.getElementById("preconSearchInput");
+    if (preconDrawer) {
+      preconDrawer.addEventListener("toggle", function () {
+        if (!preconDrawer.open) return;
+        preconEnsureDeckListIndex(false)
+          .then(function () {
+            preconPopulateSelect(preconApplyFilter(psi ? psi.value : ""));
+            preconUpdateMetaFromSelection();
+            var st = document.getElementById("preconImportStatus");
+            if (st && !st.textContent) {
+              st.textContent =
+                "Choose a deck, then import to your library and/or a new deck.";
+            }
+          })
+          .catch(function (e) {
+            var st = document.getElementById("preconImportStatus");
+            if (st) st.textContent = e.message || String(e);
+          });
+      });
+    }
+    if (psi) {
+      psi.addEventListener("input", function () {
+        clearTimeout(preconSearchTimer);
+        preconSearchTimer = setTimeout(function () {
+          if (!preconDeckListIndex) return;
+          preconPopulateSelect(preconApplyFilter(psi.value));
+          preconUpdateMetaFromSelection();
+        }, 160);
+      });
+    }
+    var ps = document.getElementById("preconSelectDeck");
+    if (ps) ps.addEventListener("change", preconUpdateMetaFromSelection);
+    var br = document.getElementById("btnPreconReloadIndex");
+    if (br) {
+      br.addEventListener("click", function () {
+        preconDeckListIndex = null;
+        preconEnsureDeckListIndex(true)
+          .then(function () {
+            preconPopulateSelect(preconApplyFilter(psi ? psi.value : ""));
+            preconUpdateMetaFromSelection();
+            var st = document.getElementById("preconImportStatus");
+            if (st) st.textContent = "Reloaded Commander precon catalog from MTGJSON.";
+          })
+          .catch(function (e) {
+            var st = document.getElementById("preconImportStatus");
+            if (st) st.textContent = e.message || String(e);
+          });
+      });
+    }
+    var bLib = document.getElementById("btnPreconImportLibrary");
+    if (bLib) bLib.addEventListener("click", function () { preconRunImport("library"); });
+    var bBoth = document.getElementById("btnPreconImportLibraryAndDeck");
+    if (bBoth) bBoth.addEventListener("click", function () { preconRunImport("library_deck"); });
+    var bDeck = document.getElementById("btnPreconImportDeckOnly");
+    if (bDeck) bDeck.addEventListener("click", function () { preconRunImport("deck_only"); });
+  })();
+
   var TRADE_BASE_FEE_CENTS = 99;
   var TRADE_OVERSIGHT_SURCHARGE_CENTS = 299;
   var tradeHubRows = [];
@@ -9682,6 +10859,13 @@
   var tradeHubEventsWired = false;
   var tradeNotifyPollTimer = null;
   var spellbookInboxActiveOfferId = null;
+  var TRADE_HUB_AGREED_STATUSES = ["accepted", "awaiting_confirmation", "completed"];
+  var TRADE_HUB_RETENTION_DAYS = 60;
+  var tradeTxActiveOfferId = null;
+  var tradeTxPendingOfferId = null;
+  var tradeCurrentTradeSubtab = "browse";
+  var tradeOfferMsgsRealtime = null;
+  var tradeOfferMsgsRealtimeOwner = null;
 
   function spellbookSignupNotifyEndpoint() {
     var base = (typeof window !== "undefined" && window.SPELLBOOK_TRADE_NOTIFY_BASE) || "";
@@ -9781,6 +10965,377 @@
         tradeInboxReloadThread();
       }
     }, 45000);
+  }
+
+  function tradeOfferMessagesCutoffIso() {
+    return new Date(Date.now() - TRADE_HUB_RETENTION_DAYS * 86400000).toISOString();
+  }
+
+  function tradeMsgKindLabel(kind) {
+    var k = String(kind || "chat").toLowerCase();
+    if (k === "shipment_update") return "Shipment update";
+    if (k === "proof") return "Proof";
+    if (k === "question") return "Question";
+    return "Message";
+  }
+
+  async function tradeOfferMessagesSelectQuery(offerId) {
+    var cutoff = tradeOfferMessagesCutoffIso();
+    var res = await sbClient
+      .from("trade_offer_messages")
+      .select("id, sender_id, body, created_at, message_kind, image_url, shipment_meta")
+      .eq("offer_id", offerId)
+      .gte("created_at", cutoff)
+      .order("created_at", { ascending: true });
+    if (
+      res.error &&
+      /column|does not exist|42703/i.test(String((res.error && res.error.message) || res.error))
+    ) {
+      res = await sbClient
+        .from("trade_offer_messages")
+        .select("id, sender_id, body, created_at")
+        .eq("offer_id", offerId)
+        .gte("created_at", cutoff)
+        .order("created_at", { ascending: true });
+    }
+    return res;
+  }
+
+  function tradeOfferMsgsRealtimeOff() {
+    if (tradeOfferMsgsRealtime && sbClient) {
+      sbClient.removeChannel(tradeOfferMsgsRealtime);
+    }
+    tradeOfferMsgsRealtime = null;
+    tradeOfferMsgsRealtimeOwner = null;
+  }
+
+  function tradeOfferMsgsRealtimeOn(offerId, reloadFn, owner) {
+    tradeOfferMsgsRealtimeOff();
+    if (!sbClient || !offerId || typeof reloadFn !== "function") return;
+    tradeOfferMsgsRealtimeOwner = owner || "other";
+    var token =
+      (typeof crypto !== "undefined" &&
+        crypto.randomUUID &&
+        crypto.randomUUID()) ||
+      String(Math.random()).slice(2);
+    var ch = sbClient
+      .channel("trade-offer-msgs-" + offerId + "-" + token)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "trade_offer_messages",
+          filter: "offer_id=eq." + offerId,
+        },
+        function () {
+          reloadFn();
+        }
+      )
+      .subscribe();
+    tradeOfferMsgsRealtime = ch;
+  }
+
+  function tradeAppendMessageRow(box, m, uid) {
+    var rawKind = String(m.message_kind || m.messageKind || "chat").toLowerCase();
+    var safeKind = rawKind.replace(/[^a-z0-9_]/g, "") || "chat";
+    var div = document.createElement("div");
+    div.className = "inbox-msg" + (m.sender_id === uid ? " mine" : "") + " trade-msg--" + safeKind;
+    var meta = document.createElement("div");
+    meta.className = "inbox-msg-meta";
+    meta.textContent =
+      (m.sender_id === uid ? "You" : "Partner") +
+      " · " +
+      tradeMsgKindLabel(safeKind) +
+      " · " +
+      new Date(m.created_at || Date.now()).toLocaleString();
+    div.appendChild(meta);
+    var sm = m.shipment_meta || m.shipmentMeta;
+    if (sm && typeof sm === "object") {
+      var trk = sm.tracking || sm.carrier_and_tracking || sm.note;
+      if (trk) {
+        var tr = document.createElement("div");
+        tr.className = "trade-msg-shipment";
+        tr.textContent = typeof trk === "string" ? trk : JSON.stringify(trk);
+        div.appendChild(tr);
+      }
+    }
+    var imgUrl = m.image_url || m.imageUrl;
+    if (imgUrl && /^https?:\/\//i.test(String(imgUrl).trim())) {
+      var wrapImg = document.createElement("div");
+      wrapImg.className = "trade-msg-proof-wrap";
+      var img = document.createElement("img");
+      img.src = String(imgUrl).trim();
+      img.alt = "Proof image";
+      img.className = "trade-msg-proof-img";
+      img.referrerPolicy = "no-referrer";
+      img.loading = "lazy";
+      wrapImg.appendChild(img);
+      var a = document.createElement("a");
+      a.href = String(imgUrl).trim();
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.className = "hint";
+      a.style.fontSize = "0.72rem";
+      a.textContent = "Open image";
+      wrapImg.appendChild(a);
+      div.appendChild(wrapImg);
+    }
+    var bod = document.createElement("div");
+    bod.className = "trade-msg-body";
+    bod.textContent = m.body || "";
+    div.appendChild(bod);
+    box.appendChild(div);
+  }
+
+  function tradeRenderMessagesIntoBox(box, rows, uid, emptyHint) {
+    box.innerHTML = "";
+    if (!rows || !rows.length) {
+      var ph = document.createElement("p");
+      ph.className = "hint";
+      ph.textContent = emptyHint || "No messages yet.";
+      box.appendChild(ph);
+      return;
+    }
+    rows.forEach(function (m) {
+      tradeAppendMessageRow(box, m, uid);
+    });
+    box.scrollTop = box.scrollHeight;
+  }
+
+  async function tradeInsertOfferMessage(row) {
+    var res = await sbClient.from("trade_offer_messages").insert(row);
+    if (
+      res.error &&
+      /column|does not exist|42703/i.test(String((res.error && res.error.message) || res.error))
+    ) {
+      var minimal = {
+        offer_id: row.offer_id,
+        sender_id: row.sender_id,
+        body: row.body != null ? row.body : "",
+      };
+      res = await sbClient.from("trade_offer_messages").insert(minimal);
+    }
+    return res;
+  }
+
+  async function tradeTxHubFetchAgreedOffers() {
+    if (!sbClient || !spellbookAuthUser) return [];
+    var uid = spellbookAuthUser.id;
+    var lr = await sbClient.from("trade_listings").select("id").eq("seller_id", uid);
+    var lids = (lr.data || []).map(function (r) {
+      return r.id;
+    });
+    var outById = Object.create(null);
+    function merge(rows) {
+      (rows || []).forEach(function (o) {
+        if (o && o.id) outById[String(o.id)] = o;
+      });
+    }
+    var r1 = await sbClient
+      .from("trade_offers")
+      .select("id, listing_id, proposer_id, status, mode, created_at, updated_at")
+      .eq("proposer_id", uid)
+      .in("status", TRADE_HUB_AGREED_STATUSES);
+    if (!r1.error) merge(r1.data);
+    if (lids.length) {
+      var r2 = await sbClient
+        .from("trade_offers")
+        .select("id, listing_id, proposer_id, status, mode, created_at, updated_at")
+        .in("listing_id", lids)
+        .in("status", TRADE_HUB_AGREED_STATUSES);
+      if (!r2.error) merge(r2.data);
+    }
+    var list = Object.keys(outById).map(function (k) {
+      return outById[k];
+    });
+    list.sort(function (a, b) {
+      return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+    });
+    return list;
+  }
+
+  function tradeTxHubClearPanel() {
+    tradeTxActiveOfferId = null;
+    var empty = document.getElementById("tradeTxEmpty");
+    var panel = document.getElementById("tradeTxPanel");
+    var live = document.getElementById("tradeTxLive");
+    if (empty) empty.style.display = "";
+    if (panel) panel.style.display = "none";
+    if (live) live.textContent = "";
+    var box = document.getElementById("tradeTxMessages");
+    if (box) box.innerHTML = "";
+  }
+
+  async function tradeTxHubLoadMessages() {
+    var box = document.getElementById("tradeTxMessages");
+    if (!box || !tradeTxActiveOfferId || !sbClient || !spellbookAuthUser) return;
+    var uid = spellbookAuthUser.id;
+    var res = await tradeOfferMessagesSelectQuery(tradeTxActiveOfferId);
+    if (res.error) {
+      box.innerHTML = "<p class=\"hint\">Could not load messages.</p>";
+      return;
+    }
+    tradeRenderMessagesIntoBox(box, res.data || [], uid, "No posts in the last 60 days yet.");
+    var live = document.getElementById("tradeTxLive");
+    if (live) {
+      live.textContent =
+        "Showing posts from the last " +
+        TRADE_HUB_RETENTION_DAYS +
+        " days · realtime updates when this hub is open";
+    }
+    box.scrollTop = box.scrollHeight;
+  }
+
+  async function tradeTxHubSelectOffer(offer, card, title) {
+    tradeTxActiveOfferId = offer.id;
+    var empty = document.getElementById("tradeTxEmpty");
+    var panel = document.getElementById("tradeTxPanel");
+    var titleEl = document.getElementById("tradeTxTitle");
+    var metaEl = document.getElementById("tradeTxMeta");
+    if (empty) empty.style.display = "none";
+    if (panel) panel.style.display = "";
+    if (titleEl) titleEl.textContent = title || "Trade";
+    var modeL = offer.mode === "mediated" ? "Mediated" : "Peer";
+    if (metaEl) {
+      metaEl.textContent =
+        "Status: " +
+        (offer.status || "") +
+        " · " +
+        modeL +
+        " · Ref " +
+        String(offer.id || "").slice(0, 8);
+    }
+    document.querySelectorAll("#tradeTxList .inbox-thread-item").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-offer-id") === String(offer.id));
+    });
+    await tradeTxHubLoadMessages();
+    tradeOfferMsgsRealtimeOn(offer.id, tradeTxHubLoadMessages, "tx");
+  }
+
+  async function tradeTxHubRefreshList() {
+    var listEl = document.getElementById("tradeTxList");
+    if (!listEl || !sbClient || !spellbookAuthUser) return;
+    listEl.innerHTML = "<p class=\"hint\" style=\"padding:0.5rem;\">Loading…</p>";
+    var offers = await tradeTxHubFetchAgreedOffers();
+    listEl.innerHTML = "";
+    if (!offers.length) {
+      listEl.innerHTML =
+        "<p class=\"hint\" style=\"padding:0.5rem;\">No active deals. Accepted or in-progress trades appear here for both parties.</p>";
+      tradeTxHubClearPanel();
+      return;
+    }
+    var lids = [];
+    offers.forEach(function (o) {
+      if (lids.indexOf(o.listing_id) < 0) lids.push(o.listing_id);
+    });
+    var cardByLid = Object.create(null);
+    if (lids.length) {
+      var lres = await sbClient.from("trade_listings").select("id, card").in("id", lids);
+      if (!lres.error && lres.data) {
+        lres.data.forEach(function (row) {
+          cardByLid[row.id] = row.card || {};
+        });
+      }
+    }
+    var uid = spellbookAuthUser.id;
+    var pending = tradeTxPendingOfferId;
+    tradeTxPendingOfferId = null;
+    var pendingHandled = false;
+    offers.forEach(function (o) {
+      var card = cardByLid[o.listing_id] || {};
+      var title = card.name || "Trade";
+      var role = o.proposer_id === uid ? "You proposed" : "On your listing";
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "inbox-thread-item" + (tradeTxActiveOfferId === o.id ? " on" : "");
+      btn.setAttribute("data-offer-id", String(o.id));
+      btn.innerHTML =
+        "<strong>" +
+        escapeHtml(title) +
+        "</strong><span class=\"hint\" style=\"display:block;font-size:0.72rem;margin-top:0.2rem;\">" +
+        escapeHtml(o.status || "") +
+        " · " +
+        escapeHtml(role) +
+        "</span>";
+      (function (oo, cc, tt) {
+        btn.addEventListener("click", function () {
+          tradeTxHubSelectOffer(oo, cc, tt);
+        });
+      })(o, card, title);
+      listEl.appendChild(btn);
+    });
+    if (pending && offers.some(function (x) { return String(x.id) === String(pending); })) {
+      var po = offers.filter(function (x) {
+        return String(x.id) === String(pending);
+      })[0];
+      var c2 = cardByLid[po.listing_id] || {};
+      pendingHandled = true;
+      await tradeTxHubSelectOffer(po, c2, c2.name || "Trade");
+    }
+    if (!pendingHandled && tradeTxActiveOfferId) {
+      var cur = offers.filter(function (x) {
+        return String(x.id) === String(tradeTxActiveOfferId);
+      })[0];
+      if (cur) {
+        var c3 = cardByLid[cur.listing_id] || {};
+        await tradeTxHubSelectOffer(cur, c3, c3.name || "Trade");
+      } else {
+        tradeTxHubClearPanel();
+      }
+    }
+  }
+
+  async function tradeTxHubSendPost() {
+    var kindEl = document.getElementById("tradeTxKind");
+    var bodyEl = document.getElementById("tradeTxBody");
+    var imgEl = document.getElementById("tradeTxImageUrl");
+    var trEl = document.getElementById("tradeTxTracking");
+    if (!tradeTxActiveOfferId || !sbClient || !spellbookAuthUser) {
+      alert("Select a deal first.");
+      return;
+    }
+    var kind = (kindEl && kindEl.value) || "chat";
+    var body = bodyEl && bodyEl.value ? bodyEl.value.trim() : "";
+    var imageUrl = imgEl && imgEl.value ? imgEl.value.trim() : "";
+    var tracking = trEl && trEl.value ? trEl.value.trim() : "";
+    if (kind === "proof" && !imageUrl && !body) {
+      alert("Add an image URL or a short note for proof.");
+      return;
+    }
+    if (!body && imageUrl) body = "Proof image (link).";
+    if (!body && kind === "shipment_update" && tracking) body = tracking;
+    if (!body) {
+      alert("Enter details for this post.");
+      return;
+    }
+    var shipment_meta = {};
+    if (tracking) shipment_meta.tracking = tracking;
+    var row = {
+      offer_id: tradeTxActiveOfferId,
+      sender_id: spellbookAuthUser.id,
+      body: body,
+      message_kind: kind,
+    };
+    if (imageUrl) row.image_url = imageUrl;
+    if (Object.keys(shipment_meta).length) row.shipment_meta = shipment_meta;
+    var ins = await tradeInsertOfferMessage(row);
+    if (ins.error) {
+      alert(ins.error.message || String(ins.error));
+      return;
+    }
+    if (bodyEl) bodyEl.value = "";
+    if (imgEl) imgEl.value = "";
+    if (trEl) trEl.value = "";
+    await tradeTxHubLoadMessages();
+    await tradeInboxRefreshThreads();
+    await tradeRefreshNotificationBadge();
+  }
+
+  function tradeOpenTxHubForOffer(offerId) {
+    tradeTxPendingOfferId = offerId;
+    showTab("trading");
+    tradeHubSetSubtab("transactions");
   }
 
   async function tradeInboxMarkNotificationsReadForOffer(offerId) {
@@ -9907,6 +11462,7 @@
         " · Ref " +
         String(offer.id || "").slice(0, 8);
     await tradeInboxReloadThread();
+    tradeOfferMsgsRealtimeOn(offer.id, tradeInboxReloadThread, "inbox");
     await tradeInboxRefreshThreads();
   }
 
@@ -9914,39 +11470,17 @@
     var box = document.getElementById("inboxMessages");
     if (!box || !spellbookInboxActiveOfferId || !sbClient || !spellbookAuthUser) return;
     var uid = spellbookAuthUser.id;
-    var res = await sbClient
-      .from("trade_offer_messages")
-      .select("id, sender_id, body, created_at")
-      .eq("offer_id", spellbookInboxActiveOfferId)
-      .order("created_at", { ascending: true });
-    box.innerHTML = "";
+    var res = await tradeOfferMessagesSelectQuery(spellbookInboxActiveOfferId);
     if (res.error) {
       box.innerHTML = "<p class=\"hint\">Could not load messages.</p>";
       return;
     }
-    var rows = res.data || [];
-    if (!rows.length) {
-      var ph = document.createElement("p");
-      ph.className = "hint";
-      ph.textContent = "No messages yet. Say hello below.";
-      box.appendChild(ph);
-    } else {
-      rows.forEach(function (m) {
-        var div = document.createElement("div");
-        div.className = "inbox-msg" + (m.sender_id === uid ? " mine" : "");
-        var meta = document.createElement("div");
-        meta.className = "inbox-msg-meta";
-        meta.textContent =
-          (m.sender_id === uid ? "You" : "Partner") +
-          " · " +
-          new Date(m.created_at || Date.now()).toLocaleString();
-        var bod = document.createElement("div");
-        bod.textContent = m.body || "";
-        div.appendChild(meta);
-        div.appendChild(bod);
-        box.appendChild(div);
-      });
-    }
+    tradeRenderMessagesIntoBox(
+      box,
+      res.data || [],
+      uid,
+      "No messages in the last " + TRADE_HUB_RETENTION_DAYS + " days. Say hello below."
+    );
     box.scrollTop = box.scrollHeight;
   }
 
@@ -9955,10 +11489,11 @@
     if (!ta || !spellbookInboxActiveOfferId || !sbClient || !spellbookAuthUser) return;
     var body = (ta.value || "").trim();
     if (!body) return;
-    var ins = await sbClient.from("trade_offer_messages").insert({
+    var ins = await tradeInsertOfferMessage({
       offer_id: spellbookInboxActiveOfferId,
       sender_id: spellbookAuthUser.id,
       body: body,
+      message_kind: "chat",
     });
     if (ins.error) {
       alert(ins.error.message || String(ins.error));
@@ -9994,6 +11529,139 @@
       oracleText: stack.oracleText,
       scryfallId: stack.scryfallId || "",
     };
+  }
+
+  function tradeListingIsDeckBundle(card) {
+    return !!(card && card.kind === "deck_bundle");
+  }
+
+  function tradeDeckBundleCardRows(card) {
+    if (!tradeListingIsDeckBundle(card)) return [];
+    return Array.isArray(card.cards) ? card.cards : [];
+  }
+
+  function tradeListingDeckBundlePayload(deckDisplayName, deckObj) {
+    var d = normalizeDeckEntry(deckObj || {});
+    var main = d.main || [];
+    var side = d.side || [];
+    var shots = [];
+    function snapOne(card) {
+      if (!card) return;
+      var u = card.uid ? [card.uid] : [];
+      return tradeListingCardPayload(
+        Object.assign({}, card, { count: 1, uids: u })
+      );
+    }
+    main.forEach(function (card) {
+      var s = snapOne(card);
+      if (s) shots.push(s);
+    });
+    side.forEach(function (card) {
+      var s2 = snapOne(card);
+      if (s2) shots.push(s2);
+    });
+    var cmdrUid = d.commanderId || "";
+    var cmdr = main.filter(function (x) {
+      return x.uid === cmdrUid;
+    })[0];
+    if (!cmdr && main.length) cmdr = main[0];
+    var sumPrice = 0;
+    var ciSeen = Object.create(null);
+    var unionCi = "";
+    main.concat(side).forEach(function (x) {
+      if (!x) return;
+      if (x.price != null && !isNaN(Number(x.price))) sumPrice += Number(x.price);
+      String(x.colorIdentity || "")
+        .toUpperCase()
+        .split("")
+        .forEach(function (ch) {
+          if ("WUBRG".indexOf(ch) >= 0 && !ciSeen[ch]) {
+            ciSeen[ch] = true;
+            unionCi += ch;
+          }
+        });
+    });
+    var order = "WUBRG";
+    unionCi = order
+      .split("")
+      .filter(function (ch) {
+        return ciSeen[ch];
+      })
+      .join("");
+    var n = shots.length;
+    var thumbImage = (cmdr && cmdr.image) || (main[0] && main[0].image) || "";
+    return {
+      kind: "deck_bundle",
+      name: "Deck: " + deckDisplayName + " (" + n + " cards)",
+      deckName: deckDisplayName,
+      cardCount: n,
+      image: thumbImage,
+      finish: "nonfoil",
+      treatment: "normal",
+      typeLine: "Complete deck (" + n + " cards)",
+      mainCardTypes: "Deck",
+      oracleText:
+        "Listed as one trade: all mainboard and sideboard cards in \"" +
+        deckDisplayName +
+        "\". Commander: " +
+        (cmdr ? cmdr.name : "—") +
+        ".",
+      colors: unionCi,
+      colorIdentity: unionCi,
+      manaCost: "",
+      manaValue: null,
+      keywords: "deck bundle",
+      rarity: "rare",
+      setCode: "",
+      collectorNumber: "",
+      price: sumPrice > 0 ? sumPrice : null,
+      cards: shots,
+      commanderName: cmdr ? cmdr.name : "",
+    };
+  }
+
+  /**
+   * Publish the entire active deck as a single trade_listings row (JSON deck_bundle).
+   */
+  async function tradePublishDeckListing(deckKeyName, opts) {
+    opts = opts || {};
+    var navigate = opts.navigate !== false;
+    if (!sbClient || !spellbookAuthUser) {
+      alert("Sign in to list for trade.");
+      return { ok: false };
+    }
+    var key = String(deckKeyName || "").trim() || activeDeck;
+    var deckObj = normalizeDeckEntry(decks[key] || {});
+    var n = (deckObj.main || []).length + (deckObj.side || []).length;
+    if (n < 1) {
+      alert("That deck is empty.");
+      return { ok: false };
+    }
+    var card = tradeListingDeckBundlePayload(key, deckObj);
+    var ins = await sbClient
+      .from("trade_listings")
+      .insert({
+        seller_id: spellbookAuthUser.id,
+        card: card,
+        note: null,
+        active: true,
+      })
+      .select("id")
+      .maybeSingle();
+    if (ins.error) {
+      alert(ins.error.message || String(ins.error));
+      return { ok: false, error: ins.error };
+    }
+    if (navigate) {
+      await tradeHubRefreshAll();
+      showTab("trading");
+      tradeHubSetSubtab("bloc");
+      if (els.addMessage) {
+        els.addMessage.textContent =
+          "Listed deck \"" + key + "\" as one trade (" + n + " cards). Your saved deck is unchanged.";
+      }
+    }
+    return { ok: true };
   }
 
   function tradeSellerLabel(sellerId) {
@@ -10136,6 +11804,8 @@
     tradeRenderBloc();
     await tradeLoadActivity();
     await tradeRefreshNotificationBadge();
+    var ts = document.getElementById("tradeSubTransactions");
+    if (ts && ts.style.display !== "none") await tradeTxHubRefreshList();
   }
 
   function tradeHubFilteredRows() {
@@ -10148,6 +11818,21 @@
     var finishSel = getCheckedValues("tradeHubFilterFinish");
     return tradeHubRows.filter(function (row) {
       var c = row.card || {};
+      if (tradeListingIsDeckBundle(c)) {
+        if (q && cardSearchHaystack(c).indexOf(q) < 0) return false;
+        var subs = tradeDeckBundleCardRows(c);
+        if (setSel && !subs.some(function (s) { return (s.setCode || "").toUpperCase() === setSel; }))
+          return false;
+        if (colorSel.length && !subs.some(function (s) { return cardMatchesColorFilters(s, colorSel); }))
+          return false;
+        if (typeSel.length && !subs.some(function (s) { return cardMatchesTypeFilters(s, typeSel); }))
+          return false;
+        if (raritySel.length && !subs.some(function (s) { return cardMatchesRarityFilters(s, raritySel); }))
+          return false;
+        if (finishSel.length && !subs.some(function (s) { return cardMatchesFinishFilters(s, finishSel); }))
+          return false;
+        return true;
+      }
       if (q && cardSearchHaystack(c).indexOf(q) < 0) return false;
       if (setSel && (c.setCode || "").toUpperCase() !== setSel) return false;
       if (!cardMatchesColorFilters(c, colorSel)) return false;
@@ -10181,7 +11866,17 @@
     var seen = Object.create(null);
     var sets = [];
     tradeHubRows.forEach(function (row) {
-      var sc = ((row.card || {}).setCode || "").toUpperCase();
+      var c = row.card || {};
+      if (tradeListingIsDeckBundle(c)) {
+        tradeDeckBundleCardRows(c).forEach(function (sub) {
+          var sc = ((sub && sub.setCode) || "").toUpperCase();
+          if (!sc || seen[sc]) return;
+          seen[sc] = true;
+          sets.push(sc);
+        });
+        return;
+      }
+      var sc = (c.setCode || "").toUpperCase();
       if (!sc || seen[sc]) return;
       seen[sc] = true;
       sets.push(sc);
@@ -10229,6 +11924,7 @@
     if (empty) empty.style.display = "none";
     rows.forEach(function (row) {
       var c = row.card || {};
+      var isBundle = tradeListingIsDeckBundle(c);
       var el = document.createElement("article");
       el.className = "collection-card";
       var thumb = document.createElement("div");
@@ -10243,10 +11939,11 @@
         });
       }
       thumb.appendChild(img);
-      if ((c.count || 1) > 1) {
+      var stackN = isBundle ? c.cardCount || 0 : c.count || 1;
+      if (stackN > 1) {
         var cnt = document.createElement("span");
         cnt.className = "stack-count";
-        cnt.textContent = "x" + c.count;
+        cnt.textContent = "x" + stackN;
         thumb.appendChild(cnt);
       }
       var body = document.createElement("div");
@@ -10258,8 +11955,9 @@
       meta.className = "collection-card-meta-row";
       var vars = document.createElement("div");
       vars.className = "variants";
-      vars.textContent =
-        finishLabel(c.finish) + " · " + treatmentLabel(c.treatment);
+      vars.textContent = isBundle
+        ? "Whole deck · " + (c.cardCount || 0) + " cards"
+        : finishLabel(c.finish) + " · " + treatmentLabel(c.treatment);
       meta.appendChild(vars);
       if (c.price != null) {
         var pr = document.createElement("div");
@@ -10271,7 +11969,9 @@
       var seller = document.createElement("p");
       seller.className = "hint";
       seller.style.margin = "0.35rem 0 0";
-      seller.textContent = tradeSellerLabel(row.seller_id);
+      seller.textContent =
+        tradeSellerLabel(row.seller_id) +
+        (isBundle ? " · Listed as one tradeable unit" : "");
       body.appendChild(seller);
       var actions = document.createElement("div");
       actions.className = "actions";
@@ -10302,12 +12002,14 @@
     if (empty) empty.style.display = "none";
     tradeBlocRows.forEach(function (row) {
       var c = row.card || {};
+      var isBundle = tradeListingIsDeckBundle(c);
       var el = document.createElement("article");
       el.className = "collection-card";
       var thumb = document.createElement("div");
       thumb.className = "thumb" + (c.image ? " thumb--zoom" : " thumb--missing");
       var img = document.createElement("img");
       img.alt = "";
+      img.loading = "lazy";
       img.src = c.image || "";
       if (c.image) {
         thumb.addEventListener("click", function () {
@@ -10315,11 +12017,33 @@
         });
       }
       thumb.appendChild(img);
+      var stackN = isBundle ? c.cardCount || 0 : c.count || 1;
+      if (stackN > 1) {
+        var cnt = document.createElement("span");
+        cnt.className = "stack-count";
+        cnt.textContent = "x" + stackN;
+        thumb.appendChild(cnt);
+      }
       var body = document.createElement("div");
       body.className = "body";
       var h = document.createElement("h3");
       h.textContent = c.name || "Card";
       body.appendChild(h);
+      var meta = document.createElement("div");
+      meta.className = "collection-card-meta-row";
+      var vars = document.createElement("div");
+      vars.className = "variants";
+      vars.textContent = isBundle
+        ? "Whole deck · " + (c.cardCount || 0) + " cards"
+        : finishLabel(c.finish) + " · " + treatmentLabel(c.treatment);
+      meta.appendChild(vars);
+      if (c.price != null) {
+        var pr = document.createElement("div");
+        pr.className = "price-tag";
+        pr.textContent = formatMoney(Number(c.price));
+        meta.appendChild(pr);
+      }
+      body.appendChild(meta);
       var actions = document.createElement("div");
       actions.className = "actions";
       var rm = document.createElement("button");
@@ -10389,43 +12113,291 @@
     return "";
   }
 
-  function tradeOfferCardEl(offer, isIncoming) {
+  function tradeFindListingRow(listingId) {
+    var rows = tradeHubRows.concat(tradeBlocRows);
+    for (var j = 0; j < rows.length; j++) {
+      if (rows[j].id === listingId) return rows[j];
+    }
+    return null;
+  }
+
+  function tradeOfferThumbEl(card, zoom) {
     var wrap = document.createElement("div");
+    wrap.className = "trade-offer-thumb";
+    var c = card || {};
+    var imgUrl = c.image;
+    if (imgUrl) {
+      if (zoom) wrap.classList.add("trade-offer-thumb--zoom");
+      var img = document.createElement("img");
+      img.src = imgUrl;
+      img.alt = c.name || "Card art";
+      img.loading = "lazy";
+      wrap.appendChild(img);
+      if (zoom) {
+        wrap.addEventListener("click", function () {
+          openCardLightbox(imgUrl, c.name || "");
+        });
+      }
+    } else {
+      wrap.classList.add("trade-offer-thumb--placeholder");
+      var ph = document.createElement("span");
+      ph.textContent =
+        (c.name && c.name.slice(0, 1).toUpperCase()) || "?";
+      wrap.appendChild(ph);
+    }
+    if (c.count > 1) {
+      var badge = document.createElement("span");
+      badge.className = "trade-offer-count";
+      badge.textContent = "×" + c.count;
+      wrap.appendChild(badge);
+    }
+    return wrap;
+  }
+
+  function tradeOfferBundleEl(cards) {
+    var bundle = document.createElement("div");
+    bundle.className = "trade-offer-bundle";
+    var list = cards && cards.length ? cards : [];
+    if (!list.length) {
+      bundle.classList.add("trade-offer-bundle--single");
+      bundle.appendChild(tradeOfferThumbEl(null, false));
+      return bundle;
+    }
+    if (list.length === 1) {
+      bundle.classList.add("trade-offer-bundle--single");
+      bundle.appendChild(tradeOfferThumbEl(list[0], true));
+      return bundle;
+    }
+    list.slice(0, 4).forEach(function (c) {
+      var t = tradeOfferThumbEl(c, true);
+      t.classList.add("trade-offer-thumb--stacked");
+      bundle.appendChild(t);
+    });
+    if (list.length > 4) {
+      var more = document.createElement("div");
+      more.className = "trade-offer-bundle-more";
+      more.textContent = "+" + (list.length - 4);
+      bundle.appendChild(more);
+    }
+    return bundle;
+  }
+
+  function tradeOfferStatusLabel(status) {
+    var s = String(status || "").replace(/_/g, " ").trim();
+    if (!s) return "—";
+    return s.replace(/\b\w/g, function (ch) {
+      return ch.toUpperCase();
+    });
+  }
+
+  function tradeOfferCardEl(offer, isIncoming) {
+    var wrap = document.createElement("article");
     wrap.className = "trade-offer-card";
-    var listTitle = tradeFindListingTitle(offer.listing_id);
-    var modeLabel =
-      offer.mode === "mediated"
-        ? "YesMagic mediated <span class=\"trade-mediator-badge\">Mediation</span>"
-        : "Peer";
+
+    var listingRow = tradeFindListingRow(offer.listing_id);
+    var listingCard = listingRow ? listingRow.card || {} : {};
+    var listIsDeck = tradeListingIsDeckBundle(listingCard);
+    var listTitle = listingCard.name || tradeFindListingTitle(offer.listing_id);
+    var offerCards = offer.offer_cards || [];
+
+    var proposerLabel = tradeSellerLabel(offer.proposer_id);
+    var sellerLabel =
+      listingRow && listingRow.seller_id != null
+        ? tradeSellerLabel(listingRow.seller_id)
+        : "Seller";
+
+    var header = document.createElement("div");
+    header.className = "trade-offer-card-header";
+
+    var headline = document.createElement("div");
+    headline.className = "trade-offer-headline";
+    if (isIncoming) {
+      headline.innerHTML =
+        "<strong>" +
+        escapeHtml(proposerLabel) +
+        "</strong> proposes a trade <span class=\"trade-offer-headline-sub\">for your " +
+        (listIsDeck ? "deck listing" : "listing") +
+        "</span>";
+    } else {
+      headline.innerHTML =
+        "You proposed to <strong>" +
+        escapeHtml(sellerLabel) +
+        "</strong> <span class=\"trade-offer-headline-sub\">for their " +
+        (listIsDeck ? "deck listing" : "listing") +
+        "</span>";
+    }
+    header.appendChild(headline);
+
+    var statusRow = document.createElement("div");
+    statusRow.className = "trade-offer-status-row";
+
+    var stBadge = document.createElement("span");
+    stBadge.className = "trade-offer-status-badge";
+    var rawSt = String(offer.status || "unknown")
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "");
+    if (rawSt) stBadge.classList.add("trade-offer-status--" + rawSt);
+    stBadge.textContent = tradeOfferStatusLabel(offer.status);
+    statusRow.appendChild(stBadge);
+
+    var modeChip = document.createElement("span");
+    modeChip.className =
+      "trade-offer-mode-chip" +
+      (offer.mode === "mediated" ? " trade-offer-mode-chip--mediated" : "");
+    if (offer.mode === "mediated") {
+      modeChip.innerHTML =
+        "YesMagic mediated <span class=\"trade-mediator-badge\">Mediation</span>";
+    } else {
+      modeChip.textContent = "Peer to peer";
+    }
+    statusRow.appendChild(modeChip);
+    header.appendChild(statusRow);
+    wrap.appendChild(header);
+
+    var deal = document.createElement("div");
+    deal.className = "trade-offer-deal";
+
+    var poleListing = document.createElement("div");
+    poleListing.className = "trade-offer-pole";
+
+    var labelL = document.createElement("div");
+    labelL.className = "trade-offer-pole-label";
+    labelL.innerHTML = isIncoming
+      ? "You send <span class=\"trade-offer-pole-hint\">(" +
+        (listIsDeck ? "your listed deck" : "your listed card") +
+        ")</span>"
+      : "You receive <span class=\"trade-offer-pole-hint\">(" +
+        (listIsDeck ? "their listed deck" : "their listing") +
+        ")</span>";
+    poleListing.appendChild(labelL);
+
+    var bundleL = document.createElement("div");
+    bundleL.className = "trade-offer-pole-visual";
+    var listBundle = document.createElement("div");
+    listBundle.className = "trade-offer-bundle trade-offer-bundle--single";
+    var listCardForThumb =
+      listingCard && (listingCard.name || listingCard.image)
+        ? listingCard
+        : { name: listTitle || "Card" };
+    listBundle.appendChild(tradeOfferThumbEl(listCardForThumb, true));
+    bundleL.appendChild(listBundle);
+    poleListing.appendChild(bundleL);
+
+    var titleL = document.createElement("div");
+    titleL.className = "trade-offer-pole-title";
+    titleL.textContent = listTitle || "Listed card";
+    poleListing.appendChild(titleL);
+
+    var subL = document.createElement("div");
+    subL.className = "trade-offer-pole-meta";
+    if (listIsDeck) {
+      subL.textContent =
+        (listingCard.cardCount || 0) +
+        " cards in this listing" +
+        (listingCard.commanderName ? " · Commander: " + listingCard.commanderName : "");
+    } else {
+      var metaL = [];
+      if (listingCard.finish) metaL.push(finishLabel(listingCard.finish));
+      if (listingCard.setCode) metaL.push(String(listingCard.setCode).toUpperCase());
+      if (listingCard.treatment) metaL.push(treatmentLabel(listingCard.treatment));
+      subL.textContent =
+        metaL.length > 0
+          ? metaL.join(" · ")
+          : isIncoming
+            ? "From your trading bloc"
+            : "From " + sellerLabel;
+    }
+    poleListing.appendChild(subL);
+
+    var swap = document.createElement("div");
+    swap.className = "trade-offer-swap";
+    swap.setAttribute("aria-hidden", "true");
+    var swapIcon = document.createElement("span");
+    swapIcon.className = "trade-offer-swap-icon";
+    swapIcon.textContent = "⇄";
+    swap.appendChild(swapIcon);
+
+    var poleOffer = document.createElement("div");
+    poleOffer.className = "trade-offer-pole";
+
+    var labelR = document.createElement("div");
+    labelR.className = "trade-offer-pole-label";
+    labelR.innerHTML = isIncoming
+      ? "They send <span class=\"trade-offer-pole-hint\">(" +
+        escapeHtml(proposerLabel) +
+        ")</span>"
+      : "You send <span class=\"trade-offer-pole-hint\">(your offer)</span>";
+    poleOffer.appendChild(labelR);
+
+    var bundleR = document.createElement("div");
+    bundleR.className = "trade-offer-pole-visual";
+    bundleR.appendChild(tradeOfferBundleEl(offerCards));
+    poleOffer.appendChild(bundleR);
+
+    var titleR = document.createElement("div");
+    titleR.className = "trade-offer-pole-title";
+    if (offerCards.length === 1) {
+      var oc = offerCards[0];
+      titleR.textContent =
+        (oc.name || "Card") + (oc.count > 1 ? " ×" + oc.count : "");
+    } else if (offerCards.length > 1) {
+      titleR.textContent = offerCards.length + " cards in this offer";
+    } else {
+      titleR.textContent = "Offer details unavailable";
+    }
+    poleOffer.appendChild(titleR);
+
+    var subR = document.createElement("div");
+    subR.className = "trade-offer-pole-meta";
+    subR.textContent =
+      offerCards
+        .map(function (c) {
+          return (c.name || "?") + " ×" + (c.count || 1);
+        })
+        .join(", ") || "—";
+    poleOffer.appendChild(subR);
+
+    deal.appendChild(poleListing);
+    deal.appendChild(swap);
+    deal.appendChild(poleOffer);
+    wrap.appendChild(deal);
+
+    var footer = document.createElement("div");
+    footer.className = "trade-offer-card-footer";
+
     var totalCents =
       (offer.trading_fee_cents || TRADE_BASE_FEE_CENTS) +
       (offer.oversight_fee_cents || 0);
-    var cards = offer.offer_cards || [];
-    var offerLines = cards
-      .map(function (c) {
-        return escapeHtml((c.name || "?") + " ×" + (c.count || 1));
-      })
-      .join(", ");
-    wrap.innerHTML =
-      (listTitle
-        ? "<p class=\"hint\" style=\"margin:0 0 0.35rem;\">Listing: <strong>" +
-          escapeHtml(listTitle) +
-          "</strong></p>"
-        : "") +
-      "<p style=\"margin:0 0 0.35rem;\"><strong>" +
-      escapeHtml(String(offer.status || "")) +
-      "</strong> · " +
-      modeLabel +
-      "</p>" +
-      "<p class=\"hint\" style=\"margin:0 0 0.35rem;\">They offer: " +
-      (offerLines || "—") +
-      "</p>" +
-      "<p class=\"hint\" style=\"margin:0;\">Fees (preview): <strong>" +
+    var feeP = document.createElement("p");
+    feeP.className = "trade-offer-fees";
+    feeP.innerHTML =
+      "Fees (preview) for this exchange: <strong>" +
       escapeHtml(tradeFeeMoney(totalCents)) +
-      "</strong></p>";
+      "</strong> total.";
+    footer.appendChild(feeP);
+
+    if (offer.status === "awaiting_confirmation" && offer.mode === "mediated") {
+      var note = document.createElement("p");
+      note.className = "hint trade-offer-mediation-note";
+      note.textContent =
+        "YesMagic will confirm both shipments. Mark when you have shipped your cards (honor system until checkout ships).";
+      footer.appendChild(note);
+      var r2 = document.createElement("div");
+      r2.className = "row trade-offer-actions";
+      var b1 = document.createElement("button");
+      b1.type = "button";
+      b1.className = "secondary";
+      b1.textContent = isIncoming ? "I shipped my listing" : "I shipped my offer";
+      b1.addEventListener("click", function () {
+        tradeConfirmShipment(offer, isIncoming);
+      });
+      r2.appendChild(b1);
+      footer.appendChild(r2);
+    }
+
     var row = document.createElement("div");
-    row.className = "row";
-    row.style.marginTop = "0.5rem";
+    row.className = "row trade-offer-actions";
+
     if (isIncoming && offer.status === "pending") {
       var acc = document.createElement("button");
       acc.type = "button";
@@ -10452,28 +12424,108 @@
         tradeRespondOffer(offer.id, "cancelled");
       });
       row.appendChild(can);
-    } else if (offer.status === "awaiting_confirmation" && offer.mode === "mediated") {
-      var note = document.createElement("p");
-      note.className = "hint";
-      note.style.margin = "0.5rem 0 0";
-      note.textContent =
-        "YesMagic will confirm both shipments. Mark when you have shipped your cards (honor system until checkout ships).";
-      wrap.appendChild(note);
-      var r2 = document.createElement("div");
-      r2.className = "row";
-      r2.style.marginTop = "0.35rem";
-      var b1 = document.createElement("button");
-      b1.type = "button";
-      b1.className = "secondary";
-      b1.textContent = isIncoming ? "I shipped my listing" : "I shipped my offer";
-      b1.addEventListener("click", function () {
-        tradeConfirmShipment(offer, isIncoming);
-      });
-      r2.appendChild(b1);
-      wrap.appendChild(r2);
     }
-    wrap.appendChild(row);
+
+    if (row.childNodes.length) footer.appendChild(row);
+    var stAgreed = String(offer.status || "").toLowerCase();
+    if (TRADE_HUB_AGREED_STATUSES.indexOf(stAgreed) >= 0) {
+      var rowHub = document.createElement("div");
+      rowHub.className = "row trade-offer-actions";
+      var hub = document.createElement("button");
+      hub.type = "button";
+      hub.className = "secondary";
+      hub.textContent = "Transaction hub";
+      hub.addEventListener("click", function () {
+        tradeOpenTxHubForOffer(offer.id);
+      });
+      rowHub.appendChild(hub);
+      footer.appendChild(rowHub);
+    }
+    wrap.appendChild(footer);
     return wrap;
+  }
+
+  function tradeRefreshProposePreview() {
+    var host = document.getElementById("tradeProposeDealPreview");
+    if (!host) return;
+    host.innerHTML = "";
+    if (!tradeActiveListingForPropose) return;
+    var listingCard = tradeActiveListingForPropose.card || {};
+
+    var pick = document.getElementById("tradeProposeOfferPick");
+    var keys = [];
+    if (pick) {
+      pick.querySelectorAll('input[type="checkbox"]:checked').forEach(function (cb) {
+        keys.push(cb.getAttribute("data-stack-key"));
+      });
+    }
+    var offered = keys.map(function (k) {
+      return tradeListingCardPayload(tradeProposeStackByKey[k] || {});
+    });
+
+    var deal = document.createElement("div");
+    deal.className = "trade-offer-deal trade-propose-preview-deal";
+
+    var poleL = document.createElement("div");
+    poleL.className = "trade-offer-pole";
+    var labL = document.createElement("div");
+    labL.className = "trade-offer-pole-label";
+    labL.textContent = "You want";
+    poleL.appendChild(labL);
+    var visL = document.createElement("div");
+    visL.className = "trade-offer-pole-visual";
+    var bL = document.createElement("div");
+    bL.className = "trade-offer-bundle trade-offer-bundle--single";
+    bL.appendChild(tradeOfferThumbEl(listingCard, true));
+    visL.appendChild(bL);
+    poleL.appendChild(visL);
+    var tL = document.createElement("div");
+    tL.className = "trade-offer-pole-title";
+    tL.textContent = listingCard.name || "Card";
+    poleL.appendChild(tL);
+
+    var swap = document.createElement("div");
+    swap.className = "trade-offer-swap";
+    swap.setAttribute("aria-hidden", "true");
+    var si = document.createElement("span");
+    si.className = "trade-offer-swap-icon";
+    si.textContent = "⇄";
+    swap.appendChild(si);
+
+    var poleR = document.createElement("div");
+    poleR.className = "trade-offer-pole";
+    var labR = document.createElement("div");
+    labR.className = "trade-offer-pole-label";
+    labR.textContent = "You offer";
+    poleR.appendChild(labR);
+    var visR = document.createElement("div");
+    visR.className = "trade-offer-pole-visual";
+    if (offered.length) {
+      visR.appendChild(tradeOfferBundleEl(offered));
+    } else {
+      var ph = document.createElement("div");
+      ph.className = "trade-propose-placeholder";
+      ph.textContent = "Pick stacks below";
+      visR.appendChild(ph);
+    }
+    poleR.appendChild(visR);
+    var tR = document.createElement("div");
+    tR.className = "trade-offer-pole-title";
+    if (offered.length === 1) {
+      tR.textContent =
+        (offered[0].name || "Card") +
+        (offered[0].count > 1 ? " ×" + offered[0].count : "");
+    } else if (offered.length > 1) {
+      tR.textContent = offered.length + " stacks selected";
+    } else {
+      tR.textContent = "—";
+    }
+    poleR.appendChild(tR);
+
+    deal.appendChild(poleL);
+    deal.appendChild(swap);
+    deal.appendChild(poleR);
+    host.appendChild(deal);
   }
 
   async function tradeRespondOffer(offerId, status) {
@@ -10533,15 +12585,27 @@
   }
 
   function tradeHubSetSubtab(which) {
+    var prev = tradeCurrentTradeSubtab || "browse";
+    tradeCurrentTradeSubtab = which;
+    if (
+      prev === "transactions" &&
+      which !== "transactions" &&
+      tradeOfferMsgsRealtimeOwner === "tx"
+    ) {
+      tradeOfferMsgsRealtimeOff();
+    }
     document.querySelectorAll(".trade-subtabs [data-trade-sub]").forEach(function (b) {
       b.classList.toggle("on", b.getAttribute("data-trade-sub") === which);
     });
     var browse = document.getElementById("tradeSubBrowse");
     var bloc = document.getElementById("tradeSubBloc");
     var act = document.getElementById("tradeSubActivity");
+    var tx = document.getElementById("tradeSubTransactions");
     if (browse) browse.style.display = which === "browse" ? "" : "none";
     if (bloc) bloc.style.display = which === "bloc" ? "" : "none";
     if (act) act.style.display = which === "activity" ? "" : "none";
+    if (tx) tx.style.display = which === "transactions" ? "" : "none";
+    if (which === "transactions") tradeTxHubRefreshList();
   }
 
   function tradeOpenProposeDialog(row) {
@@ -10559,16 +12623,32 @@
     var sum = document.getElementById("tradeProposeTargetSummary");
     var c = row.card || {};
     if (sum) {
-      sum.innerHTML =
-        "You want: <strong>" +
-        escapeHtml(c.name || "") +
-        "</strong> (" +
-        escapeHtml(finishLabel(c.finish)) +
-        " · " +
-        escapeHtml(String(c.count || 1)) +
-        "×) from " +
-        escapeHtml(tradeSellerLabel(row.seller_id)) +
-        ".";
+      if (tradeListingIsDeckBundle(c)) {
+        sum.innerHTML =
+          "You want the <strong>entire deck listing</strong> " +
+          "<strong>" +
+          escapeHtml(c.name || c.deckName || "Deck") +
+          "</strong> (" +
+          escapeHtml(String(c.cardCount || 0)) +
+          " cards" +
+          (c.commanderName
+            ? ", commander <strong>" + escapeHtml(c.commanderName) + "</strong>"
+            : "") +
+          ") from " +
+          escapeHtml(tradeSellerLabel(row.seller_id)) +
+          ". Offer your side below; the listing is one tradeable unit.";
+      } else {
+        sum.innerHTML =
+          "You want: <strong>" +
+          escapeHtml(c.name || "") +
+          "</strong> (" +
+          escapeHtml(finishLabel(c.finish)) +
+          " · " +
+          escapeHtml(String(c.count || 1)) +
+          "×) from " +
+          escapeHtml(tradeSellerLabel(row.seller_id)) +
+          ".";
+      }
     }
     var peer = document.getElementById("tradeFeePeerDisplay");
     var med = document.getElementById("tradeFeeMediatedDisplay");
@@ -10603,6 +12683,7 @@
     }
     var modePeer = document.getElementById("tradeModePeer");
     if (modePeer) modePeer.checked = true;
+    tradeRefreshProposePreview();
     if (dlg) dlg.showModal();
   }
 
@@ -10724,8 +12805,23 @@
       });
     var sub = document.getElementById("tradeProposeSubmit");
     if (sub) sub.addEventListener("click", tradeSubmitPropose);
+    var tradeDlg = document.getElementById("tradeProposeDialog");
+    if (tradeDlg && !tradeDlg.dataset.previewDelegated) {
+      tradeDlg.dataset.previewDelegated = "1";
+      tradeDlg.addEventListener("change", function (ev) {
+        if (
+          ev.target &&
+          ev.target.closest &&
+          ev.target.closest("#tradeProposeOfferPick")
+        ) {
+          tradeRefreshProposePreview();
+        }
+      });
+    }
     var inboxSend = document.getElementById("btnInboxSend");
     if (inboxSend) inboxSend.addEventListener("click", tradeInboxSendReply);
+    var txSend = document.getElementById("btnTradeTxSend");
+    if (txSend) txSend.addEventListener("click", tradeTxHubSendPost);
   }
 
   function renderCollection() {
@@ -11510,6 +13606,37 @@
       saveDecks(decks);
       populateDeckSelects();
       renderDeck();
+    });
+  }
+
+  var btnListDeckForTrade = document.getElementById("btnListDeckForTrade");
+  if (btnListDeckForTrade) {
+    btnListDeckForTrade.addEventListener("click", function () {
+      if (!sbClient || !spellbookAuthUser) {
+        alert("Sign in to list decks for trade.");
+        return;
+      }
+      if (!activeDeck || !decks[activeDeck]) return;
+      var d = normalizeDeckEntry(decks[activeDeck]);
+      var total = (d.main || []).length + (d.side || []).length;
+      if (total < 1) {
+        alert("This deck is empty.");
+        return;
+      }
+      if (
+        !confirm(
+          "List entire deck \"" +
+            activeDeck +
+            "\" (" +
+            total +
+            " cards) as one tradeable listing? Your saved deck will not change."
+        )
+      ) {
+        return;
+      }
+      tradePublishDeckListing(activeDeck, {}).catch(function (e) {
+        alert(e.message || String(e));
+      });
     });
   }
 
