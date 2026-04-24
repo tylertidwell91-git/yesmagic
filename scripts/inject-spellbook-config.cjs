@@ -46,6 +46,13 @@ window.SPELLBOOK_SUPABASE_ANON_KEY = ${JSON.stringify(key)};
 `
 writeFileSync(join(outDir, "config.js"), content, "utf8")
 console.log(
-  "[spellbook] Wrote public/spellbook/config.js — Supabase " +
-    (url ? "URL set" : "URL missing (set SPELLBOOK_SUPABASE_URL for cloud save)")
+  "[spellbook] Wrote public/spellbook/config.js — SPELLBOOK_SUPABASE_URL: " +
+    (url ? "set" : "EMPTY") +
+    " | SPELLBOOK_SUPABASE_ANON_KEY: " +
+    (key ? "set" : "EMPTY")
 )
+if (!url || !key) {
+  console.warn(
+    "[spellbook] Netlify: open each variable → ensure scope includes Builds (not only Functions). Redeploy after saving."
+  )
+}

@@ -1,6 +1,7 @@
 # Netlify config for YESMagic (Vite + React SPA + serverless API)
 [build]
-  command = "npm run build"
+  # Inject SPELLBOOK_* into public/spellbook/config.js before Vite copies public/ → dist/
+  command = "node scripts/inject-spellbook-config.cjs && vite build"
   publish = "dist"
   functions = "netlify/functions"
 
