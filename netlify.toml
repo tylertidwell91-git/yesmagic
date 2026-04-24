@@ -81,11 +81,13 @@
   to = "/spellbook/index.html"
   status = 200
   force = true
+# No force: real files under dist/spellbook/ (e.g. config.js) must be served.
+# force=true on /* was rewriting /spellbook/config.js to index.html, so Supabase
+# env baked into config.js never loaded and the app showed "missing configuration".
 [[redirects]]
   from = "https://spellbook.yesmagicshop.com/*"
   to = "/spellbook/index.html"
   status = 200
-  force = true
 [[redirects]]
   from = "http://spellbook.yesmagicshop.com/"
   to = "/spellbook/index.html"
@@ -95,7 +97,6 @@
   from = "http://spellbook.yesmagicshop.com/*"
   to = "/spellbook/index.html"
   status = 200
-  force = true
 [[redirects]]
   from = "/spellbook"
   to = "/spellbook/index.html"
