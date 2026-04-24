@@ -211,3 +211,12 @@ SPELLBOOK_SUPABASE_ANON_KEY=eyJhbGciOiJI...
 Running **`npm run dev`** or **`npm run build`** runs **`scripts/inject-spellbook-config.cjs`**, which writes **`public/spellbook/config.js`** (gitignored). Netlify should define the same two variables on the site that builds YESMagic.
 
 The anon key is safe in the browser; **Row Level Security** on `spellbook_data` restricts reads and writes to `auth.uid()`.
+
+### Sign-up error: “Invalid path specified in request URL”
+
+1. **Netlify `SPELLBOOK_SUPABASE_URL`** must be **only** the Supabase **project URL** (Dashboard → Project Settings → API → **Project URL**), for example `https://abcdefgh.supabase.co` — **no** `/rest/v1`, `/auth/v1`, or trailing path.
+2. **Supabase → Authentication → URL configuration**  
+   - **Site URL:** `https://spellbook.yesmagicshop.com` (or your real Spellbook origin).  
+   - **Redirect URLs:** add `https://spellbook.yesmagicshop.com/**` (and `http://localhost:5173/**` for local dev if needed).  
+   Save after edits.
+3. Redeploy the site after changing Netlify env vars so `config.js` is regenerated.

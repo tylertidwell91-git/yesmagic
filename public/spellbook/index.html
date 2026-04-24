@@ -2975,9 +2975,38 @@
     } catch (_e) {}
   }
 
+  function spellbookNormalizeSupabaseUrl(raw) {
+    var u = String(raw || "").trim();
+    if (
+      (u.charAt(0) === '"' && u.slice(-1) === '"') ||
+      (u.charAt(0) === "'" && u.slice(-1) === "'")
+    ) {
+      u = u.slice(1, -1).trim();
+    }
+    u = u.replace(/\/?(rest\/v1|auth\/v1|storage\/v1|graphql\/v1)\/?$/i, "");
+    u = u.replace(/\/+$/, "");
+    if (!u) return "";
+    if (!/^https:\/\//i.test(u)) {
+      if (/^http:\/\//i.test(u)) u = u.replace(/^http/i, "https");
+      else u = "https://" + u.replace(/^\/+/, "");
+    }
+    return u;
+  }
+
+  function spellbookNormalizeAnonKey(raw) {
+    var k = String(raw || "").trim();
+    if (
+      (k.charAt(0) === '"' && k.slice(-1) === '"') ||
+      (k.charAt(0) === "'" && k.slice(-1) === "'")
+    ) {
+      k = k.slice(1, -1).trim();
+    }
+    return k;
+  }
+
   function spellbookGetSupabaseConfig() {
-    var u = (window.SPELLBOOK_SUPABASE_URL || "").trim();
-    var k = (window.SPELLBOOK_SUPABASE_ANON_KEY || "").trim();
+    var u = spellbookNormalizeSupabaseUrl(window.SPELLBOOK_SUPABASE_URL || "");
+    var k = spellbookNormalizeAnonKey(window.SPELLBOOK_SUPABASE_ANON_KEY || "");
     return { url: u, anonKey: k };
   }
 
@@ -3509,7 +3538,12 @@
           if (inRes.error) throw inRes.error;
           if (inRes.data.session) await spellbookAfterSignIn(inRes.data.session);
         } else {
-          var upRes = await sbClient.auth.signUp({ email: email, password: password });
+          var redirectTo = window.location.origin + "/";
+          var upRes = await sbClient.auth.signUp({
+            email: email,
+            password: password,
+            options: { emailRedirectTo: redirectTo },
+          });
           if (upRes.error) throw upRes.error;
           if (upRes.data.session) {
             await spellbookAfterSignIn(upRes.data.session);
@@ -3520,7 +3554,12 @@
           }
         }
       } catch (err) {
-        spellbookSetAuthMessage((err && err.message) || String(err));
+        var msg = (err && err.message) || String(err);
+        if (/invalid path|requested path is invalid/i.test(msg)) {
+          msg +=
+            " In Netlify, use the project URL only (https://YOUR-REF.supabase.co), not …/rest/v1 or …/auth/v1. In Supabase → Authentication → URL configuration: set Site URL to your Spellbook origin and add https://spellbook.yesmagicshop.com/** under Redirect URLs.";
+        }
+        spellbookSetAuthMessage(msg);
       } finally {
         spellbookPrimary.disabled = false;
       }
