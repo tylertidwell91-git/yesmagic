@@ -1740,6 +1740,19 @@
       text-align: center;
     }
 
+    .collection-card .actions .remove-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.38rem;
+      min-width: 110px;
+      align-self: stretch;
+    }
+
+    .collection-card .actions .remove-actions button {
+      width: 100%;
+      min-width: 0;
+    }
+
     .collection-card.condensed .body {
       grid-template-columns: 1fr;
       grid-template-areas:
@@ -2951,6 +2964,15 @@
         padding: 0.45rem 0.6rem;
       }
 
+      .collection-card:not(.condensed) .actions .remove-actions {
+        flex: 1 1 calc(50% - 0.25rem);
+      }
+
+      .collection-card:not(.condensed) .actions .remove-actions button {
+        flex: 1 1 auto;
+        min-height: 44px;
+      }
+
       .collection-card .stack-select {
         width: 26px;
         height: 26px;
@@ -3501,7 +3523,7 @@
     <section id="panel-cmdr-build" class="panel">
       <h2>Commander Deck Builder</h2>
       <p class="hint" style="margin-top:0;">
-        Choose a <strong>commander-eligible</strong> legendary creature (or planeswalker that can be your commander). Suggestions come from the same card catalog as <strong>Add cards</strong>. Pick <strong>deck colors</strong> (a subset of your commander’s identity) to drive the catalog search and basic land mix. Optionally set a <strong>max deck value</strong> in USD so the 100-card list stays within budget (commander included). The tool builds your <strong>mana base first</strong> (nonbasics from the catalog, then basics split across those colors), then fills out spells using the same scoring signals as the <strong>Deck advisor</strong>, biased by <strong>objectives inferred from your commander</strong> (tribal types, keywords, spellslinger vs creatures, tokens, graveyard, artifacts, enchantments, etc.), while <strong>skipping library tutors</strong> that name basic land types or subtypes your list does not run (snow / Wastes handled the same way).
+        Choose a <strong>commander-eligible</strong> legendary creature (or planeswalker that can be your commander). Suggestions come from the same card catalog as <strong>Add cards</strong>. Pick <strong>deck colors</strong> (a subset of your commander’s identity) to drive the catalog search and basic land mix. Optionally set a <strong>max deck value</strong> in USD so the 100-card list stays within budget (commander included). Use <strong>Spells from library only</strong> to restrict nonland picks to cards you already own. The tool builds your <strong>mana base first</strong> as <strong>basic-land counts by color</strong> (no individual nonbasic land recommendations), then fills out spells using the same scoring signals as the <strong>Deck advisor</strong>, biased by <strong>objectives inferred from your commander</strong> (tribal types, keywords, spellslinger vs creatures, tokens, graveyard, artifacts, enchantments, etc.), while <strong>skipping library tutors</strong> that name basic land types or subtypes your list does not run (snow / Wastes handled the same way).
       </p>
       <div class="grid2" style="margin-top:1rem; max-width: 52rem;">
         <div class="cmdr-commander-wrap" style="position:relative;">
@@ -3541,6 +3563,12 @@
           <p class="hint" style="margin:0.35rem 0 0;">
             Estimated catalog total (Scryfall <strong>usd</strong> / foil / etched) for the full 100. The commander counts. Cards with no price count as <strong>$0</strong>.
           </p>
+          <label class="field-inline" style="margin-top:0.85rem; align-items:flex-start; gap:0.45rem;">
+            <input type="checkbox" id="cmdrBuildLibraryOnly" style="margin-top:0.2rem;" />
+            <span>
+              <strong>Spells from library only</strong> — nonland, non-token picks come only from cards already in your library (same identity rules). Commander and basic lands still use the catalog.
+            </span>
+          </label>
         </div>
       </div>
       <div class="row" style="margin-top:1rem;">
@@ -4553,6 +4581,7 @@
     cmdrCommanderSuggestions: document.getElementById("cmdrCommanderSuggestions"),
     cmdrDeckNameInput: document.getElementById("cmdrDeckNameInput"),
     cmdrMaxDeckValueInput: document.getElementById("cmdrMaxDeckValueInput"),
+    cmdrBuildLibraryOnly: document.getElementById("cmdrBuildLibraryOnly"),
     btnCmdrBuild: document.getElementById("btnCmdrBuild"),
     cmdrBuilderStatus: document.getElementById("cmdrBuilderStatus"),
     cmdrCommanderPickHint: document.getElementById("cmdrCommanderPickHint"),
@@ -8978,6 +9007,103 @@
     };
   }
 
+  function cmdrBuilderFauxFromLibraryCard(lib) {
+    if (!lib) return null;
+    return {
+      oracleText: lib.oracleText || "",
+      rarity: lib.rarity,
+      manaValue: lib.manaValue != null && !isNaN(Number(lib.manaValue)) ? Number(lib.manaValue) : null,
+      mainCardTypes: lib.mainCardTypes || lib.typeLine || "",
+      typeLine: lib.typeLine || "",
+    };
+  }
+
+  function cmdrLibKeywordsToArray(kw) {
+    if (!kw) return [];
+    if (Array.isArray(kw)) return kw.filter(Boolean);
+    return String(kw)
+      .split(/[,;\/]/)
+      .map(function (x) {
+        return x.trim();
+      })
+      .filter(Boolean);
+  }
+
+  /** Minimal Scryfall-shaped object so advisorSf* + scoring work for library rows. */
+  function cmdrSfStubFromLibraryCard(lib) {
+    if (!lib) return null;
+    var ci = advisorNormalizeColorIdentity(lib.colorIdentity || "");
+    var ciArr = ci ? ci.split("") : [];
+    var stub = {
+      name: lib.name || "",
+      oracle_text: lib.oracleText || "",
+      type_line: lib.typeLine || "",
+      cmc: lib.manaValue != null && !isNaN(Number(lib.manaValue)) ? Number(lib.manaValue) : null,
+      mana_cost: lib.manaCost || "",
+      rarity: lib.rarity || "",
+      color_identity: ciArr,
+      keywords: cmdrLibKeywordsToArray(lib.keywords),
+      _libRef: lib,
+    };
+    return stub;
+  }
+
+  function cmdrColorLettersSubsetOf(cardCi, allowedCi) {
+    var c = advisorNormalizeColorIdentity(cardCi || "");
+    var a = advisorNormalizeColorIdentity(allowedCi || "");
+    if (!c.length) return true;
+    for (var i = 0; i < c.length; i++) {
+      if (a.indexOf(c[i]) < 0) return false;
+    }
+    return true;
+  }
+
+  function cmdrLibraryRowEligibleForCmdrSpells(lib, commanderCiFull, cmdrNameLower, deckSet) {
+    if (!lib) return false;
+    if (advisorCardIsLand(lib)) return false;
+    var tl = (lib.typeLine || "").toLowerCase();
+    if (/\btoken\b/.test(tl)) return false;
+    var nk = (lib.name || "").toLowerCase().trim();
+    if (!nk) return false;
+    if (cmdrNameLower && nk === cmdrNameLower) return false;
+    if (cmdrNameLower) {
+      var parts = nk.split(/\s*\/\/\s*/);
+      for (var pi = 0; pi < parts.length; pi++) {
+        if (parts[pi].trim() === cmdrNameLower) return false;
+      }
+    }
+    if (!cmdrColorLettersSubsetOf(lib.colorIdentity || "", commanderCiFull)) return false;
+    if (advisorSfInDeck({ name: lib.name }, deckSet)) return false;
+    return true;
+  }
+
+  /**
+   * One candidate per card name (Commander singleton). Each entry is a Scryfall-shaped stub
+   * with `_libRef` pointing at the library row used for cloning into the deck.
+   */
+  function cmdrBuildLibrarySpellCandidateStubs(collection, commanderCiFull, cmdrNameLower, deckSet) {
+    var byName = Object.create(null);
+    var out = [];
+    (collection || []).forEach(function (lib) {
+      if (!cmdrLibraryRowEligibleForCmdrSpells(lib, commanderCiFull, cmdrNameLower, deckSet)) return;
+      var nk = (lib.name || "").toLowerCase().trim();
+      if (!nk || byName[nk]) return;
+      byName[nk] = true;
+      var stub = cmdrSfStubFromLibraryCard(lib);
+      if (stub) out.push(stub);
+    });
+    return out;
+  }
+
+  function cmdrCloneLibraryCardToDeck(lib) {
+    if (!lib) return null;
+    var o = JSON.parse(JSON.stringify(lib));
+    o.uid = uuid();
+    o.categories = ["CMDR builder"];
+    o.addedAt = new Date().toISOString();
+    return o;
+  }
+
   function cmdrMergePriorityTerms(priority, rest, maxN) {
     var seen = Object.create(null);
     var out = [];
@@ -9737,13 +9863,18 @@
     }
 
     els.btnCmdrBuild.disabled = true;
-    if (els.cmdrBuilderStatus) els.cmdrBuilderStatus.textContent = "Building… This uses several catalog requests.";
+    var libraryOnlyBuild = !!(els.cmdrBuildLibraryOnly && els.cmdrBuildLibraryOnly.checked);
+    if (els.cmdrBuilderStatus) {
+      els.cmdrBuilderStatus.textContent = libraryOnlyBuild
+        ? "Building… Spells from your library; commander and basics use the catalog."
+        : "Building… This uses several catalog requests.";
+    }
 
     var CMDR_TOTAL = 100;
     var CMDR_LANDS = 36;
     var SPELL_TARGET = CMDR_TOTAL - CMDR_LANDS - 1;
     var BATCH = 21;
-    var MAX_NONBASIC = 15;
+    var libEligibleSpellNames = 0;
 
     try {
       var cmdrCard = advisorCardFromSfForDeck(sf);
@@ -9765,7 +9896,6 @@
       var deckIdResolved = advisorDeckColorIdentityResolved(deckObj, "commander");
       var deckSet = advisorDeckNameSet(main);
       var basicMap = { W: "Plains", U: "Island", B: "Swamp", R: "Mountain", G: "Forest" };
-      var cmdrCiMonoKey = cmdrNormalizeSortCi(buildCi);
 
       var maxBudget = Infinity;
       var budgetCapped = false;
@@ -9794,218 +9924,149 @@
         return;
       }
 
-      if (els.cmdrBuilderStatus) els.cmdrBuilderStatus.textContent = "Building mana base (lands first)…";
-      var qLands = (idClause ? idClause + " " : "") + legalFrag + "game:paper type:land";
-      var landPool = await advisorScryfallSearchPaged(qLands, 140, "edhrec");
-      var nonbasicAdded = 0;
-      for (var li = 0; li < landPool.length; li++) {
-        if (main.filter(advisorCardIsLand).length >= CMDR_LANDS) break;
-        if (nonbasicAdded >= MAX_NONBASIC) break;
-        var lsf = landPool[li];
-        if (!lsf || advisorSfIsLand(lsf) === false) continue;
-        var ltl = (advisorSfTypeLine(lsf) || "").toLowerCase();
-        if (/\bbasic\b/.test(ltl)) continue;
-        if (advisorSfInDeck(lsf, deckSet)) continue;
-        if (!cmdrMonoNonbasicLandReasonable(lsf, cmdrCiMonoKey)) continue;
-        if (!cmdrLandTutorYourLibraryPipsSubsetOfBuildCi(advisorSfOracle(lsf), buildCi))
-          continue;
-        var lc = advisorCardFromSfForDeck(lsf);
-        lc.categories = ["CMDR builder"];
-        var lcu = cmdrCardUsd(lc);
-        if (budgetCapped && spent + lcu > maxBudget + 1e-6) continue;
-        main.push(lc);
-        spent += lcu;
-        var lk = (lsf.name || "").toLowerCase();
-        if (lk) {
-          deckSet[lk] = true;
-          lk.split(/\s*\/\/\s*/).forEach(function (part) {
-            var p = part.trim().toLowerCase();
-            if (p) deckSet[p] = true;
-          });
-        }
-        nonbasicAdded++;
-      }
-
-      var needBasics = CMDR_LANDS - main.filter(advisorCardIsLand).length;
-      if (needBasics > 0) {
-        if (!buildBasicsLetters.length) {
-          var ws = await fetchBasicLandPrinting("Wastes");
-          if (ws) {
-            for (var bi = 0; bi < needBasics; bi++) {
-              var bc = advisorCardFromSfForDeck(ws);
-              bc.categories = ["CMDR builder"];
-              var bu = cmdrCardUsd(bc);
-              if (budgetCapped && spent + bu > maxBudget + 1e-6) break;
-              main.push(bc);
-              spent += bu;
-              cmdrRegisterCardInNameSet(deckSet, bc);
-            }
-          }
-        } else {
-          var per = Math.floor(needBasics / buildBasicsLetters.length);
-          var extra = needBasics % buildBasicsLetters.length;
-          for (var ci = 0; ci < buildBasicsLetters.length; ci++) {
-            var letter = buildBasicsLetters[ci];
-            var count = per + (ci < extra ? 1 : 0);
-            var bname = basicMap[letter];
-            if (!bname || count <= 0) continue;
-            var bsf = await fetchBasicLandPrinting(bname);
-            if (!bsf) continue;
-            for (var bj = 0; bj < count; bj++) {
-              var bcard = advisorCardFromSfForDeck(bsf);
-              bcard.categories = ["CMDR builder"];
-              var bcu = cmdrCardUsd(bcard);
-              if (budgetCapped && spent + bcu > maxBudget + 1e-6) break;
-              main.push(bcard);
-              spent += bcu;
-              cmdrRegisterCardInNameSet(deckSet, bcard);
-            }
-          }
-        }
-      }
-
-      deckObj.main = main;
-      deckIdResolved = advisorDeckColorIdentityResolved(deckObj, "commander");
-      deckSet = advisorDeckNameSet(main);
-
-      function cmdrNonbasicLandCountInMain(arr, cmdrU) {
-        var n = 0;
-        for (var xi = 0; xi < arr.length; xi++) {
-          var xc = arr[xi];
-          if (!xc || xc.uid === cmdrU) continue;
-          if (!advisorCardIsLand(xc)) continue;
-          if (/\bbasic\b/i.test(xc.typeLine || "")) continue;
-          n++;
-        }
-        return n;
-      }
-
-      var purgePass = 0;
-      for (; purgePass < 12; purgePass++) {
-        var purged = false;
-        for (var pi = main.length - 1; pi >= 0; pi--) {
-          var pcc = main[pi];
-          if (!pcc || pcc.uid === cmdrCard.uid) continue;
-          if (!advisorCardIsLand(pcc)) continue;
-          if (/\bbasic\b/i.test(pcc.typeLine || "")) continue;
-          var pId = advisorDeckColorIdentityResolved(
-            { main: main, side: [], commanderId: cmdrCard.uid },
-            "commander"
-          );
-          if (
-            !cmdrLandTutorTargetsBuiltManaBase(pcc.oracleText || "", main, pId) ||
-            !cmdrLandTutorYourLibraryPipsSubsetOfBuildCi(pcc.oracleText || "", buildCi)
-          ) {
-            spent -= cmdrCardUsd(pcc);
-            main.splice(pi, 1);
-            purged = true;
-          }
-        }
-        if (!purged) break;
-      }
-
-      while (
-        main.filter(advisorCardIsLand).length < CMDR_LANDS &&
-        cmdrNonbasicLandCountInMain(main, cmdrCard.uid) < MAX_NONBASIC
-      ) {
-        var filledNb = false;
-        for (var rj = 0; rj < landPool.length; rj++) {
-          var rsf = landPool[rj];
-          if (!rsf || advisorSfIsLand(rsf) === false) continue;
-          var rtl = (advisorSfTypeLine(rsf) || "").toLowerCase();
-          if (/\bbasic\b/.test(rtl)) continue;
-          if (advisorSfInDeck(rsf, deckSet)) continue;
-          if (!cmdrMonoNonbasicLandReasonable(rsf, cmdrCiMonoKey)) continue;
-          if (!cmdrLandTutorYourLibraryPipsSubsetOfBuildCi(advisorSfOracle(rsf), buildCi))
-            continue;
-          var rlc = advisorCardFromSfForDeck(rsf);
-          rlc.categories = ["CMDR builder"];
-          var trialMain = main.concat([rlc]);
-          var trialId = advisorDeckColorIdentityResolved(
-            { main: trialMain, side: [], commanderId: cmdrCard.uid },
-            "commander"
-          );
-          if (!cmdrLandTutorTargetsBuiltManaBase(advisorSfOracle(rsf), trialMain, trialId)) continue;
-          var rcu = cmdrCardUsd(rlc);
-          if (budgetCapped && spent + rcu > maxBudget + 1e-6) continue;
-          main.push(rlc);
-          spent += rcu;
-          var rnk = (rsf.name || "").toLowerCase();
-          if (rnk) {
-            deckSet[rnk] = true;
-            rnk.split(/\s*\/\/\s*/).forEach(function (part) {
-              var pp = part.trim().toLowerCase();
-              if (pp) deckSet[pp] = true;
-            });
-          }
-          filledNb = true;
-          break;
-        }
-        if (!filledNb) break;
-      }
-
-      var needMoreBasics = CMDR_LANDS - main.filter(advisorCardIsLand).length;
-      if (needMoreBasics > 0) {
-        deckObj.main = main;
-        deckIdResolved = advisorDeckColorIdentityResolved(deckObj, "commander");
-        if (!buildBasicsLetters.length) {
-          var wsMore = await fetchBasicLandPrinting("Wastes");
-          if (wsMore) {
-            for (var bm = 0; bm < needMoreBasics; bm++) {
-              var bcm = advisorCardFromSfForDeck(wsMore);
-              bcm.categories = ["CMDR builder"];
-              var bmu = cmdrCardUsd(bcm);
-              if (budgetCapped && spent + bmu > maxBudget + 1e-6) break;
-              main.push(bcm);
-              spent += bmu;
-              cmdrRegisterCardInNameSet(deckSet, bcm);
-            }
-          }
-        } else {
-          var perM = Math.floor(needMoreBasics / buildBasicsLetters.length);
-          var extraM = needMoreBasics % buildBasicsLetters.length;
-          for (var cm = 0; cm < buildBasicsLetters.length; cm++) {
-            var letM = buildBasicsLetters[cm];
-            var cntM = perM + (cm < extraM ? 1 : 0);
-            var bnM = basicMap[letM];
-            if (!bnM || cntM <= 0) continue;
-            var bsfM = await fetchBasicLandPrinting(bnM);
-            if (!bsfM) continue;
-            for (var bq = 0; bq < cntM; bq++) {
-              var bcdM = advisorCardFromSfForDeck(bsfM);
-              bcdM.categories = ["CMDR builder"];
-              var bmu2 = cmdrCardUsd(bcdM);
-              if (budgetCapped && spent + bmu2 > maxBudget + 1e-6) break;
-              main.push(bcdM);
-              spent += bmu2;
-              cmdrRegisterCardInNameSet(deckSet, bcdM);
-            }
-          }
-        }
-      }
-
-      deckObj.main = main;
-      deckIdResolved = advisorDeckColorIdentityResolved(deckObj, "commander");
-
-      deckSet = advisorDeckNameSet(main);
-
-      var qSpells =
-        (idClause ? idClause + " " : "") + legalFrag + "game:paper -type:land -is:token";
-      var cmdrObjectiveTerms = cmdrDeriveObjectiveTermsFromCommander(sf);
       if (els.cmdrBuilderStatus) {
         els.cmdrBuilderStatus.textContent =
-          "Choosing spells — mana base + commander plan (" +
-          main.filter(advisorCardIsLand).length +
-          " lands)…";
+          "Building mana base (basic land counts by selected colors)…";
       }
-      var poolSpells = await advisorBuildReplacementCandidatePool(qSpells, "", "score");
+      var plannedLandCountsText = "";
+      if (!buildBasicsLetters.length) {
+        var ws = await fetchBasicLandPrinting("Wastes");
+        if (!ws) {
+          if (els.cmdrBuilderStatus) {
+            els.cmdrBuilderStatus.textContent =
+              "Could not fetch Wastes for this colorless build.";
+          }
+          return;
+        }
+        for (var bi = 0; bi < CMDR_LANDS; bi++) {
+          var bc = advisorCardFromSfForDeck(ws);
+          bc.categories = ["CMDR builder"];
+          main.push(bc);
+          cmdrRegisterCardInNameSet(deckSet, bc);
+        }
+        plannedLandCountsText = "Wastes " + CMDR_LANDS;
+      } else {
+        var demandSeed = advisorManaPipDemand([cmdrCard]);
+        for (var ds = 0; ds < buildBasicsLetters.length; ds++) {
+          demandSeed[buildBasicsLetters[ds]] =
+            Number(demandSeed[buildBasicsLetters[ds]] || 0) + 0.75;
+        }
+        var landPlan = advisorRecommendLandColorCounts(CMDR_LANDS, demandSeed, buildCi);
+        var basicCache = {};
+        function fetchBasicCached(name) {
+          if (basicCache[name]) return Promise.resolve(basicCache[name]);
+          return fetchBasicLandPrinting(name).then(function (sfBasic) {
+            basicCache[name] = sfBasic || null;
+            return basicCache[name];
+          });
+        }
+        for (var ci = 0; ci < buildBasicsLetters.length; ci++) {
+          var letter = buildBasicsLetters[ci];
+          var count = Number(landPlan[letter] || 0);
+          var bname = basicMap[letter];
+          if (!bname || count <= 0) continue;
+          var bsf = await fetchBasicCached(bname);
+          if (!bsf) continue;
+          for (var bj = 0; bj < count; bj++) {
+            var bcard = advisorCardFromSfForDeck(bsf);
+            bcard.categories = ["CMDR builder"];
+            main.push(bcard);
+            cmdrRegisterCardInNameSet(deckSet, bcard);
+          }
+        }
+        var planParts = [];
+        buildBasicsLetters.forEach(function (letter) {
+          var bn = basicMap[letter];
+          var cnt = Number(landPlan[letter] || 0);
+          if (bn && cnt > 0) planParts.push(bn + " " + cnt);
+        });
+        plannedLandCountsText = planParts.join(", ");
+      }
 
-      var remaining = poolSpells.filter(function (sfp) {
-        if (!sfp || advisorSfIsLand(sfp)) return false;
-        if (advisorSfInDeck(sfp, deckSet)) return false;
-        if (!cmdrLandTutorTargetsBuiltManaBase(advisorSfOracle(sfp), main, deckIdResolved)) return false;
-        return true;
-      });
+      while (main.filter(advisorCardIsLand).length < CMDR_LANDS) {
+        var fillerSf = null;
+        if (buildBasicsLetters.length) {
+          var fillerLetter = buildBasicsLetters[main.length % buildBasicsLetters.length];
+          var fillerName = basicMap[fillerLetter];
+          fillerSf = fillerName ? await fetchBasicLandPrinting(fillerName) : null;
+        } else {
+          fillerSf = await fetchBasicLandPrinting("Wastes");
+        }
+        if (!fillerSf) break;
+        var fillerLand = advisorCardFromSfForDeck(fillerSf);
+        fillerLand.categories = ["CMDR builder"];
+        main.push(fillerLand);
+        cmdrRegisterCardInNameSet(deckSet, fillerLand);
+      }
+
+      deckObj.main = main;
+      deckIdResolved = advisorDeckColorIdentityResolved(deckObj, "commander");
+
+      deckSet = advisorDeckNameSet(main);
+
+      var cmdrObjectiveTerms = cmdrDeriveObjectiveTermsFromCommander(sf);
+      var cmdrNameLower = ((sf.name || "") + "").toLowerCase().trim();
+      var remaining;
+      if (libraryOnlyBuild) {
+        if (!collection || !collection.length) {
+          if (els.cmdrBuilderStatus) {
+            els.cmdrBuilderStatus.textContent =
+              "Add cards to your library first, or turn off “Spells from library only”.";
+          }
+          return;
+        }
+        var libStubs = cmdrBuildLibrarySpellCandidateStubs(
+          collection,
+          commanderCiFull,
+          cmdrNameLower,
+          deckSet
+        );
+        libEligibleSpellNames = libStubs.length;
+        if (libEligibleSpellNames < 1) {
+          if (els.cmdrBuilderStatus) {
+            els.cmdrBuilderStatus.textContent =
+              "No library cards match this commander’s identity (nonland, non-token). Add staples or turn off “Spells from library only”.";
+          }
+          return;
+        }
+        if (els.cmdrBuilderStatus) {
+          els.cmdrBuilderStatus.textContent =
+            "Choosing spells from your library — " +
+            libEligibleSpellNames +
+            " eligible names, mana base (" +
+            main.filter(advisorCardIsLand).length +
+            " lands)…";
+        }
+        remaining = libStubs.filter(function (stub) {
+          if (!stub || advisorSfIsLand(stub)) return false;
+          if (advisorSfInDeck(stub, deckSet)) return false;
+          if (!cmdrLandTutorTargetsBuiltManaBase(advisorSfOracle(stub), main, deckIdResolved))
+            return false;
+          return true;
+        });
+      } else {
+        var qSpells =
+          (idClause ? idClause + " " : "") + legalFrag + "game:paper -type:land -is:token";
+        if (els.cmdrBuilderStatus) {
+          els.cmdrBuilderStatus.textContent =
+            "Choosing spells — mana base + commander plan (" +
+            main.filter(advisorCardIsLand).length +
+            " lands)…";
+        }
+        var poolSpells = await advisorBuildReplacementCandidatePool(qSpells, "", "deck");
+        if ((poolSpells && poolSpells.length) < 2200) {
+          var poolByName = await advisorScryfallSearchPaged(qSpells, 1300, "name");
+          var poolByRelease = await advisorScryfallSearchPaged(qSpells, 1300, "released");
+          poolSpells = advisorMergeCardPools(poolSpells, poolByName);
+          poolSpells = advisorMergeCardPools(poolSpells, poolByRelease);
+        }
+        remaining = poolSpells.filter(function (sfp) {
+          if (!sfp || advisorSfIsLand(sfp)) return false;
+          if (advisorSfInDeck(sfp, deckSet)) return false;
+          if (!cmdrLandTutorTargetsBuiltManaBase(advisorSfOracle(sfp), main, deckIdResolved)) return false;
+          return true;
+        });
+      }
 
       while (cmdrCountNonlandNonCommander(main, cmdrCard.uid) < SPELL_TARGET && remaining.length) {
         var deckProfile = cmdrBuilderProfileFromMain(main, cmdrCard, deckIdResolved, sf);
@@ -10019,16 +10080,11 @@
           ),
           18
         );
-        var scored = remaining.map(function (sfp) {
+        var scored = remaining.map(function (cand) {
+          var faux = cand._libRef ? cmdrBuilderFauxFromLibraryCard(cand._libRef) : cmdrBuilderFauxFromSf(cand);
           return {
-            sf: sfp,
-            breakdown: computePowerBreakdown(
-              cmdrBuilderFauxFromSf(sfp),
-              sfp,
-              termsNow,
-              deckProfile,
-              { emphasizeRole: true }
-            ),
+            sf: cand,
+            breakdown: computePowerBreakdown(faux, cand, termsNow, deckProfile, { emphasizeRole: true }),
           };
         });
         scored.sort(function (a, b) {
@@ -10042,7 +10098,8 @@
           var nk = (pick.name || "").toLowerCase();
           if (!nk || advisorSfInDeck(pick, deckSet)) continue;
           if (!cmdrLandTutorTargetsBuiltManaBase(advisorSfOracle(pick), main, deckIdResolved)) continue;
-          var addC = advisorCardFromSfForDeck(pick);
+          var addC = pick._libRef ? cmdrCloneLibraryCardToDeck(pick._libRef) : advisorCardFromSfForDeck(pick);
+          if (!addC) continue;
           addC.categories = ["CMDR builder"];
           var addU = cmdrCardUsd(addC);
           if (budgetCapped && spent + addU > maxBudget + 1e-6) continue;
@@ -10069,22 +10126,72 @@
           if (!fsf) break;
           var fc = advisorCardFromSfForDeck(fsf);
           fc.categories = ["CMDR builder"];
-          var fu = cmdrCardUsd(fc);
-          if (budgetCapped && spent + fu > maxBudget + 1e-6) break;
           main.push(fc);
-          spent += fu;
           cmdrRegisterCardInNameSet(deckSet, fc);
         } else {
           var wsPad = await fetchBasicLandPrinting("Wastes");
           if (!wsPad) break;
           var wc = advisorCardFromSfForDeck(wsPad);
           wc.categories = ["CMDR builder"];
-          var wu = cmdrCardUsd(wc);
-          if (budgetCapped && spent + wu > maxBudget + 1e-6) break;
           main.push(wc);
-          spent += wu;
           cmdrRegisterCardInNameSet(deckSet, wc);
         }
+      }
+
+      if (buildBasicsLetters.length) {
+        var currentLandTotal = main.filter(advisorCardIsLand).length;
+        if (currentLandTotal > 0) {
+          var finalNonlands = main.filter(function (c) {
+            if (!c || c.uid === cmdrCard.uid) return false;
+            return !advisorCardIsLand(c);
+          });
+          var finalDemand = advisorManaPipDemand(finalNonlands);
+          var finalLandPlan = advisorRecommendLandColorCounts(
+            currentLandTotal,
+            finalDemand,
+            buildCi
+          );
+          var finalPlanParts = [];
+          buildBasicsLetters.forEach(function (letter) {
+            var bn = basicMap[letter];
+            var cnt = Number(finalLandPlan[letter] || 0);
+            if (bn && cnt > 0) finalPlanParts.push(bn + " " + cnt);
+          });
+          if (finalPlanParts.length) plannedLandCountsText = finalPlanParts.join(", ");
+
+          var basicFetchCache = Object.create(null);
+          async function cmdrFetchBasicCached(name) {
+            if (basicFetchCache[name] !== undefined) return basicFetchCache[name];
+            basicFetchCache[name] = await fetchBasicLandPrinting(name);
+            return basicFetchCache[name];
+          }
+
+          var rebuiltLands = [];
+          for (var rbi = 0; rbi < buildBasicsLetters.length; rbi++) {
+            var rLetter = buildBasicsLetters[rbi];
+            var rName = basicMap[rLetter];
+            var rCount = Number(finalLandPlan[rLetter] || 0);
+            if (!rName || rCount <= 0) continue;
+            var rSf = await cmdrFetchBasicCached(rName);
+            if (!rSf) continue;
+            for (var rc = 0; rc < rCount; rc++) {
+              var rCard = advisorCardFromSfForDeck(rSf);
+              rCard.categories = ["CMDR builder"];
+              rebuiltLands.push(rCard);
+            }
+          }
+
+          if (rebuiltLands.length === currentLandTotal) {
+            var finalSpells = main.filter(function (c) {
+              if (!c || c.uid === cmdrCard.uid) return false;
+              return !advisorCardIsLand(c);
+            });
+            main = [cmdrCard].concat(rebuiltLands, finalSpells);
+            deckSet = advisorDeckNameSet(main);
+          }
+        }
+      } else {
+        plannedLandCountsText = "Wastes " + main.filter(advisorCardIsLand).length;
       }
 
       deckObj = { main: main, side: [], commanderId: cmdrCard.uid };
@@ -10104,6 +10211,19 @@
             CMDR_TOTAL +
             ") — try a higher cap, different colors, or catalog may be thin.";
         }
+        if (
+          libraryOnlyBuild &&
+          libEligibleSpellNames > 0 &&
+          libEligibleSpellNames < SPELL_TARGET
+        ) {
+          doneMsg +=
+            " Library-only mode: " +
+            libEligibleSpellNames +
+            " eligible spell names in your library (target " +
+            SPELL_TARGET +
+            " spells) — add more on-color cards to fill the list.";
+        }
+        if (plannedLandCountsText) doneMsg += " Land plan: " + plannedLandCountsText + ".";
         if (budgetCapped) doneMsg += " ≈" + formatMoney(spent) + " / " + formatMoney(maxBudget) + " budget.";
         els.cmdrBuilderStatus.textContent = doneMsg;
       }
@@ -11229,9 +11349,11 @@
 
       var actions = document.createElement("div");
       actions.className = "actions";
+      var removeActions = document.createElement("div");
+      removeActions.className = "remove-actions";
       var rmOne = document.createElement("button");
       rmOne.type = "button";
-      rmOne.className = "secondary";
+      rmOne.className = "danger secondary";
       rmOne.textContent = "Remove 1";
       rmOne.addEventListener("click", function () {
         if (!confirm("Remove 1 copy of " + c.name + " from " + activeDeck + "?")) return;
@@ -11247,7 +11369,7 @@
         saveDecks(decks);
         renderDeck();
       });
-      actions.appendChild(rmOne);
+      removeActions.appendChild(rmOne);
 
       var rm = document.createElement("button");
       rm.type = "button";
@@ -11265,7 +11387,8 @@
         saveDecks(decks);
         renderDeck();
       });
-      actions.appendChild(rm);
+      removeActions.appendChild(rm);
+      actions.appendChild(removeActions);
 
       var cmd = document.createElement("button");
       cmd.type = "button";
