@@ -1981,7 +1981,8 @@
     }
 
     .spellbook-auth-card input[type="email"],
-    .spellbook-auth-card input[type="password"] {
+    .spellbook-auth-card input[type="password"],
+    .spellbook-auth-card input[type="text"] {
       width: 100%;
       padding: 0.55rem 0.75rem;
       border-radius: 10px;
@@ -1989,6 +1990,14 @@
       font: inherit;
       background: var(--surface);
       color: var(--text);
+    }
+
+    .spellbook-auth-help {
+      margin-top: 0.35rem;
+      font-size: var(--text-xs);
+      color: var(--muted);
+      line-height: 1.45;
+      font-style: normal;
     }
 
     .spellbook-auth-actions {
@@ -2999,6 +3008,17 @@
       </p>
       <label for="spellbookAuthEmail">Email</label>
       <input type="email" id="spellbookAuthEmail" autocomplete="username" required />
+      <div id="spellbookUsernameWrap" style="display:none;">
+        <label for="spellbookAuthUsername">Username</label>
+        <input
+          type="text"
+          id="spellbookAuthUsername"
+          autocomplete="nickname"
+          maxlength="24"
+          placeholder="3-24 letters, numbers, or underscore"
+        />
+        <p class="spellbook-auth-help">Usernames are public, must be unique, and cannot be changed after registration.</p>
+      </div>
       <label for="spellbookAuthPassword">Password</label>
       <input type="password" id="spellbookAuthPassword" autocomplete="current-password" required />
       <p id="spellbookAuthMessage" role="alert"></p>
@@ -3039,6 +3059,7 @@
       <button type="button" data-tab="advisor">Deck advisor</button>
       <button type="button" data-tab="trading">Trading hub</button>
       <button type="button" data-tab="inbox">Inbox</button>
+      <button type="button" data-tab="admin" id="tabAdmin" hidden>Admin</button>
     </nav>
 
     <div id="valueBanner" class="value-banner" aria-live="polite">
@@ -3078,6 +3099,15 @@
               <label for="qtyInput">Quantity</label>
               <input type="number" id="qtyInput" min="1" max="999" value="1" />
             </div>
+          </div>
+          <div style="margin-top:0.7rem;">
+            <label for="printingSelect">Printing / reprint version</label>
+            <select id="printingSelect" disabled>
+              <option value="">Choose a card first</option>
+            </select>
+            <p id="printingSelectHint" class="hint" style="margin-top:0.35rem;">
+              After selecting a card name, choose which printing art/version to use for your library preview.
+            </p>
           </div>
 
           <div class="row" style="margin-top:1rem;">
@@ -3690,14 +3720,14 @@
 
     <section id="panel-trading" class="panel">
       <h2>Community trading hub</h2>
-      <p class="hint" style="max-width:46rem;line-height:1.55;">
-        List stacks from your <strong>library</strong> in your trading bloc so other signed-in members can discover them — your library stays as-is; listings are copies on the hub.
-        When you find a card you want, propose a trade with your own cards — either <strong>peer-to-peer</strong> (no platform fee) or with <strong>YesMagic mediation</strong> (we confirm both shipments; <strong>$10 per side</strong>, billed at checkout when enabled).
-      </p>
       <div class="trade-fee-callout" role="note">
-        <strong>Fees (preview):</strong> <span id="tradeFeeSummaryLine"></span>
-        Mediated trades charge <strong>$10 per participant</strong> ($20 per exchange) so YesMagic can verify both shipments. Checkout for Spellbook will be wired in a follow-up release — for now proposals are recorded and you can coordinate off-site.
+        <strong>Fees:</strong> <span id="tradeFeeSummaryLine"></span><br /><br />
+        Mediated trades carry a fee <strong>$8.50 per side</strong>, plus shipping cost (determined at the time of shipment by <strong>YESMagic</strong>) per participant so YESMagic can verify both shipments.<br /><br />
+        <strong>How mediation works:</strong> We receive both sides of the trade, verify the cards are legitimate (no fakes or proxies, and correspond to the trade listing). Once verified, we will determine the shipping cost to send both orders to the recipients. Both sides can then send us payment (Venmo, CashApp are accepted) to include the mediation fee and the shipping cost for their side of the order.
       </div>
+      <p class="hint" style="max-width:46rem;line-height:1.55;margin-top:0.75rem;">
+        <strong>Peer Trading:</strong> Once a trade agreement is reached, each side can access the transaction hub for that trade. There, you can send stored messages to the other party, send images of your shipment for verification (encouraged), and work through the details of your trade.
+      </p>
       <nav class="trade-subtabs" role="tablist" aria-label="Trading hub sections">
         <button type="button" class="on" data-trade-sub="browse">All listings</button>
         <button type="button" data-trade-sub="bloc">My trading bloc</button>
@@ -3847,6 +3877,9 @@
                 <input type="text" id="tradeTxTracking" placeholder="e.g. UPS 1Z999…" maxlength="500" />
                 <label for="tradeTxImageUrl">Image URL (for proof)</label>
                 <input type="url" id="tradeTxImageUrl" placeholder="https://…" maxlength="2000" />
+                <label for="tradeTxImageFile">Or upload image from device</label>
+                <input type="file" id="tradeTxImageFile" accept="image/*" />
+                <p id="tradeTxUploadStatus" class="hint" style="margin:0.1rem 0 0.25rem;font-size:0.75rem;"></p>
                 <label for="tradeTxBody">Details</label>
                 <textarea id="tradeTxBody" rows="4" maxlength="8000" placeholder="Describe the update or question…"></textarea>
                 <button type="button" class="primary" id="btnTradeTxSend">Post to hub</button>
@@ -3877,6 +3910,39 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section id="panel-admin" class="panel">
+      <h2>Admin Console</h2>
+      <p class="hint" style="max-width:46rem;line-height:1.55;">
+        Admin accounts can review all transaction hubs, monitor online users, and grant admin authority.
+      </p>
+      <div class="trade-activity-layout" style="margin-top:0.75rem;">
+        <div>
+          <h3 style="margin-top:0;">Registered users</h3>
+          <p class="hint">Shows usernames and recent online status.</p>
+          <div id="adminUsersList"></div>
+        </div>
+        <div>
+          <h3 style="margin-top:0;">Admin authority</h3>
+          <p class="hint">Grant admin by username (immutable usernames only).</p>
+          <div class="row" style="gap:0.45rem;align-items:flex-end;margin:0.25rem 0 0.6rem;">
+            <div style="min-width:min(100%,18rem);flex:1;">
+              <label for="adminGrantUsername">Username</label>
+              <input type="text" id="adminGrantUsername" placeholder="username" maxlength="24" />
+            </div>
+            <button type="button" class="primary" id="btnAdminGrant">Grant admin</button>
+            <button type="button" class="secondary" id="btnAdminRefresh">Refresh</button>
+          </div>
+          <p id="adminGrantStatus" class="hint" style="min-height:1.2rem;"></p>
+          <div id="adminAdminsList"></div>
+        </div>
+      </div>
+      <div style="margin-top:1rem;">
+        <h3 style="margin-top:0;">All transaction hubs</h3>
+        <p class="hint">Open any active deal and participate in its transaction hub.</p>
+        <div id="adminOffersList"></div>
       </div>
     </section>
 
@@ -4326,10 +4392,21 @@
     panelAdvisor: document.getElementById("panel-advisor"),
     panelTrading: document.getElementById("panel-trading"),
     panelInbox: document.getElementById("panel-inbox"),
+    panelAdmin: document.getElementById("panel-admin"),
+    tabAdmin: document.getElementById("tabAdmin"),
+    adminUsersList: document.getElementById("adminUsersList"),
+    adminOffersList: document.getElementById("adminOffersList"),
+    adminAdminsList: document.getElementById("adminAdminsList"),
+    adminGrantUsername: document.getElementById("adminGrantUsername"),
+    btnAdminGrant: document.getElementById("btnAdminGrant"),
+    btnAdminRefresh: document.getElementById("btnAdminRefresh"),
+    adminGrantStatus: document.getElementById("adminGrantStatus"),
     searchInput: document.getElementById("searchInput"),
     suggestions: document.getElementById("suggestions"),
     finishSelect: document.getElementById("finishSelect"),
     treatmentSelect: document.getElementById("treatmentSelect"),
+    printingSelect: document.getElementById("printingSelect"),
+    printingSelectHint: document.getElementById("printingSelectHint"),
     qtyInput: document.getElementById("qtyInput"),
     btnAdd: document.getElementById("btnAdd"),
     btnClearPick: document.getElementById("btnClearPick"),
@@ -4539,21 +4616,137 @@
     if (el) el.textContent = t || "";
   }
 
+  function spellbookNormalizeUsername(u) {
+    return String(u || "").trim().toLowerCase();
+  }
+
+  function spellbookValidateUsernameOrError(raw) {
+    var u = spellbookNormalizeUsername(raw);
+    if (!u) return "Enter a username.";
+    if (!/^[a-z0-9_]{3,24}$/.test(u)) {
+      return "Username must be 3-24 chars using lowercase letters, numbers, or _.";
+    }
+    return "";
+  }
+
+  async function spellbookUsernameIsAvailable(username) {
+    if (!sbClient) return false;
+    var u = spellbookNormalizeUsername(username);
+    if (!u) return false;
+    var res = await sbClient
+      .from("spellbook_usernames")
+      .select("username")
+      .eq("username", u)
+      .maybeSingle();
+    if (res.error) throw res.error;
+    return !res.data;
+  }
+
+  async function spellbookClaimUsernameForCurrentUser(username) {
+    if (!sbClient || !spellbookAuthUser) throw new Error("Sign in before claiming a username.");
+    var u = spellbookNormalizeUsername(username);
+    var errMsg = spellbookValidateUsernameOrError(u);
+    if (errMsg) throw new Error(errMsg);
+    var ins = await sbClient
+      .from("spellbook_usernames")
+      .insert({ user_id: spellbookAuthUser.id, username: u });
+    if (ins.error) throw ins.error;
+    spellbookAuthUsername = u;
+    spellbookUsernamesById[spellbookAuthUser.id] = u;
+    return u;
+  }
+
+  async function spellbookLoadAuthUsername() {
+    if (!sbClient || !spellbookAuthUser) return "";
+    var userId = spellbookAuthUser.id;
+    var res = await sbClient
+      .from("spellbook_usernames")
+      .select("username")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!res.error && res.data && res.data.username) {
+      spellbookAuthUsername = String(res.data.username || "");
+      spellbookUsernamesById[userId] = spellbookAuthUsername;
+      return spellbookAuthUsername;
+    }
+    var metaU =
+      spellbookNormalizeUsername(
+        (spellbookAuthUser.user_metadata && spellbookAuthUser.user_metadata.username_normalized) ||
+          (spellbookAuthUser.user_metadata && spellbookAuthUser.user_metadata.username)
+      );
+    if (metaU) {
+      try {
+        await spellbookClaimUsernameForCurrentUser(metaU);
+        return spellbookAuthUsername;
+      } catch (e) {
+        // fall through to interactive claim
+      }
+    }
+    while (true) {
+      var proposed = window.prompt(
+        "Choose your Spellbook username (3-24 lowercase letters, numbers, or underscore). This cannot be changed.",
+        ""
+      );
+      if (proposed == null) throw new Error("Username setup is required.");
+      var vErr = spellbookValidateUsernameOrError(proposed);
+      if (vErr) {
+        alert(vErr);
+        continue;
+      }
+      try {
+        var ok = await spellbookUsernameIsAvailable(proposed);
+        if (!ok) {
+          alert("That username is taken. Try another.");
+          continue;
+        }
+        await spellbookClaimUsernameForCurrentUser(proposed);
+        return spellbookAuthUsername;
+      } catch (e2) {
+        alert("Could not save username: " + ((e2 && e2.message) || String(e2)));
+      }
+    }
+  }
+
+  async function spellbookLoadUsernamesByIds(ids) {
+    if (!sbClient) return;
+    var uniq = [];
+    (ids || []).forEach(function (id) {
+      var k = String(id || "");
+      if (!k) return;
+      if (spellbookUsernamesById[k]) return;
+      if (uniq.indexOf(k) >= 0) return;
+      uniq.push(k);
+    });
+    if (!uniq.length) return;
+    var res = await sbClient.from("spellbook_usernames").select("user_id, username").in("user_id", uniq);
+    if (res.error || !res.data) return;
+    res.data.forEach(function (r) {
+      if (r && r.user_id && r.username) {
+        spellbookUsernamesById[String(r.user_id)] = String(r.username);
+      }
+    });
+  }
+
   function spellbookUpdateAuthModeUI() {
     var title = document.getElementById("spellbookAuthTitle");
     var primary = document.getElementById("spellbookAuthPrimary");
     var toggleLabel = document.getElementById("spellbookAuthToggleLabel");
     var toggleBtn = document.getElementById("spellbookAuthToggle");
+    var usernameWrap = document.getElementById("spellbookUsernameWrap");
+    var usernameInput = document.getElementById("spellbookAuthUsername");
     if (spellbookAuthModeSignIn) {
       if (title) title.textContent = "Sign in to The Spellbook";
       if (primary) primary.textContent = "Sign in";
       if (toggleLabel) toggleLabel.textContent = "New here?";
       if (toggleBtn) toggleBtn.textContent = "Create an account";
+      if (usernameWrap) usernameWrap.style.display = "none";
+      if (usernameInput) usernameInput.value = "";
     } else {
       if (title) title.textContent = "Create your Spellbook account";
       if (primary) primary.textContent = "Sign up";
       if (toggleLabel) toggleLabel.textContent = "Already have an account?";
       if (toggleBtn) toggleBtn.textContent = "Sign in instead";
+      if (usernameWrap) usernameWrap.style.display = "";
     }
   }
 
@@ -4574,7 +4767,64 @@
     if (overlay) overlay.setAttribute("hidden", "");
     if (shell) shell.removeAttribute("hidden");
     if (bar) bar.removeAttribute("hidden");
-    if (emailEl && user) emailEl.textContent = user.email || "Signed in";
+    if (emailEl && user) {
+      emailEl.textContent = spellbookAuthUsername
+        ? "@" + spellbookAuthUsername + " (" + (user.email || "signed in") + ")"
+        : (user.email || "Signed in");
+    }
+  }
+
+  function spellbookSetAdminTabVisibility() {
+    if (!els.tabAdmin) return;
+    if (spellbookIsAdmin) {
+      els.tabAdmin.removeAttribute("hidden");
+    } else {
+      els.tabAdmin.setAttribute("hidden", "");
+      if (activeTab === "admin") showTab("add");
+    }
+  }
+
+  async function spellbookLoadAdminState() {
+    spellbookIsAdmin = false;
+    if (!sbClient || !spellbookAuthUser) {
+      spellbookSetAdminTabVisibility();
+      return false;
+    }
+    var res = await sbClient
+      .from("spellbook_admins")
+      .select("user_id")
+      .eq("user_id", spellbookAuthUser.id)
+      .maybeSingle();
+    if (!res.error && res.data) spellbookIsAdmin = true;
+    spellbookSetAdminTabVisibility();
+    return spellbookIsAdmin;
+  }
+
+  async function spellbookPresenceMarkOnline(online) {
+    if (!sbClient || !spellbookAuthUser) return;
+    var row = {
+      user_id: spellbookAuthUser.id,
+      username: spellbookAuthUsername || null,
+      online: !!online,
+      last_seen: new Date().toISOString(),
+    };
+    await sbClient.from("spellbook_presence").upsert(row, { onConflict: "user_id" });
+  }
+
+  function spellbookPresenceStop() {
+    if (spellbookPresenceTimer) {
+      clearInterval(spellbookPresenceTimer);
+      spellbookPresenceTimer = null;
+    }
+  }
+
+  async function spellbookPresenceStart() {
+    spellbookPresenceStop();
+    if (!sbClient || !spellbookAuthUser) return;
+    await spellbookPresenceMarkOnline(true);
+    spellbookPresenceTimer = setInterval(function () {
+      spellbookPresenceMarkOnline(true);
+    }, 30000);
   }
 
   async function spellbookLoadCloudRow() {
@@ -4597,9 +4847,12 @@
     if (!session || !session.user) return;
     spellbookAuthUser = session.user;
     spellbookSetAuthMessage("");
+    await spellbookLoadAuthUsername();
+    await spellbookLoadAdminState();
     await spellbookLoadCloudRow();
     spellbookShowAppChrome(session.user);
     spellbookFinishInit();
+    spellbookPresenceStart();
     tradeNotifyPollStart();
     tradeRefreshNotificationBadge();
   }
@@ -4633,10 +4886,16 @@
     sbClient.auth.onAuthStateChange(function (event, session) {
       if (event === "SIGNED_OUT") {
         tradeNotifyPollStop();
+        spellbookPresenceMarkOnline(false);
+        spellbookPresenceStop();
         tradeOfferMsgsRealtimeOff();
         tradeTxActiveOfferId = null;
         tradeTxPendingOfferId = null;
         spellbookInboxActiveOfferId = null;
+        spellbookAuthUsername = "";
+        spellbookUsernamesById = Object.create(null);
+        spellbookIsAdmin = false;
+        spellbookSetAdminTabVisibility();
         var nb = document.getElementById("spellbookNotifyBadge");
         if (nb) nb.hidden = true;
         spellbookAuthUser = null;
@@ -4688,6 +4947,7 @@
       spellbookSetAuthMessage("");
       var emailEl = document.getElementById("spellbookAuthEmail");
       var passEl = document.getElementById("spellbookAuthPassword");
+      var usernameEl = document.getElementById("spellbookAuthUsername");
       var email = (emailEl && emailEl.value) || "";
       var password = (passEl && passEl.value) || "";
       if (!email || !password) {
@@ -4705,19 +4965,32 @@
           if (inRes.error) throw inRes.error;
           if (inRes.data.session) await spellbookAfterSignIn(inRes.data.session);
         } else {
+          var usernameRaw = (usernameEl && usernameEl.value) || "";
+          var usernameErr = spellbookValidateUsernameOrError(usernameRaw);
+          if (usernameErr) throw new Error(usernameErr);
+          var username = spellbookNormalizeUsername(usernameRaw);
+          var usernameFree = await spellbookUsernameIsAvailable(username);
+          if (!usernameFree) throw new Error("That username is already taken. Please choose another.");
           var redirectTo = window.location.origin + "/";
           var upRes = await sbClient.auth.signUp({
             email: email,
             password: password,
-            options: { emailRedirectTo: redirectTo },
+            options: {
+              emailRedirectTo: redirectTo,
+              data: { username_normalized: username },
+            },
           });
           if (upRes.error) throw upRes.error;
+          if (upRes.data.session && upRes.data.user) {
+            spellbookAuthUser = upRes.data.user;
+            await spellbookClaimUsernameForCurrentUser(username);
+          }
           spellbookNotifyAdminNewUser(upRes.data.session, upRes.data.user);
           if (upRes.data.session) {
             await spellbookAfterSignIn(upRes.data.session);
           } else {
             spellbookSetAuthMessage(
-              "Check your email to confirm your account, then sign in. (You can disable email confirmation in Supabase for testing.)"
+              "Check your email to confirm your account, then sign in. Your username will be finalized on first sign-in."
             );
           }
         }
@@ -4745,14 +5018,38 @@
       showTab("inbox");
     });
   }
+  if (els.btnAdminGrant) {
+    els.btnAdminGrant.addEventListener("click", function () {
+      spellbookAdminGrant();
+    });
+  }
+  if (els.adminGrantUsername) {
+    els.adminGrantUsername.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter") {
+        ev.preventDefault();
+        spellbookAdminGrant();
+      }
+    });
+  }
+  if (els.btnAdminRefresh) {
+    els.btnAdminRefresh.addEventListener("click", function () {
+      spellbookAdminRefreshAll();
+    });
+  }
 
   var selectedSuggest = null;
   var resolvedCard = null;
+  var activeSuggestionPrintings = [];
+  var spellbookAuthUsername = "";
+  var spellbookUsernamesById = Object.create(null);
+  var spellbookIsAdmin = false;
+  var spellbookPresenceTimer = null;
   var activeTab = "add";
   var advisorRecommendedById = Object.create(null);
   var advisorPendingAddIds = [];
 
   function showTab(id) {
+    if (id === "admin" && !spellbookIsAdmin) id = "add";
     activeTab = id;
     els.tabs.forEach(function (b) {
       b.classList.toggle("on", b.getAttribute("data-tab") === id);
@@ -4764,6 +5061,7 @@
     if (els.panelAdvisor) els.panelAdvisor.classList.toggle("active", id === "advisor");
     if (els.panelTrading) els.panelTrading.classList.toggle("active", id === "trading");
     if (els.panelInbox) els.panelInbox.classList.toggle("active", id === "inbox");
+    if (els.panelAdmin) els.panelAdmin.classList.toggle("active", id === "admin");
     if (id === "collection") renderCollection();
     if (id === "decks") renderDeck();
     if (id === "cmdrbuild" && cmdrPreviewDeck) renderCmdrPreviewDeck();
@@ -4786,6 +5084,9 @@
           });
         }
       });
+    }
+    if (id === "admin" && spellbookIsAdmin) {
+      spellbookAdminRefreshAll();
     }
     if (id !== "collection" && id !== "decks") {
       updateValueBanner(sumCardValue(collection), "Library total value");
@@ -4924,6 +5225,73 @@
     var chosen = pool[0] || null;
     if (chosen) chosen._fallbackPrinting = approx;
     return chosen;
+  }
+
+  function printingOptionLabel(card) {
+    if (!card) return "Unknown printing";
+    var set = String(card.set || "").toUpperCase();
+    var cn = card.collector_number ? "#" + card.collector_number : "";
+    var date = card.released_at || "";
+    var rarity = card.rarity || "";
+    var frame = treatmentMatch(card, "borderless")
+      ? "borderless"
+      : treatmentMatch(card, "showcase")
+        ? "showcase"
+        : treatmentMatch(card, "extendedart")
+          ? "extended art"
+          : "normal";
+    return [set, cn, date, frame, rarity].filter(Boolean).join(" · ");
+  }
+
+  function setPrintingSelectOptions(printings, pickedId, fallback) {
+    if (!els.printingSelect) return;
+    var sel = els.printingSelect;
+    sel.innerHTML = "";
+    activeSuggestionPrintings = Array.isArray(printings) ? printings.slice() : [];
+    if (!activeSuggestionPrintings.length) {
+      sel.disabled = true;
+      var only = document.createElement("option");
+      only.value = "";
+      only.textContent = "No alternate printings available";
+      sel.appendChild(only);
+      if (els.printingSelectHint) {
+        els.printingSelectHint.textContent =
+          "No print/reprint options returned for this card. Using the loaded preview.";
+      }
+      return;
+    }
+    activeSuggestionPrintings.forEach(function (p) {
+      var opt = document.createElement("option");
+      opt.value = p.id || "";
+      opt.textContent = printingOptionLabel(p);
+      if (pickedId && p.id === pickedId) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.disabled = false;
+    if (els.printingSelectHint) {
+      els.printingSelectHint.textContent = fallback
+        ? "Showing the closest match for finish/frame. You can override it with any printing here."
+        : "Select any available print/reprint version to change the library preview image and set info.";
+    }
+  }
+
+  function applyPickedPrinting(picked) {
+    if (!picked) return;
+    var gpSf = gameplayFromScryfallPrinting(picked);
+    resolvedCard = Object.assign({}, gpSf, {
+      source: "scryfall",
+      name: picked.name,
+      image: cardImageUrl(picked),
+      rarity: picked.rarity || "",
+      setCode: (picked.set || "").toUpperCase(),
+      collectorNumber: picked.collector_number || "",
+      price: scryfallPrice(picked),
+      oracleId: picked.oracle_id || "",
+      scryfallId: picked.id || "",
+      printing: picked,
+    });
+    showPreview(resolvedCard);
+    els.btnAdd.disabled = false;
   }
 
   function cardImageUrl(card) {
@@ -5242,19 +5610,8 @@
         );
         if (!picked) throw new Error("No printings returned.");
         printingApproximate = !!picked._fallbackPrinting;
-        var gpSf = gameplayFromScryfallPrinting(picked);
-        resolvedCard = Object.assign({}, gpSf, {
-          source: "scryfall",
-          name: picked.name,
-          image: cardImageUrl(picked),
-          rarity: picked.rarity || "",
-          setCode: (picked.set || "").toUpperCase(),
-          collectorNumber: picked.collector_number || "",
-          price: scryfallPrice(picked),
-          oracleId: picked.oracle_id || "",
-          scryfallId: picked.id || "",
-          printing: picked,
-        });
+        setPrintingSelectOptions(prints, picked.id || "", printingApproximate);
+        applyPickedPrinting(picked);
       } else {
         var fromApi = null;
         if (item.id) fromApi = await detailManaPool(item.id, item.name);
@@ -5282,9 +5639,10 @@
           scryfallId: item.id || "",
           printing: detail.raw || item.raw,
         });
+        setPrintingSelectOptions([], "", false);
       }
 
-      showPreview(resolvedCard);
+      if (!useScryfallLookup()) showPreview(resolvedCard);
       els.btnAdd.disabled = false;
       var okMsg;
       if (useScryfallLookup()) {
@@ -5399,6 +5757,15 @@
     els.btnAdd.disabled = true;
     resolvedCard = null;
     selectedSuggest = null;
+    activeSuggestionPrintings = [];
+    if (els.printingSelect) {
+      els.printingSelect.disabled = true;
+      els.printingSelect.innerHTML = '<option value="">Choose a card first</option>';
+    }
+    if (els.printingSelectHint) {
+      els.printingSelectHint.textContent =
+        "After selecting a card name, choose which printing art/version to use for your library preview.";
+    }
   }
 
   function formatMoney(n) {
@@ -10823,6 +11190,25 @@
       applyPreviewVariantClasses();
       return;
     }
+    if (useScryfallLookup() && activeSuggestionPrintings.length) {
+      var picked = pickPrinting(
+        activeSuggestionPrintings,
+        els.finishSelect.value,
+        els.treatmentSelect.value
+      );
+      if (picked) {
+        setPrintingSelectOptions(
+          activeSuggestionPrintings,
+          picked.id || "",
+          !!picked._fallbackPrinting
+        );
+        applyPickedPrinting(picked);
+        els.addMessage.textContent = picked._fallbackPrinting
+          ? "Using the closest printing for this finish/frame. Choose a specific printing above to override."
+          : "Preview updated for finish/frame selection.";
+        return;
+      }
+    }
     var sid =
       (resolvedCard && resolvedCard.scryfallId) ||
       (selectedSuggest && selectedSuggest.id) ||
@@ -10838,6 +11224,23 @@
   ["finishSelect", "treatmentSelect"].forEach(function (id) {
     document.getElementById(id).addEventListener("change", refreshPreviewForFinishFrame);
   });
+  if (els.printingSelect) {
+    els.printingSelect.addEventListener("change", function () {
+      if (!useScryfallLookup() || !activeSuggestionPrintings.length) return;
+      var id = els.printingSelect.value || "";
+      var picked = activeSuggestionPrintings.find(function (p) {
+        return (p && p.id) === id;
+      });
+      if (!picked) return;
+      applyPickedPrinting(picked);
+      if (els.printingSelectHint) {
+        els.printingSelectHint.textContent =
+          "Selected printing applied. Add to collection will use this preview image + set details.";
+      }
+      els.addMessage.textContent =
+        "Selected print/reprint version applied. Add to collection when ready.";
+    });
+  }
 
   els.btnClearPick.addEventListener("click", function () {
     els.searchInput.value = "";
@@ -10947,11 +11350,12 @@
     if (bDeck) bDeck.addEventListener("click", function () { preconRunImport("deck_only"); });
   })();
 
-  /** Peer trades: no platform fee. Mediated: $10 per participant (stored split across two columns). */
+  /** Peer trades: no platform fee. Mediated: $8.50 per participant (stored split across two columns). */
   var TRADE_PEER_TOTAL_FEE_CENTS = 0;
-  var TRADE_MEDIATED_PER_SIDE_CENTS = 1000;
+  var TRADE_MEDIATED_PER_SIDE_CENTS = 850;
   var TRADE_MEDIATED_TOTAL_FEE_CENTS =
     TRADE_MEDIATED_PER_SIDE_CENTS + TRADE_MEDIATED_PER_SIDE_CENTS;
+  var TRADE_TX_IMAGE_BUCKET = "trade-transaction-images";
   var tradeHubRows = [];
   var tradeBlocRows = [];
   var tradeActiveListingForPropose = null;
@@ -11221,6 +11625,14 @@
 
   async function tradeTxHubFetchAgreedOffers() {
     if (!sbClient || !spellbookAuthUser) return [];
+    if (spellbookIsAdmin) {
+      var allRes = await sbClient
+        .from("trade_offers")
+        .select("id, listing_id, proposer_id, status, mode, created_at, updated_at")
+        .in("status", TRADE_HUB_AGREED_STATUSES)
+        .order("updated_at", { ascending: false });
+      return allRes.error ? [] : (allRes.data || []);
+    }
     var uid = spellbookAuthUser.id;
     var lr = await sbClient.from("trade_listings").select("id").eq("seller_id", uid);
     var lids = (lr.data || []).map(function (r) {
@@ -11330,15 +11742,23 @@
       if (lids.indexOf(o.listing_id) < 0) lids.push(o.listing_id);
     });
     var cardByLid = Object.create(null);
+    var sellerByLid = Object.create(null);
     if (lids.length) {
-      var lres = await sbClient.from("trade_listings").select("id, card").in("id", lids);
+      var lres = await sbClient.from("trade_listings").select("id, seller_id, card").in("id", lids);
       if (!lres.error && lres.data) {
         lres.data.forEach(function (row) {
           cardByLid[row.id] = row.card || {};
+          sellerByLid[row.id] = row.seller_id || "";
         });
       }
     }
     var uid = spellbookAuthUser.id;
+    var profileIds = [uid];
+    offers.forEach(function (o) {
+      if (o && o.proposer_id) profileIds.push(o.proposer_id);
+      if (o && sellerByLid[o.listing_id]) profileIds.push(sellerByLid[o.listing_id]);
+    });
+    await spellbookLoadUsernamesByIds(profileIds);
     var pending = tradeTxPendingOfferId;
     tradeTxPendingOfferId = null;
     var pendingHandled = false;
@@ -11386,10 +11806,58 @@
     }
   }
 
+  function tradeTxUploadExt(file) {
+    var name = (file && file.name) || "";
+    var m = /\.([a-z0-9]{2,8})$/i.exec(name);
+    if (m && m[1]) return m[1].toLowerCase();
+    var t = (file && file.type) || "";
+    if (/png/i.test(t)) return "png";
+    if (/webp/i.test(t)) return "webp";
+    if (/gif/i.test(t)) return "gif";
+    return "jpg";
+  }
+
+  async function tradeTxUploadDeviceImage(file, offerId) {
+    if (!sbClient || !spellbookAuthUser || !file || !offerId) return "";
+    var maxBytes = 10 * 1024 * 1024; // 10 MB
+    if ((file.size || 0) > maxBytes) {
+      throw new Error("Image is too large. Please use a file under 10 MB.");
+    }
+    if (!/^image\//i.test(file.type || "")) {
+      throw new Error("Only image files are supported.");
+    }
+    var ext = tradeTxUploadExt(file);
+    var fileName =
+      Date.now() +
+      "-" +
+      ((typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID()) ||
+        String(Math.random()).slice(2)) +
+      "." +
+      ext;
+    var path =
+      "offer-" +
+      offerId +
+      "/user-" +
+      spellbookAuthUser.id +
+      "/" +
+      fileName;
+    var up = await sbClient.storage
+      .from(TRADE_TX_IMAGE_BUCKET)
+      .upload(path, file, { upsert: false, contentType: file.type || undefined });
+    if (up.error) throw up.error;
+    var pub = sbClient.storage.from(TRADE_TX_IMAGE_BUCKET).getPublicUrl(path);
+    var url = pub && pub.data && pub.data.publicUrl ? pub.data.publicUrl : "";
+    if (!url) throw new Error("Upload completed but no public URL was returned.");
+    return url;
+  }
+
   async function tradeTxHubSendPost() {
     var kindEl = document.getElementById("tradeTxKind");
     var bodyEl = document.getElementById("tradeTxBody");
     var imgEl = document.getElementById("tradeTxImageUrl");
+    var fileEl = document.getElementById("tradeTxImageFile");
+    var uploadStatusEl = document.getElementById("tradeTxUploadStatus");
+    var sendBtn = document.getElementById("btnTradeTxSend");
     var trEl = document.getElementById("tradeTxTracking");
     if (!tradeTxActiveOfferId || !sbClient || !spellbookAuthUser) {
       alert("Select a deal first.");
@@ -11398,14 +11866,37 @@
     var kind = (kindEl && kindEl.value) || "chat";
     var body = bodyEl && bodyEl.value ? bodyEl.value.trim() : "";
     var imageUrl = imgEl && imgEl.value ? imgEl.value.trim() : "";
+    var imageFile = fileEl && fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
     var tracking = trEl && trEl.value ? trEl.value.trim() : "";
-    if (kind === "proof" && !imageUrl && !body) {
+    if (uploadStatusEl) uploadStatusEl.textContent = "";
+    if (kind === "proof" && !imageUrl && !imageFile && !body) {
       alert("Add an image URL or a short note for proof.");
       return;
+    }
+    if (sendBtn) sendBtn.disabled = true;
+    if (imageFile) {
+      try {
+        if (uploadStatusEl) uploadStatusEl.textContent = "Uploading image…";
+        imageUrl = await tradeTxUploadDeviceImage(imageFile, tradeTxActiveOfferId);
+        if (uploadStatusEl) uploadStatusEl.textContent = "Image uploaded and attached.";
+        if (imgEl) imgEl.value = imageUrl;
+      } catch (e) {
+        if (uploadStatusEl) uploadStatusEl.textContent = "";
+        if (sendBtn) sendBtn.disabled = false;
+        alert(
+          "Could not upload image. " +
+            (((e && e.message) || String(e)) +
+              " (Make sure Storage bucket '" +
+              TRADE_TX_IMAGE_BUCKET +
+              "' exists and is writable/public.)")
+        );
+        return;
+      }
     }
     if (!body && imageUrl) body = "Proof image (link).";
     if (!body && kind === "shipment_update" && tracking) body = tracking;
     if (!body) {
+      if (sendBtn) sendBtn.disabled = false;
       alert("Enter details for this post.");
       return;
     }
@@ -11421,12 +11912,16 @@
     if (Object.keys(shipment_meta).length) row.shipment_meta = shipment_meta;
     var ins = await tradeInsertOfferMessage(row);
     if (ins.error) {
+      if (sendBtn) sendBtn.disabled = false;
       alert(ins.error.message || String(ins.error));
       return;
     }
     if (bodyEl) bodyEl.value = "";
     if (imgEl) imgEl.value = "";
+    if (fileEl) fileEl.value = "";
     if (trEl) trEl.value = "";
+    if (uploadStatusEl) uploadStatusEl.textContent = "";
+    if (sendBtn) sendBtn.disabled = false;
     await tradeTxHubLoadMessages();
     await tradeInboxRefreshThreads();
     await tradeRefreshNotificationBadge();
@@ -11436,6 +11931,211 @@
     tradeTxPendingOfferId = offerId;
     showTab("trading");
     tradeHubSetSubtab("transactions");
+  }
+
+  function spellbookAdminSetStatus(msg, isError) {
+    if (!els.adminGrantStatus) return;
+    els.adminGrantStatus.style.color = isError ? "var(--danger)" : "var(--muted)";
+    els.adminGrantStatus.textContent = msg || "";
+  }
+
+  async function spellbookAdminLoadUsers() {
+    if (!spellbookIsAdmin || !els.adminUsersList || !sbClient) return;
+    els.adminUsersList.innerHTML = "<p class=\"hint\">Loading users…</p>";
+    var usersRes = await sbClient
+      .from("spellbook_usernames")
+      .select("user_id, username, created_at")
+      .order("username", { ascending: true });
+    if (usersRes.error) {
+      els.adminUsersList.innerHTML = "<p class=\"hint\">Could not load users.</p>";
+      return;
+    }
+    var presenceRes = await sbClient
+      .from("spellbook_presence")
+      .select("user_id, online, last_seen")
+      .eq("online", true);
+    var pByUser = Object.create(null);
+    (presenceRes.data || []).forEach(function (p) {
+      if (p && p.user_id) pByUser[String(p.user_id)] = p;
+    });
+    var rows = usersRes.data || [];
+    if (!rows.length) {
+      els.adminUsersList.innerHTML = "<p class=\"hint\">No registered usernames yet.</p>";
+      return;
+    }
+    var nowMs = Date.now();
+    var html = "<div class=\"inbox-messages\" style=\"max-height:40vh;\">";
+    rows.forEach(function (u) {
+      var pp = pByUser[String(u.user_id)] || null;
+      var seenMs = pp && pp.last_seen ? new Date(pp.last_seen).getTime() : 0;
+      var isOnline = !!(pp && pp.online && seenMs && nowMs - seenMs <= 120000);
+      html +=
+        "<div class=\"inbox-msg\">" +
+        "<div class=\"inbox-msg-meta\">@" +
+        escapeHtml(u.username || "") +
+        " · " +
+        (isOnline ? "Online now" : "Offline") +
+        "</div>" +
+        "<div style=\"font-size:0.78rem;color:var(--muted);\">User ID: " +
+        escapeHtml(String(u.user_id || "").slice(0, 8)) +
+        " · Joined " +
+        escapeHtml(new Date(u.created_at || Date.now()).toLocaleString()) +
+        "</div></div>";
+    });
+    html += "</div>";
+    els.adminUsersList.innerHTML = html;
+  }
+
+  async function spellbookAdminLoadAdmins() {
+    if (!spellbookIsAdmin || !els.adminAdminsList || !sbClient) return;
+    var res = await sbClient
+      .from("spellbook_admins")
+      .select("user_id, granted_by, created_at")
+      .order("created_at", { ascending: true });
+    if (res.error) {
+      els.adminAdminsList.innerHTML = "<p class=\"hint\">Could not load admin list.</p>";
+      return;
+    }
+    var rows = res.data || [];
+    if (!rows.length) {
+      els.adminAdminsList.innerHTML = "<p class=\"hint\">No admins found.</p>";
+      return;
+    }
+    var ids = [];
+    rows.forEach(function (r) {
+      if (r && r.user_id) ids.push(r.user_id);
+      if (r && r.granted_by) ids.push(r.granted_by);
+    });
+    await spellbookLoadUsernamesByIds(ids);
+    var html = "<div class=\"inbox-messages\" style=\"max-height:30vh;\">";
+    rows.forEach(function (r) {
+      var u = spellbookUsernamesById[String(r.user_id)] || String(r.user_id || "").slice(0, 8);
+      var g = spellbookUsernamesById[String(r.granted_by)] || String(r.granted_by || "").slice(0, 8);
+      html +=
+        "<div class=\"inbox-msg\">" +
+        "<div class=\"inbox-msg-meta\">@" +
+        escapeHtml(u) +
+        "</div>" +
+        "<div style=\"font-size:0.78rem;color:var(--muted);\">Granted by @" +
+        escapeHtml(g) +
+        " · " +
+        escapeHtml(new Date(r.created_at || Date.now()).toLocaleString()) +
+        "</div></div>";
+    });
+    html += "</div>";
+    els.adminAdminsList.innerHTML = html;
+  }
+
+  async function spellbookAdminLoadOffers() {
+    if (!spellbookIsAdmin || !els.adminOffersList || !sbClient) return;
+    els.adminOffersList.innerHTML = "<p class=\"hint\">Loading transaction hubs…</p>";
+    var res = await sbClient
+      .from("trade_offers")
+      .select("id, listing_id, proposer_id, status, mode, updated_at, created_at")
+      .in("status", TRADE_HUB_AGREED_STATUSES)
+      .order("updated_at", { ascending: false })
+      .limit(300);
+    if (res.error) {
+      els.adminOffersList.innerHTML = "<p class=\"hint\">Could not load transaction hubs.</p>";
+      return;
+    }
+    var offers = res.data || [];
+    if (!offers.length) {
+      els.adminOffersList.innerHTML = "<p class=\"hint\">No active/agreed offers found.</p>";
+      return;
+    }
+    var lids = [];
+    var ids = [];
+    offers.forEach(function (o) {
+      if (lids.indexOf(o.listing_id) < 0) lids.push(o.listing_id);
+      if (o.proposer_id) ids.push(o.proposer_id);
+    });
+    var listingById = Object.create(null);
+    if (lids.length) {
+      var lres = await sbClient
+        .from("trade_listings")
+        .select("id, seller_id, card")
+        .in("id", lids);
+      if (!lres.error && lres.data) {
+        lres.data.forEach(function (l) {
+          listingById[l.id] = l;
+          if (l && l.seller_id) ids.push(l.seller_id);
+        });
+      }
+    }
+    await spellbookLoadUsernamesByIds(ids);
+    var wrap = document.createElement("div");
+    offers.forEach(function (o) {
+      var listing = listingById[o.listing_id] || {};
+      var card = listing.card || {};
+      var title = card.name || "Trade";
+      var proposerName = spellbookUsernamesById[String(o.proposer_id)] || String(o.proposer_id || "").slice(0, 8);
+      var sellerName = spellbookUsernamesById[String(listing.seller_id)] || String(listing.seller_id || "").slice(0, 8);
+      var item = document.createElement("button");
+      item.type = "button";
+      item.className = "inbox-thread-item";
+      item.innerHTML =
+        "<strong>" +
+        escapeHtml(title) +
+        "</strong><span class=\"hint\" style=\"display:block;font-size:0.72rem;margin-top:0.2rem;\">" +
+        "Offer " +
+        escapeHtml(String(o.id || "").slice(0, 8)) +
+        " · " +
+        escapeHtml(o.status || "") +
+        " · @" +
+        escapeHtml(proposerName) +
+        " ↔ @" +
+        escapeHtml(sellerName) +
+        "</span>";
+      item.addEventListener("click", function () {
+        tradeOpenTxHubForOffer(o.id);
+      });
+      wrap.appendChild(item);
+    });
+    els.adminOffersList.innerHTML = "";
+    els.adminOffersList.appendChild(wrap);
+  }
+
+  async function spellbookAdminGrant() {
+    if (!spellbookIsAdmin || !sbClient || !els.adminGrantUsername) return;
+    var raw = (els.adminGrantUsername.value || "").trim();
+    var username = spellbookNormalizeUsername(raw).replace(/^@+/, "");
+    var usernameErr = spellbookValidateUsernameOrError(username);
+    if (usernameErr) {
+      spellbookAdminSetStatus(usernameErr, true);
+      return;
+    }
+    spellbookAdminSetStatus("Resolving username…", false);
+    var ures = await sbClient
+      .from("spellbook_usernames")
+      .select("user_id, username")
+      .eq("username", username)
+      .maybeSingle();
+    if (ures.error || !ures.data || !ures.data.user_id) {
+      spellbookAdminSetStatus("Username not found.", true);
+      return;
+    }
+    var targetId = ures.data.user_id;
+    var ins = await sbClient
+      .from("spellbook_admins")
+      .upsert(
+        { user_id: targetId, granted_by: spellbookAuthUser.id, created_at: new Date().toISOString() },
+        { onConflict: "user_id" }
+      );
+    if (ins.error) {
+      spellbookAdminSetStatus(ins.error.message || String(ins.error), true);
+      return;
+    }
+    spellbookAdminSetStatus("Granted admin to @" + username + ".", false);
+    els.adminGrantUsername.value = "";
+    await spellbookAdminLoadAdmins();
+  }
+
+  async function spellbookAdminRefreshAll() {
+    if (!spellbookIsAdmin) return;
+    await spellbookAdminLoadUsers();
+    await spellbookAdminLoadAdmins();
+    await spellbookAdminLoadOffers();
   }
 
   async function tradeInboxMarkNotificationsReadForOffer(offerId) {
@@ -11514,6 +12214,11 @@
       }
     }
     var uid = spellbookAuthUser.id;
+    var profileIds = [uid];
+    offers.forEach(function (o) {
+      if (o && o.proposer_id) profileIds.push(o.proposer_id);
+    });
+    await spellbookLoadUsernamesByIds(profileIds);
     offers.forEach(function (o) {
       var card = cardByLid[o.listing_id] || {};
       var title = card.name || "Trade";
@@ -11771,7 +12476,8 @@
 
   function tradeSellerLabel(sellerId) {
     var s = String(sellerId || "");
-    return s ? "Member · " + s.slice(0, 8) : "Member";
+    var uname = spellbookUsernamesById[s];
+    return uname ? "@" + uname : (s ? "Member · " + s.slice(0, 8) : "Member");
   }
 
   /**
@@ -11899,6 +12605,11 @@
       return;
     }
     var rows = all.data || [];
+    var nameIds = [uid];
+    rows.forEach(function (r) {
+      if (r && r.seller_id) nameIds.push(r.seller_id);
+    });
+    await spellbookLoadUsernamesByIds(nameIds);
     tradeHubRows = rows.filter(function (r) {
       return r.seller_id !== uid;
     });
@@ -12192,6 +12903,11 @@
     var outgoing = all.filter(function (o) {
       return o.proposer_id === uid;
     });
+    var offerNameIds = [uid];
+    incoming.concat(outgoing).forEach(function (o) {
+      if (o && o.proposer_id) offerNameIds.push(o.proposer_id);
+    });
+    await spellbookLoadUsernamesByIds(offerNameIds);
     inc.innerHTML = "";
     out.innerHTML = "";
     if (!incoming.length) {
@@ -12856,11 +13572,9 @@
     }
     alert(
       mode === "mediated"
-        ? "Proposal sent. Mediated trades bill $" +
-            (TRADE_MEDIATED_PER_SIDE_CENTS / 100).toFixed(0) +
-            " per side ($" +
-            (TRADE_MEDIATED_TOTAL_FEE_CENTS / 100).toFixed(0) +
-            " total) at checkout when billing is enabled."
+        ? "Proposal sent. Mediated trades bill " +
+            tradeFeeMoney(TRADE_MEDIATED_PER_SIDE_CENTS) +
+            " per side plus shipping (set by YESMagic at shipment time)."
         : "Proposal sent. Peer trades have no platform fee; coordinate shipping with your partner."
     );
   }
@@ -12871,11 +13585,9 @@
     var feeLine = document.getElementById("tradeFeeSummaryLine");
     if (feeLine) {
       feeLine.innerHTML =
-        "Peer trades: <strong>free</strong>. Mediated (YesMagic): <strong>" +
+        "Peer to peer trades: <strong>FREE</strong><br />Mediated (through YesMagic): <strong>" +
         tradeFeeMoney(TRADE_MEDIATED_PER_SIDE_CENTS) +
-        " per side</strong> (" +
-        tradeFeeMoney(TRADE_MEDIATED_TOTAL_FEE_CENTS) +
-        " per exchange).";
+        "</strong>";
     }
     document.querySelectorAll(".trade-subtabs [data-trade-sub]").forEach(function (btn) {
       btn.addEventListener("click", function () {
