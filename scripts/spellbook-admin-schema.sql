@@ -28,17 +28,12 @@ DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
-    WHERE schemaname='public' AND tablename='spellbook_admins' AND policyname='spellbook_admins_select_self_or_admin'
+    WHERE schemaname='public' AND tablename='spellbook_admins' AND policyname='spellbook_admins_select_public'
   ) THEN
-    CREATE POLICY spellbook_admins_select_self_or_admin
+    CREATE POLICY spellbook_admins_select_public
       ON public.spellbook_admins
       FOR SELECT
-      USING (
-        user_id = (select auth.uid())
-        OR EXISTS (
-          SELECT 1 FROM public.spellbook_admins a WHERE a.user_id = (select auth.uid())
-        )
-      );
+      USING (true);
   END IF;
 END$$;
 

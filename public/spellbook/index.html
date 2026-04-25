@@ -2149,6 +2149,15 @@
       margin-bottom: 0.25rem;
     }
 
+    .trade-msg-sender {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .trade-msg-sender--admin {
+      color: #7c3aed;
+    }
+
     .inbox-compose textarea {
       width: 100%;
       max-width: 40rem;
@@ -3006,8 +3015,8 @@
       <p class="hint" style="margin:0;line-height:1.5;">
         Your collection, decks, and settings are saved to your account so they follow you on any device.
       </p>
-      <label for="spellbookAuthEmail">Email</label>
-      <input type="email" id="spellbookAuthEmail" autocomplete="username" required />
+      <label for="spellbookAuthEmail">Email or username</label>
+      <input type="text" id="spellbookAuthEmail" autocomplete="username" required />
       <div id="spellbookUsernameWrap" style="display:none;">
         <label for="spellbookAuthUsername">Username</label>
         <input
@@ -4642,14 +4651,33 @@
     return !res.data;
   }
 
+  async function spellbookResolveLoginEmail(identifier) {
+    if (!sbClient) return "";
+    var raw = String(identifier || "").trim();
+    if (!raw) return "";
+    if (raw.indexOf("@") >= 0) return raw;
+    var uname = spellbookNormalizeUsername(raw);
+    if (!/^[a-z0-9_]{3,24}$/.test(uname)) return "";
+    var res = await sbClient
+      .from("spellbook_usernames")
+      .select("login_email")
+      .eq("username", uname)
+      .maybeSingle();
+    if (res.error) throw res.error;
+    var em = res.data && res.data.login_email ? String(res.data.login_email).trim() : "";
+    return em;
+  }
+
   async function spellbookClaimUsernameForCurrentUser(username) {
     if (!sbClient || !spellbookAuthUser) throw new Error("Sign in before claiming a username.");
     var u = spellbookNormalizeUsername(username);
     var errMsg = spellbookValidateUsernameOrError(u);
     if (errMsg) throw new Error(errMsg);
+    var loginEmail = String((spellbookAuthUser && spellbookAuthUser.email) || "").trim().toLowerCase();
+    if (!loginEmail) throw new Error("Could not determine account email for username mapping.");
     var ins = await sbClient
       .from("spellbook_usernames")
-      .insert({ user_id: spellbookAuthUser.id, username: u });
+      .insert({ user_id: spellbookAuthUser.id, username: u, login_email: loginEmail });
     if (ins.error) throw ins.error;
     spellbookAuthUsername = u;
     spellbookUsernamesById[spellbookAuthUser.id] = u;
@@ -4682,29 +4710,7 @@
         // fall through to interactive claim
       }
     }
-    while (true) {
-      var proposed = window.prompt(
-        "Choose your Spellbook username (3-24 lowercase letters, numbers, or underscore). This cannot be changed.",
-        ""
-      );
-      if (proposed == null) throw new Error("Username setup is required.");
-      var vErr = spellbookValidateUsernameOrError(proposed);
-      if (vErr) {
-        alert(vErr);
-        continue;
-      }
-      try {
-        var ok = await spellbookUsernameIsAvailable(proposed);
-        if (!ok) {
-          alert("That username is taken. Try another.");
-          continue;
-        }
-        await spellbookClaimUsernameForCurrentUser(proposed);
-        return spellbookAuthUsername;
-      } catch (e2) {
-        alert("Could not save username: " + ((e2 && e2.message) || String(e2)));
-      }
-    }
+    return "";
   }
 
   async function spellbookLoadUsernamesByIds(ids) {
@@ -4727,11 +4733,30 @@
     });
   }
 
+  async function spellbookLoadAdminsByIds(ids) {
+    if (!sbClient) return;
+    var uniq = [];
+    (ids || []).forEach(function (id) {
+      var k = String(id || "");
+      if (!k) return;
+      if (spellbookAdminsById[k]) return;
+      if (uniq.indexOf(k) >= 0) return;
+      uniq.push(k);
+    });
+    if (!uniq.length) return;
+    var res = await sbClient.from("spellbook_admins").select("user_id").in("user_id", uniq);
+    if (res.error || !res.data) return;
+    res.data.forEach(function (r) {
+      if (r && r.user_id) spellbookAdminsById[String(r.user_id)] = true;
+    });
+  }
+
   function spellbookUpdateAuthModeUI() {
     var title = document.getElementById("spellbookAuthTitle");
     var primary = document.getElementById("spellbookAuthPrimary");
     var toggleLabel = document.getElementById("spellbookAuthToggleLabel");
     var toggleBtn = document.getElementById("spellbookAuthToggle");
+    var identLabel = document.querySelector('label[for="spellbookAuthEmail"]');
     var usernameWrap = document.getElementById("spellbookUsernameWrap");
     var usernameInput = document.getElementById("spellbookAuthUsername");
     if (spellbookAuthModeSignIn) {
@@ -4739,6 +4764,7 @@
       if (primary) primary.textContent = "Sign in";
       if (toggleLabel) toggleLabel.textContent = "New here?";
       if (toggleBtn) toggleBtn.textContent = "Create an account";
+      if (identLabel) identLabel.textContent = "Email or username";
       if (usernameWrap) usernameWrap.style.display = "none";
       if (usernameInput) usernameInput.value = "";
     } else {
@@ -4746,6 +4772,7 @@
       if (primary) primary.textContent = "Sign up";
       if (toggleLabel) toggleLabel.textContent = "Already have an account?";
       if (toggleBtn) toggleBtn.textContent = "Sign in instead";
+      if (identLabel) identLabel.textContent = "Email";
       if (usernameWrap) usernameWrap.style.display = "";
     }
   }
@@ -4895,6 +4922,7 @@
         spellbookAuthUsername = "";
         spellbookUsernamesById = Object.create(null);
         spellbookIsAdmin = false;
+        spellbookAdminsById = Object.create(null);
         spellbookSetAdminTabVisibility();
         var nb = document.getElementById("spellbookNotifyBadge");
         if (nb) nb.hidden = true;
@@ -4948,10 +4976,10 @@
       var emailEl = document.getElementById("spellbookAuthEmail");
       var passEl = document.getElementById("spellbookAuthPassword");
       var usernameEl = document.getElementById("spellbookAuthUsername");
-      var email = (emailEl && emailEl.value) || "";
+      var identifier = (emailEl && emailEl.value) || "";
       var password = (passEl && passEl.value) || "";
-      if (!email || !password) {
-        spellbookSetAuthMessage("Enter email and password.");
+      if (!identifier || !password) {
+        spellbookSetAuthMessage("Enter username/email and password.");
         return;
       }
       if (!sbClient) {
@@ -4961,10 +4989,16 @@
       spellbookPrimary.disabled = true;
       try {
         if (spellbookAuthModeSignIn) {
-          var inRes = await sbClient.auth.signInWithPassword({ email: email, password: password });
+          var loginEmail = await spellbookResolveLoginEmail(identifier);
+          if (!loginEmail) throw new Error("Account not found for that username/email.");
+          var inRes = await sbClient.auth.signInWithPassword({ email: loginEmail, password: password });
           if (inRes.error) throw inRes.error;
           if (inRes.data.session) await spellbookAfterSignIn(inRes.data.session);
         } else {
+          var signupEmail = String(identifier || "").trim();
+          if (signupEmail.indexOf("@") < 0) {
+            throw new Error("Use an email address when creating a new account.");
+          }
           var usernameRaw = (usernameEl && usernameEl.value) || "";
           var usernameErr = spellbookValidateUsernameOrError(usernameRaw);
           if (usernameErr) throw new Error(usernameErr);
@@ -4973,7 +5007,7 @@
           if (!usernameFree) throw new Error("That username is already taken. Please choose another.");
           var redirectTo = window.location.origin + "/";
           var upRes = await sbClient.auth.signUp({
-            email: email,
+            email: signupEmail,
             password: password,
             options: {
               emailRedirectTo: redirectTo,
@@ -5043,6 +5077,7 @@
   var spellbookAuthUsername = "";
   var spellbookUsernamesById = Object.create(null);
   var spellbookIsAdmin = false;
+  var spellbookAdminsById = Object.create(null);
   var spellbookPresenceTimer = null;
   var activeTab = "add";
   var advisorRecommendedById = Object.create(null);
@@ -11540,6 +11575,25 @@
     tradeOfferMsgsRealtime = ch;
   }
 
+  function tradeMessageSenderHtml(senderId, uid) {
+    var sid = String(senderId || "");
+    var uname = spellbookUsernamesById[sid] || "";
+    var isSelf = sid && sid === String(uid || "");
+    var isAdminSender = !!spellbookAdminsById[sid];
+    var display = uname
+      ? "@" + uname + (isSelf ? " (you)" : "")
+      : (isSelf ? "You" : (sid ? "Member · " + sid.slice(0, 8) : "Member"));
+    var cls = "trade-msg-sender" + (isAdminSender ? " trade-msg-sender--admin" : "");
+    return (
+      "<span class=\"" +
+      cls +
+      "\">" +
+      escapeHtml(display) +
+      (isAdminSender ? " (admin)" : "") +
+      "</span>"
+    );
+  }
+
   function tradeAppendMessageRow(box, m, uid) {
     var rawKind = String(m.message_kind || m.messageKind || "chat").toLowerCase();
     var safeKind = rawKind.replace(/[^a-z0-9_]/g, "") || "chat";
@@ -11547,12 +11601,12 @@
     div.className = "inbox-msg" + (m.sender_id === uid ? " mine" : "") + " trade-msg--" + safeKind;
     var meta = document.createElement("div");
     meta.className = "inbox-msg-meta";
-    meta.textContent =
-      (m.sender_id === uid ? "You" : "Partner") +
+    meta.innerHTML =
+      tradeMessageSenderHtml(m.sender_id, uid) +
       " · " +
-      tradeMsgKindLabel(safeKind) +
+      escapeHtml(tradeMsgKindLabel(safeKind)) +
       " · " +
-      new Date(m.created_at || Date.now()).toLocaleString();
+      escapeHtml(new Date(m.created_at || Date.now()).toLocaleString());
     div.appendChild(meta);
     var sm = m.shipment_meta || m.shipmentMeta;
     if (sm && typeof sm === "object") {
@@ -11688,7 +11742,14 @@
       box.innerHTML = "<p class=\"hint\">Could not load messages.</p>";
       return;
     }
-    tradeRenderMessagesIntoBox(box, res.data || [], uid, "No posts in the last 60 days yet.");
+    var rows = res.data || [];
+    var senderIds = [uid];
+    rows.forEach(function (r) {
+      if (r && r.sender_id) senderIds.push(r.sender_id);
+    });
+    await spellbookLoadUsernamesByIds(senderIds);
+    await spellbookLoadAdminsByIds(senderIds);
+    tradeRenderMessagesIntoBox(box, rows, uid, "No posts in the last 60 days yet.");
     var live = document.getElementById("tradeTxLive");
     if (live) {
       live.textContent =
@@ -12280,9 +12341,16 @@
       box.innerHTML = "<p class=\"hint\">Could not load messages.</p>";
       return;
     }
+    var rows = res.data || [];
+    var senderIds = [uid];
+    rows.forEach(function (r) {
+      if (r && r.sender_id) senderIds.push(r.sender_id);
+    });
+    await spellbookLoadUsernamesByIds(senderIds);
+    await spellbookLoadAdminsByIds(senderIds);
     tradeRenderMessagesIntoBox(
       box,
-      res.data || [],
+      rows,
       uid,
       "No messages in the last " + TRADE_HUB_RETENTION_DAYS + " days. Say hello below."
     );
