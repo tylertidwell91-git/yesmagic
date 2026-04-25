@@ -31,7 +31,7 @@ function EmailsPageInner() {
   useEffect(() => {
     setLoading(true)
     setError('')
-    fetch('/api/email-subscribers')
+    fetch('/.netlify/functions/email-subscribers')
       .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
         if (!ok) throw new Error(data.error || 'Failed to load subscribers.')
@@ -112,7 +112,7 @@ function EmailsPageInner() {
     setError('')
     setSaved(false)
     try {
-      const res = await fetch('/api/email-subscribers', {
+      const res = await fetch('/.netlify/functions/email-subscribers', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subscribers }),
@@ -132,7 +132,7 @@ function EmailsPageInner() {
     setSendingLive(true)
     setSendingLiveResult('')
     try {
-      const res = await fetch('/api/email-broadcast', {
+      const res = await fetch('/.netlify/functions/email-broadcast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'go-live', whatnotUrl: WHATNOT_URL }),
@@ -153,7 +153,7 @@ function EmailsPageInner() {
     setSendingCustom(true)
     setSendingCustomResult('')
     try {
-      const res = await fetch('/api/email-broadcast', {
+      const res = await fetch('/.netlify/functions/email-broadcast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

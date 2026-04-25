@@ -15,7 +15,7 @@ const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null
 /** Use relative path so API is same-origin (avoids CORS/redirect when www vs non-www). */
 function getPaymentIntentUrl() {
   if (!ORDER_API_URL) return ''
-  return '/api/create-payment-intent'
+  return '/.netlify/functions/create-payment-intent'
 }
 
 function buildOrderPayload(
@@ -72,7 +72,7 @@ function PaymentForm({ cartWithProducts, totalCents, customerEmail, orderPayload
       }
       // Payment succeeded; submit order to our server for email notification
       let emailFailed = false
-      const res = await fetch('/api/order', {
+      const res = await fetch('/.netlify/functions/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderPayload),
@@ -145,7 +145,7 @@ export default function CheckoutPage() {
   const [shippingRules, setShippingRules] = useState(null)
 
   useEffect(() => {
-    fetch('/api/shipping-rules')
+    fetch('/.netlify/functions/shipping-rules')
       .then((res) => (res.ok ? res.json() : {}))
       .then((data) => setShippingRules(data.rules ?? null))
       .catch(() => setShippingRules(null))

@@ -21,7 +21,7 @@ export function ensureProductFields(p) {
 export function getInventoryApiUrl() {
   const orderUrl = import.meta.env.VITE_ORDER_API_URL || ''
   if (!orderUrl) return ''
-  return '/api/inventory'
+  return '/.netlify/functions/inventory'
 }
 
 /** Sync getter for non-React code (e.g. pull-inventory script). In the app, prefer useInventory(). */

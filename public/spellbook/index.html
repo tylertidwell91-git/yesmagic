@@ -11507,7 +11507,7 @@
   function spellbookSignupNotifyEndpoint() {
     var base = (typeof window !== "undefined" && window.SPELLBOOK_TRADE_NOTIFY_BASE) || "";
     base = String(base || "").replace(/\/+$/, "");
-    var path = "/api/spellbook-signup-notify";
+    var path = "/.netlify/functions/spellbook-signup-notify";
     if (base) return base + path;
     return path;
   }
@@ -11542,7 +11542,7 @@
   function tradeNotifyEmailEndpoint() {
     var base = (typeof window !== "undefined" && window.SPELLBOOK_TRADE_NOTIFY_BASE) || "";
     base = String(base || "").replace(/\/+$/, "");
-    var path = "/api/spellbook-trade-offer-email";
+    var path = "/.netlify/functions/spellbook-trade-offer-email";
     if (base) return base + path;
     return path;
   }
