@@ -36,8 +36,44 @@
   status = 200
   force = true
 
-# SPA fallback: serve index.html for all other routes (/admin, /checkout, etc.)
+# SPA route rewrites only (avoid catching /.netlify/functions/*)
 [[redirects]]
-  from = "/*"
+  from = "/admin"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/checkout"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/checkout/success"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/whatnot"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/schedule"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/contact"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/subscribe"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/emails"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/Reply"
+  to = "/index.html"
+  status = 200
+[[redirects]]
+  from = "/reply"
   to = "/index.html"
   status = 200
