@@ -34,7 +34,7 @@ export default function SubscribePage() {
 
     setSubmitting(true)
     try {
-      const res = await fetch('/.netlify/functions/email-subscribers', {
+      const res = await fetch('/api/email-subscribers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

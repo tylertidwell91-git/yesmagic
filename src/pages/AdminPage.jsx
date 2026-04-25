@@ -42,7 +42,7 @@ export function AdminGate({ children }) {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch('/.netlify/functions/admin-auth')
+    fetch('/api/admin-auth')
       .then((res) => (res.ok ? res.json() : { authenticated: false }))
       .then((data) => {
         if (data.authenticated) {
@@ -61,7 +61,7 @@ export function AdminGate({ children }) {
       setError('Password is required.')
       return
     }
-    fetch('/.netlify/functions/admin-auth', {
+    fetch('/api/admin-auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: trimmed }),
@@ -82,7 +82,7 @@ export function AdminGate({ children }) {
     sessionStorage.removeItem(ADMIN_SESSION_KEY)
     setAuthenticated(false)
     setPassword('')
-    fetch('/.netlify/functions/admin-auth', { method: 'DELETE' }).catch(() => {})
+    fetch('/api/admin-auth', { method: 'DELETE' }).catch(() => {})
     navigate('/')
   }
 
@@ -129,10 +129,10 @@ export function AdminGate({ children }) {
   )
 }
 
-const SHOWS_API = '/.netlify/functions/shows'
-const SHIPPING_RULES_API = '/.netlify/functions/shipping-rules'
-const SYNC_WHATNOT_API = '/.netlify/functions/sync-whatnot-shows'
-const REPLY_NOTE_API = '/.netlify/functions/reply-note'
+const SHOWS_API = '/api/shows'
+const SHIPPING_RULES_API = '/api/shipping-rules'
+const SYNC_WHATNOT_API = '/api/sync-whatnot-shows'
+const REPLY_NOTE_API = '/api/reply-note'
 
 export default function AdminPage() {
   const { inventory, loading, saveInventory, reload } = useInventory()
@@ -314,7 +314,7 @@ export default function AdminPage() {
     }
     setConfirmSending(true)
     try {
-      const res = await fetch('/.netlify/functions/order-confirmation', {
+      const res = await fetch('/api/order-confirmation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 
-const API_URL = '/.netlify/functions/shows'
+const API_URL = '/api/shows'
 
 function parseDate(str) {
   if (!str) return null

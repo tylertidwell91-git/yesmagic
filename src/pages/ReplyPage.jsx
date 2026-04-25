@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const API_URL = '/.netlify/functions/reply-note'
+const API_URL = '/api/reply-note'
 
 export default function ReplyPage() {
   const [note, setNote] = useState('')
